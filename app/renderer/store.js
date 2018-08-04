@@ -7,7 +7,7 @@ import {
 import persistState from 'redux-localstorage'
 import thunk from 'redux-thunk'
 
-import gitGraph from './store/gitGraph'
+import commits from './store/commits'
 
 export default function configureStore(initialState, routerHistory) {
   const router = routerMiddleware(routerHistory)
@@ -17,7 +17,7 @@ export default function configureStore(initialState, routerHistory) {
   }
 
   const reducers = {
-    gitGraph,
+    commits,
   }
 
   const middlewares = [thunk, router]

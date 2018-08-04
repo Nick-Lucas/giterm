@@ -1,7 +1,7 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
 import Commits from '../components/commits'
-import { GITGRAPH_UPDATE } from '../store/gitGraph'
+import { COMMITS_UPDATE } from '../store/commits'
 
 export class Home extends PureComponent {
   render() {
@@ -13,9 +13,16 @@ export class Home extends PureComponent {
           style={{ backgroundColor: 'dark-gray', padding: '5px' }}
           onClick={() =>
             this.props.populate([
-              { sha: '1234' },
-              { sha: '5678' },
-              { sha: '4334' },
+              {
+                sha: '1234',
+                message: 'change the filange to eradicate the rumbling',
+              },
+              { sha: '5678', message: 'fix typos' },
+              {
+                sha: '4334',
+                message:
+                  'add new project type in order to reverse the polarity of the neutron flow',
+              },
             ])
           }>
           Populate
@@ -27,5 +34,5 @@ export class Home extends PureComponent {
 
 export default connect(
   null,
-  { populate: (commits) => ({ type: GITGRAPH_UPDATE, payload: commits }) },
+  { populate: (commits) => ({ type: COMMITS_UPDATE, payload: commits }) },
 )(Home)
