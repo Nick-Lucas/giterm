@@ -5,4 +5,6 @@ body {
   color: #d6d6d6;
   font-family: 'Inconsolata', monospace;
   margin: 0;
+
+  user-select: none;
 }

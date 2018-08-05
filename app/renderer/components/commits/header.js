@@ -12,7 +12,9 @@ const HeaderWrapper = styled.div`
   padding-bottom: 0.5em;
 `
 
-const HeaderColumn = styled.div``
+const HeaderColumn = styled.div`
+  padding-right: 0.5em;
+`
 
 export default class Header extends PureComponent {
   render() {

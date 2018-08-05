@@ -43,6 +43,7 @@ export function loadAllCommits(Repo) {
             committer: x.committer(),
             email: x.author().email(),
             author: x.author().name(),
+            authorStr: `${x.author().name()} <${x.author().email()}>`,
             parents: parents,
             isStash: isStash,
             stashIndex: stashIndex,

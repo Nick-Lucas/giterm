@@ -15,7 +15,12 @@ const RowWrapper = styled.div`
 `
 const selectedStyle = { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
 
-const RowColumn = styled.div``
+const RowColumn = styled.div`
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  padding-right: 0.5em;
+`
 
 export default class Row extends React.Component {
   handleSelect = () => {
