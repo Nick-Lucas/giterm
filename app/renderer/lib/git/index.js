@@ -1,5 +1,5 @@
-import NodeGit from "nodegit";
-import DateFormat from "dateformat";
+import NodeGit from 'nodegit'
+import DateFormat from 'dateformat'
 
 export async function openRepo(workingDir) {
   return await NodeGit.Repository.open(workingDir)
@@ -7,38 +7,42 @@ export async function openRepo(workingDir) {
 
 export function loadAllCommits(Repo) {
   if (Repo && window) {
-    let walker = NodeGit.Revwalk.create(Repo);
-    walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME);
-    walker.pushGlob('*');
-    let stashes = [];
+    const walker = NodeGit.Revwalk.create(Repo)
+    walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
+    walker.pushGlob('*')
+    const stashes = []
     return NodeGit.Stash.foreach(Repo, (index, msg, id) => {
-      stashes.push(id.toString());
-      walker.push(id);
+      stashes.push(id.toString())
+      walker.push(id)
     }).then(() => {
-      return walker.getCommits(500).then(res => {
-        let commits = [];
-        let stashIndicies = [];
-        res.forEach(x => {
-          let stashIndex = -1;
-          let isStash = false;
-          let parents = x.parents().map(p => p.toString());
+      return walker.getCommits(500).then((res) => {
+        const commits = []
+        const stashIndicies = []
+        res.forEach((x) => {
+          let stashIndex = -1
+          let isStash = false
+          let parents = x.parents().map((p) => p.toString())
           if (stashes.indexOf(x.sha()) !== -1) {
-            isStash = true;
-            parents = [x.parents()[0].toString()];
+            isStash = true
+            parents = [x.parents()[0].toString()]
             if (x.parents().length > 0) {
               for (let i = 1; i < x.parents().length; i++) {
-                stashIndicies.push(x.parents()[i].toString());
+                stashIndicies.push(x.parents()[i].toString())
               }
             }
-            stashIndex = stashes.indexOf(x.sha());
+            stashIndex = stashes.indexOf(x.sha())
           }
-          let cmt = {
+          const cmt = {
             sha: x.sha(),
             sha7: x.sha().substring(0, 6),
             message: x.message().split('\n')[0],
-            detail: x.message().split('\n').splice(1, x.message().split('\n').length).join('\n'),
+            detail: x
+              .message()
+              .split('\n')
+              .splice(1, x.message().split('\n').length)
+              .join('\n'),
             date: x.date(),
-            dateStr: DateFormat(x.date(), "yyyy/mm/dd hh:MM"),
+            dateStr: DateFormat(x.date(), 'yyyy/mm/dd hh:MM'),
             time: x.time(),
             committer: x.committer(),
             email: x.author().email(),
@@ -49,10 +53,10 @@ export function loadAllCommits(Repo) {
             stashIndex: stashIndex,
           }
           if (stashIndicies.indexOf(cmt.sha) === -1) {
-            commits.push(cmt);
+            commits.push(cmt)
           }
-        });
-        return commits;
+        })
+        return commits
       })
     })
   } else {
