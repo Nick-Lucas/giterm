@@ -19,8 +19,6 @@ export class Commits extends Component {
 
   render() {
     const { commits } = this.props
-    console.log(commits)
-
     return <Table columns={columns} data={commits || []} />
   }
 }

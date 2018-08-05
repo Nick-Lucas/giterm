@@ -1,4 +1,13 @@
+html {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  flex-direction: column;
+}
+
 body {
+  display: flex;
+  flex: 1;
   cursor:default;
 
   background-color: #001825;
@@ -7,4 +16,10 @@ body {
   margin: 0;
 
   user-select: none;
+}
+
+#app {
+  display: flex;
+  flex: 1;
+  flex-direction: column
 }
