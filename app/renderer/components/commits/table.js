@@ -1,5 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import RightClickArea from 'react-electron-contextmenu'
+import { clipboard } from 'electron'
 
 import { columns, data } from './props'
 import Header from './header'
@@ -17,6 +19,13 @@ export default class Table extends React.Component {
     this.setState({ selectedSHA: item.sha })
   }
 
+  getMenuItems = (item) => [
+    {
+      label: 'Copy SHA',
+      click: () => clipboard.writeText(item.sha),
+    },
+  ]
+
   render() {
     const { columns, data } = this.props
     const { selectedSHA } = this.state
@@ -25,13 +34,14 @@ export default class Table extends React.Component {
       <div>
         <Header columns={columns} />
         {data.map((row) => (
-          <Row
-            key={row.sha}
-            item={row}
-            columns={columns}
-            selected={selectedSHA === row.sha}
-            onSelect={this.handleSelect}
-          />
+          <RightClickArea key={row.sha} menuItems={this.getMenuItems(row)}>
+            <Row
+              item={row}
+              columns={columns}
+              selected={selectedSHA === row.sha}
+              onSelect={this.handleSelect}
+            />
+          </RightClickArea>
         ))}
       </div>
     )
