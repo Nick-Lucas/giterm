@@ -13,14 +13,22 @@ const RowWrapper = styled.div`
     background-color: rgba(255, 255, 255, 0.1);
   }
 `
+const selectedStyle = { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
 
 const RowColumn = styled.div``
 
 export default class Row extends React.Component {
+  handleSelect = () => {
+    const { item, onSelect } = this.props
+    onSelect(item)
+  }
+
   render() {
-    const { columns, item } = this.props
+    const { selected, columns, item } = this.props
     return (
-      <RowWrapper>
+      <RowWrapper
+        style={selected ? selectedStyle : {}}
+        onClick={this.handleSelect}>
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
             {item[column.key]}
@@ -32,6 +40,8 @@ export default class Row extends React.Component {
 }
 
 Row.propTypes = {
+  selected: PropTypes.bool,
+  onSelect: PropTypes.func,
   columns,
   item,
 }
