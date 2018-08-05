@@ -33,6 +33,7 @@
   "dependencies": {
     "babel-runtime": "^6.26.0",
     "history": "^4.6.3",
+    "nodegit": "^0.22.2",
     "prop-types": "^15.5.10",
     "react": "^16.2.0",
     "react-dom": "^16.2.0",

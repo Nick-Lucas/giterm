@@ -17,7 +17,7 @@ export class Commits extends Component {
     return (
       <Table
         columns={[
-          { name: 'SHA', key: 'sha', width: '5em' },
+          { name: 'SHA', key: 'sha7', width: '5em' },
           { name: 'Message', key: 'message', width: '40em' },
         ]}
         data={commits || []}

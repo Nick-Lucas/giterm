@@ -1,10 +1,11 @@
-import { loadAllCommits } from '../lib/git'
+import { openRepo, loadAllCommits } from '../lib/git'
 
 export const COMMITS_UPDATE = 'commits/update'
 
 export const loadCommits = () => {
   return async (dispatch) => {
-    const commits = await loadAllCommits()
+    const repo = await openRepo(process.cwd())
+    const commits = await loadAllCommits(repo)
     dispatch({
       type: COMMITS_UPDATE,
       payload: commits,
