@@ -5,6 +5,12 @@ import PropTypes from 'prop-types'
 import Table from './table'
 import { data } from './props'
 
+const columns = [
+  { name: 'SHA', key: 'sha7', width: '5em' },
+  { name: 'Message', key: 'message', width: '40em' },
+  { name: 'Date', key: 'dateStr', width: '6em' },
+]
+
 export class Commits extends Component {
   static propTypes = {
     commits: data,
@@ -14,15 +20,7 @@ export class Commits extends Component {
     const { commits } = this.props
     console.log(commits)
 
-    return (
-      <Table
-        columns={[
-          { name: 'SHA', key: 'sha7', width: '5em' },
-          { name: 'Message', key: 'message', width: '40em' },
-        ]}
-        data={commits || []}
-      />
-    )
+    return <Table columns={columns} data={commits || []} />
   }
 }
 

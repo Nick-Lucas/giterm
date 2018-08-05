@@ -1,4 +1,5 @@
 import NodeGit from "nodegit";
+import DateFormat from "dateformat";
 
 export async function openRepo(workingDir) {
   return await NodeGit.Repository.open(workingDir)
@@ -37,6 +38,7 @@ export function loadAllCommits(Repo) {
             message: x.message().split('\n')[0],
             detail: x.message().split('\n').splice(1, x.message().split('\n').length).join('\n'),
             date: x.date(),
+            dateStr: DateFormat(x.date(), "yyyy/mm/dd hh:MM"),
             time: x.time(),
             committer: x.committer(),
             email: x.author().email(),
