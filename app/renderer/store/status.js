@@ -1,5 +1,6 @@
 import * as git from '../lib/git'
 import { join } from 'path'
+import { updateReducer } from './helpers'
 
 export const STATUS_UPDATE = 'status/update'
 
@@ -23,13 +24,4 @@ export function doStatusUpdate() {
   }
 }
 
-const initialState = []
-export default (state = initialState, action) => {
-  switch (action.type) {
-    case STATUS_UPDATE: {
-      return action.payload
-    }
-    default:
-      return state
-  }
-}
+export default updateReducer(STATUS_UPDATE, {})

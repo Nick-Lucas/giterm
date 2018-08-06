@@ -2,6 +2,7 @@ import { openRepo, loadAllCommits } from '../lib/git'
 import * as git from '../lib/git'
 
 import { join } from 'path'
+import { updateReducer } from './helpers'
 
 export const COMMITS_UPDATE = 'commits/update'
 
@@ -19,13 +20,4 @@ export const loadCommits = () => {
   }
 }
 
-const initialState = []
-export default (state = initialState, action) => {
-  switch (action.type) {
-    case COMMITS_UPDATE: {
-      return action.payload
-    }
-    default:
-      return state
-  }
-}
+export default updateReducer(COMMITS_UPDATE, [])
