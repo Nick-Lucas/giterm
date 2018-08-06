@@ -4,6 +4,7 @@ import styled from 'styled-components'
 
 import { loadCommits } from '../store/commits'
 import { doStatusUpdate } from '../store/status'
+import { doUpdateBranches } from '../store/branches'
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
 
@@ -26,6 +27,7 @@ export class Home extends PureComponent {
   componentDidMount() {
     this.props.loadCommits()
     this.props.doStatusUpdate()
+    this.props.doUpdateBranches()
   }
 
   render() {
@@ -45,5 +47,5 @@ export class Home extends PureComponent {
 
 export default connect(
   null,
-  { loadCommits, doStatusUpdate },
+  { loadCommits, doStatusUpdate, doUpdateBranches },
 )(Home)

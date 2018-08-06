@@ -31,17 +31,25 @@ export async function getCurrentBranchHead(repo) {
   const ref = await repo.getCurrentBranch()
   const commit = await repo.getBranchCommit(ref)
   return {
-    name: ref.name(),
+    name: ref.shorthand(),
     commitSHA: commit.sha(),
   }
 }
 
-export async function getAllBranches(repo) {
-  return await repo.getReferences(NodeGit.Reference.TYPE.OID)
+export async function getAllBranches(repo, isRemote = false) {
+  const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
+  return refs.filter((ref) => ref.isBranch()).map((ref) => ({
+    name: ref.shorthand(),
+    isRemote: !!ref.isRemote(),
+    isHead: !!ref.isHead(),
+    id: ref.name(),
+  }))
 }
 
-export function loadAllCommits(repo) {
+export async function loadAllCommits(repo) {
   if (repo && window) {
+    const headSHA = (await repo.head()).target().toString()
+
     const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
     walker.pushGlob('*')
@@ -86,6 +94,7 @@ export function loadAllCommits(repo) {
             parents: parents,
             isStash: isStash,
             stashIndex: stashIndex,
+            isHead: headSHA === x.sha(),
           }
           if (stashIndicies.indexOf(cmt.sha) === -1) {
             commits.push(cmt)
@@ -97,16 +106,4 @@ export function loadAllCommits(repo) {
   } else {
     return Promise.reject('NO_REPO')
   }
-  // return Promise.resolve([
-  //   {
-  //     sha: '1234',
-  //     message: 'change the filange to eradicate the rumbling',
-  //   },
-  //   { sha: '5678', message: 'fix typos' },
-  //   {
-  //     sha: '4334',
-  //     message:
-  //       'add new project type in order to reverse the polarity of the neutron flow',
-  //   },
-  // ])
 }

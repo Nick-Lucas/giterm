@@ -11,6 +11,9 @@ export const columns = PropTypes.arrayOf(
 export const item = PropTypes.shape({
   sha: PropTypes.string,
   message: PropTypes.string,
+  authorStr: PropTypes.string,
+  dateStr: PropTypes.string,
+  isHead: PropTypes.bool,
 })
 
 export const data = PropTypes.arrayOf(item)

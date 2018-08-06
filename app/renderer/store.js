@@ -10,9 +10,11 @@ import thunk from 'redux-thunk'
 // Reducers
 import commits from './store/commits'
 import status from './store/status'
+import branches from './store/branches'
 const reducers = {
   commits,
   status,
+  branches,
 }
 
 export default function configureStore(initialState, routerHistory) {

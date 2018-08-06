@@ -11,8 +11,6 @@ export const loadCommits = () => {
     const path = join(process.cwd(), '../domain-store')
     const repo = await openRepo(path)
     const commits = await loadAllCommits(repo)
-    const bs = await git.getAllBranches(repo)
-    console.log(bs.map((ref) => ref.name()))
     await dispatch({
       type: COMMITS_UPDATE,
       payload: commits,

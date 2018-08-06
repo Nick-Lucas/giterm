@@ -12,8 +12,11 @@ const RowWrapper = styled.div`
   :hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
+
+  color: rgba(255, 255, 255, 0.8);
 `
 const selectedStyle = { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
+const headStyle = { fontWeight: 'bold', color: 'rgba(255, 255, 255, 1)' }
 
 const RowColumn = styled.div`
   white-space: nowrap;
@@ -28,12 +31,19 @@ export default class Row extends React.Component {
     onSelect(item)
   }
 
+  getWrapperStyle() {
+    const { selected, item } = this.props
+
+    return {
+      ...(selected ? selectedStyle : {}),
+      ...(item.isHead ? headStyle : {}),
+    }
+  }
+
   render() {
-    const { selected, columns, item } = this.props
+    const { columns, item } = this.props
     return (
-      <RowWrapper
-        style={selected ? selectedStyle : {}}
-        onClick={this.handleSelect}>
+      <RowWrapper style={this.getWrapperStyle()} onClick={this.handleSelect}>
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
             {item[column.key]}
