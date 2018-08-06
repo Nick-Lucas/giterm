@@ -5,6 +5,7 @@ export const columns = PropTypes.arrayOf(
     name: PropTypes.string.isRequired,
     key: PropTypes.string.isRequired,
     width: PropTypes.any,
+    showsTags: PropTypes.bool,
   }),
 )
 
@@ -17,3 +18,11 @@ export const item = PropTypes.shape({
 })
 
 export const data = PropTypes.arrayOf(item)
+
+export const branch = PropTypes.shape({
+  id: PropTypes.string,
+  name: PropTypes.string,
+  isRemote: PropTypes.bool,
+  isHead: PropTypes.bool,
+})
+export const branches = PropTypes.arrayOf(branch)

@@ -4,7 +4,7 @@ import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 import styled from 'styled-components'
 
-import { columns, data } from './props'
+import { columns, data, branches } from './props'
 import Header from './header'
 import Row from './row'
 
@@ -32,7 +32,7 @@ export default class Table extends React.Component {
   ]
 
   render() {
-    const { columns, data } = this.props
+    const { columns, data, branches } = this.props
     const { selectedSHA } = this.state
 
     return (
@@ -44,6 +44,7 @@ export default class Table extends React.Component {
               <Row
                 item={row}
                 columns={columns}
+                branches={branches}
                 selected={selectedSHA === row.sha}
                 onSelect={this.handleSelect}
               />
@@ -58,4 +59,5 @@ export default class Table extends React.Component {
 Table.propTypes = {
   columns,
   data,
+  branches,
 }
