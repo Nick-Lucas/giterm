@@ -7,19 +7,19 @@ import {
 import persistState from 'redux-localstorage'
 import thunk from 'redux-thunk'
 
+// Reducers
 import commits from './store/commits'
+import status from './store/status'
+const reducers = {
+  commits,
+  status,
+}
 
 export default function configureStore(initialState, routerHistory) {
   const router = routerMiddleware(routerHistory)
-
   const actionCreators = {
     push,
   }
-
-  const reducers = {
-    commits,
-  }
-
   const middlewares = [thunk, router]
 
   const composeEnhancers = (() => {

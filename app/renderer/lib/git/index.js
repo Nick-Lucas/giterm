@@ -5,10 +5,35 @@ export async function openRepo(workingDir) {
   return await NodeGit.Repository.open(workingDir)
 }
 
+export function getStateText(repo) {
+  if (repo.isRebasing()) {
+    return 'Rebasing'
+  }
+  if (repo.isMerging()) {
+    return 'Merging'
+  }
+  if (repo.isCherrypicking()) {
+    return 'Cherry Picking'
+  }
+  if (repo.isReverting()) {
+    return 'Reverting'
+  }
+  if (repo.isBisecting()) {
+    return 'Bisecting'
+  }
+  if (repo.isApplyingMailbox()) {
+    return 'Applying Mailbox'
+  }
+  return 'OK'
+}
+
 export async function getCurrentBranchHead(repo) {
   const ref = await repo.getCurrentBranch()
   const commit = await repo.getBranchCommit(ref)
-  return commit
+  return {
+    name: ref.name(),
+    commitSHA: commit.sha(),
+  }
 }
 
 export async function getAllBranches(repo) {
