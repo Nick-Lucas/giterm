@@ -2,10 +2,15 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
+import styled from 'styled-components'
 
 import { columns, data } from './props'
 import Header from './header'
 import Row from './row'
+
+const TableWrapper = styled.div`
+  overflow: auto;
+`
 
 export default class Table extends React.Component {
   constructor(props) {
@@ -31,19 +36,21 @@ export default class Table extends React.Component {
     const { selectedSHA } = this.state
 
     return (
-      <div>
+      <React.Fragment>
         <Header columns={columns} />
-        {data.map((row) => (
-          <RightClickArea key={row.sha} menuItems={this.getMenuItems(row)}>
-            <Row
-              item={row}
-              columns={columns}
-              selected={selectedSHA === row.sha}
-              onSelect={this.handleSelect}
-            />
-          </RightClickArea>
-        ))}
-      </div>
+        <TableWrapper>
+          {data.map((row) => (
+            <RightClickArea key={row.sha} menuItems={this.getMenuItems(row)}>
+              <Row
+                item={row}
+                columns={columns}
+                selected={selectedSHA === row.sha}
+                onSelect={this.handleSelect}
+              />
+            </RightClickArea>
+          ))}
+        </TableWrapper>
+      </React.Fragment>
     )
   }
 }

@@ -5,13 +5,23 @@ export async function openRepo(workingDir) {
   return await NodeGit.Repository.open(workingDir)
 }
 
-export function loadAllCommits(Repo) {
-  if (Repo && window) {
-    const walker = NodeGit.Revwalk.create(Repo)
+export async function getCurrentBranchHead(repo) {
+  const ref = await repo.getCurrentBranch()
+  const commit = await repo.getBranchCommit(ref)
+  return commit
+}
+
+export async function getAllBranches(repo) {
+  return await repo.getReferences(NodeGit.Reference.TYPE.OID)
+}
+
+export function loadAllCommits(repo) {
+  if (repo && window) {
+    const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
     walker.pushGlob('*')
     const stashes = []
-    return NodeGit.Stash.foreach(Repo, (index, msg, id) => {
+    return NodeGit.Stash.foreach(repo, (index, msg, id) => {
       stashes.push(id.toString())
       walker.push(id)
     }).then(() => {

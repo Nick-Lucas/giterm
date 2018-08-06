@@ -8,6 +8,7 @@ import Terminal from '../components/terminal'
 
 const CommitsWrapper = styled.div`
   flex: 1;
+  display: inline-grid;
 `
 const TerminalWrapper = styled.div`
   height: 15em;
