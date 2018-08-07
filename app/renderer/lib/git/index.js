@@ -38,12 +38,19 @@ export async function getCurrentBranchHead(repo) {
 
 export async function getAllBranches(repo, isRemote = false) {
   const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
-  return refs.filter((ref) => ref.isBranch()).map((ref) => ({
-    name: ref.shorthand(),
-    isRemote: !!ref.isRemote(),
-    isHead: !!ref.isHead(),
-    id: ref.name(),
-  }))
+  return Promise.all(
+    refs.filter((ref) => ref.isBranch()).map(async (ref) => {
+      const headRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
+      const head = await repo.getCommit(headRef)
+      return {
+        name: ref.shorthand(),
+        isRemote: !!ref.isRemote(),
+        isHead: !!ref.isHead(),
+        id: ref.name(),
+        headSHA: head.sha(),
+      }
+    }),
+  )
 }
 
 export async function loadAllCommits(repo) {
