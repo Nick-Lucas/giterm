@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 
-import { columns } from './props'
+import * as props from './props'
 
 import styled from 'styled-components'
 
@@ -33,5 +33,5 @@ export default class Header extends PureComponent {
 }
 
 Header.propTypes = {
-  columns,
+  columns: props.columns,
 }

@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import { columns, item, branches } from './props'
+import * as props from './props'
 import Tag from './tag'
 
 const RowWrapper = styled.div`
@@ -31,27 +31,27 @@ const RowColumn = styled.div`
 
 export default class Row extends React.Component {
   handleSelect = () => {
-    const { item, onSelect } = this.props
-    onSelect(item)
+    const { commit, onSelect } = this.props
+    onSelect(commit)
   }
 
   getWrapperStyle() {
-    const { selected, item } = this.props
+    const { selected, commit } = this.props
 
     return {
       ...(selected ? selectedStyle : {}),
-      ...(item.isHead ? headStyle : {}),
+      ...(commit.isHead ? headStyle : {}),
     }
   }
 
   render() {
-    const { columns, item, branches } = this.props
+    const { columns, commit } = this.props
     return (
       <RowWrapper style={this.getWrapperStyle()} onClick={this.handleSelect}>
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
             {column.showTags && this.renderTags()}
-            {item[column.key]}
+            {commit[column.key]}
           </RowColumn>
         ))}
       </RowWrapper>
@@ -59,9 +59,9 @@ export default class Row extends React.Component {
   }
 
   renderTags() {
-    const { branches, item } = this.props
+    const { branches, commit } = this.props
     return branches
-      .filter((branch) => item.sha === branch.headSHA)
+      .filter((branch) => commit.sha === branch.headSHA)
       .map((branch) => <Tag key={branch.id} label={branch.name} />)
   }
 }
@@ -69,7 +69,7 @@ export default class Row extends React.Component {
 Row.propTypes = {
   selected: PropTypes.bool,
   onSelect: PropTypes.func,
-  columns,
-  branches,
-  item,
+  columns: props.columns,
+  branches: props.branches,
+  commit: props.commit,
 }

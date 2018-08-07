@@ -36,7 +36,7 @@ export async function getCurrentBranchHead(repo) {
   }
 }
 
-export async function getAllBranches(repo, isRemote = false) {
+export async function getAllBranches(repo) {
   const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
   return Promise.all(
     refs.filter((ref) => ref.isBranch()).map(async (ref) => {

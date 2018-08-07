@@ -9,7 +9,7 @@ export const columns = PropTypes.arrayOf(
   }),
 )
 
-export const item = PropTypes.shape({
+export const commit = PropTypes.shape({
   sha: PropTypes.string,
   message: PropTypes.string,
   authorStr: PropTypes.string,
@@ -17,7 +17,7 @@ export const item = PropTypes.shape({
   isHead: PropTypes.bool,
 })
 
-export const data = PropTypes.arrayOf(item)
+export const commits = PropTypes.arrayOf(commit)
 
 export const branch = PropTypes.shape({
   id: PropTypes.string,
