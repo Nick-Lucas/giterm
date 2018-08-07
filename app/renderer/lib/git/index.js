@@ -114,3 +114,17 @@ export async function loadAllCommits(repo) {
     return Promise.reject('NO_REPO')
   }
 }
+
+export async function checkout(repo, sha) {
+  const commit = await repo.getCommit(sha)
+
+  await NodeGit.Checkout.tree(repo, commit, {
+    checkoutStrategy: NodeGit.Checkout.STRATEGY.SAFE,
+  })
+
+  repo.setHeadDetached(
+    commit,
+    repo.defaultSignature,
+    'Checkout: HEAD ' + commit.id(),
+  )
+}

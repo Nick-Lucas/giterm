@@ -18,4 +18,15 @@ export const loadCommits = () => {
   }
 }
 
+export const checkoutCommit = (commit) => {
+  return async (dispatch) => {
+    const path = join(process.cwd(), '../domain-store')
+    const repo = await openRepo(path)
+
+    git.checkout(repo, commit.sha)
+
+    dispatch(loadCommits())
+  }
+}
+
 export default updateReducer(COMMITS_UPDATE, [])

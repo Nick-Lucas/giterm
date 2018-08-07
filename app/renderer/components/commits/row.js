@@ -35,6 +35,11 @@ export default class Row extends React.Component {
     onSelect(commit)
   }
 
+  handleDoubleClick = () => {
+    const { commit, onDoubleClick } = this.props
+    onDoubleClick(commit)
+  }
+
   getWrapperStyle() {
     const { selected, commit } = this.props
 
@@ -47,7 +52,10 @@ export default class Row extends React.Component {
   render() {
     const { columns, commit } = this.props
     return (
-      <RowWrapper style={this.getWrapperStyle()} onClick={this.handleSelect}>
+      <RowWrapper
+        style={this.getWrapperStyle()}
+        onClick={this.handleSelect}
+        onDoubleClick={this.handleDoubleClick}>
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
             {column.showTags && this.renderTags()}
@@ -69,6 +77,7 @@ export default class Row extends React.Component {
 Row.propTypes = {
   selected: PropTypes.bool,
   onSelect: PropTypes.func,
+  onDoubleClick: PropTypes.func,
   columns: props.columns,
   branches: props.branches,
   commit: props.commit,
