@@ -59,57 +59,34 @@ export async function loadAllCommits(repo) {
 
     const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
-    walker.pushGlob('*')
-    const stashes = []
-    return NodeGit.Stash.foreach(repo, (index, msg, id) => {
-      stashes.push(id.toString())
-      walker.push(id)
-    }).then(() => {
-      return walker.getCommits(500).then((res) => {
-        const commits = []
-        const stashIndicies = []
-        res.forEach((x) => {
-          let stashIndex = -1
-          let isStash = false
-          let parents = x.parents().map((p) => p.toString())
-          if (stashes.indexOf(x.sha()) !== -1) {
-            isStash = true
-            parents = [x.parents()[0].toString()]
-            if (x.parents().length > 0) {
-              for (let i = 1; i < x.parents().length; i++) {
-                stashIndicies.push(x.parents()[i].toString())
-              }
-            }
-            stashIndex = stashes.indexOf(x.sha())
-          }
-          const cmt = {
-            sha: x.sha(),
-            sha7: x.sha().substring(0, 6),
-            message: x.message().split('\n')[0],
-            detail: x
-              .message()
-              .split('\n')
-              .splice(1, x.message().split('\n').length)
-              .join('\n'),
-            date: x.date(),
-            dateStr: DateFormat(x.date(), 'yyyy/mm/dd hh:MM'),
-            time: x.time(),
-            committer: x.committer(),
-            email: x.author().email(),
-            author: x.author().name(),
-            authorStr: `${x.author().name()} <${x.author().email()}>`,
-            parents: parents,
-            isStash: isStash,
-            stashIndex: stashIndex,
-            isHead: headSHA === x.sha(),
-          }
-          if (stashIndicies.indexOf(cmt.sha) === -1) {
-            commits.push(cmt)
-          }
-        })
-        return commits
-      })
+    walker.pushGlob('refs/heads/*')
+
+    const foundCommits = await walker.getCommits(500)
+    const commits = []
+    foundCommits.forEach((c) => {
+      const cmt = {
+        sha: c.sha(),
+        sha7: c.sha().substring(0, 6),
+        message: c.message().split('\n')[0],
+        detail: c
+          .message()
+          .split('\n')
+          .splice(1, c.message().split('\n').length)
+          .join('\n'),
+        date: c.date(),
+        dateStr: DateFormat(c.date(), 'yyyy/mm/dd hh:MM'),
+        time: c.time(),
+        committer: c.committer(),
+        email: c.author().email(),
+        author: c.author().name(),
+        authorStr: `${c.author().name()} <${c.author().email()}>`,
+        parents: c.parents().map((p) => p.toString()),
+        isHead: headSHA === c.sha(),
+      }
+
+      commits.push(cmt)
     })
+    return commits
   } else {
     return Promise.reject('NO_REPO')
   }
