@@ -20,6 +20,7 @@ const Divider = styled.hr`
   width: 100%;
   border-width: 0.5px;
   border-color: gray;
+  margin: 0;
 `
 
 export class Home extends PureComponent {

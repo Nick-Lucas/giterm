@@ -7,13 +7,13 @@ import * as fit from 'xterm/lib/addons/fit/fit'
 const TerminalContainer = styled.div`
   display: flex;
   flex: 1;
+  margin: 5px;
 `
-
-const TERMINAL_NODE = 'xterm-node'
 
 export default class Terminal extends React.Component {
   constructor(props) {
     super(props)
+    this.container = React.createRef()
   }
 
   componentDidMount() {
@@ -30,13 +30,13 @@ export default class Terminal extends React.Component {
         background: 'rgba(255, 255, 255, 0)',
       },
     })
-    this.terminal.open(this.container)
+    this.terminal.open(this.container.current)
     this.terminal.write('giterm> ')
     this.terminal.fit()
   }
 
   render() {
-    return <TerminalContainer innerRef={(ref) => (this.container = ref)} />
+    return <TerminalContainer innerRef={this.container} />
   }
 }
 
