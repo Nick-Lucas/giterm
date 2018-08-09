@@ -15,11 +15,14 @@ const TableWrapper = styled.div`
   overflow: auto;
   display: flex;
   flex-direction: row;
+  position: relative;
 `
 
 const TableGraphCol = styled.div`
   padding-left: 3px;
   padding-right: 10px;
+  position: absolute;
+  top: 0;
 `
 const TableMainCol = styled.div`
   flex: 1;
@@ -91,7 +94,7 @@ Commits.propTypes = {
 }
 
 const columns = [
-  { name: '*', key: 'graph', width: '60px', skipRowRender: true },
+  { name: '', key: 'graph', width: '60px' },
   { name: 'SHA', key: 'sha7', width: '50px' },
   { name: 'Message', key: 'message', width: '500px', showTags: true },
   { name: 'Author', key: 'authorStr', width: '150px' },

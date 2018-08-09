@@ -9,6 +9,7 @@ const RowWrapper = styled.div`
   flex-direction: row;
 
   padding-right: 3px;
+  padding-left: 3px;
 
   align-items: center;
 
@@ -62,15 +63,12 @@ export default class Row extends React.Component {
         style={this.getWrapperStyle()}
         onClick={this.handleSelect}
         onDoubleClick={this.handleDoubleClick}>
-        {columns.map(
-          (column) =>
-            !column.skipRowRender && (
-              <RowColumn key={column.key} style={{ width: column.width }}>
-                {column.showTags && this.renderTags()}
-                <ColumnText>{commit[column.key]}</ColumnText>
-              </RowColumn>
-            ),
-        )}
+        {columns.map((column) => (
+          <RowColumn key={column.key} style={{ width: column.width }}>
+            {column.showTags && this.renderTags()}
+            <ColumnText>{commit[column.key]}</ColumnText>
+          </RowColumn>
+        ))}
       </RowWrapper>
     )
   }
