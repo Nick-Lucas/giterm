@@ -3,10 +3,11 @@ import * as git from '../lib/git'
 
 import { join } from 'path'
 import { updateReducer } from './helpers'
+import { refreshApplication } from './coreapp'
 
 export const COMMITS_UPDATE = 'commits/update'
 
-export const loadCommits = () => {
+export const doUpdateCommits = () => {
   return async (dispatch) => {
     const path = join(process.cwd(), '../domain-store')
     const repo = await openRepo(path)
@@ -23,9 +24,9 @@ export const checkoutCommit = (commit) => {
     const path = join(process.cwd(), '../domain-store')
     const repo = await openRepo(path)
 
-    git.checkout(repo, commit.sha)
+    await git.checkout(repo, commit.sha)
 
-    dispatch(loadCommits())
+    dispatch(refreshApplication())
   }
 }
 
