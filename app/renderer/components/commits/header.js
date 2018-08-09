@@ -8,12 +8,12 @@ const HeaderWrapper = styled.div`
   display: flex;
   flex-direction: row;
 
-  padding: 0.3em;
-  padding-bottom: 0.5em;
+  padding: 3px;
+  padding-bottom: 5px;
 `
 
 const HeaderColumn = styled.div`
-  padding-right: 0.5em;
+  padding-right: 10px;
 `
 
 export default class Header extends PureComponent {

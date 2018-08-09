@@ -6,6 +6,7 @@ export const columns = PropTypes.arrayOf(
     key: PropTypes.string.isRequired,
     width: PropTypes.any,
     showsTags: PropTypes.bool,
+    skipRowRender: PropTypes.bool,
   }),
 )
 

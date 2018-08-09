@@ -11,7 +11,8 @@ const CommitsWrapper = styled.div`
   display: inline-grid;
 `
 const TerminalWrapper = styled.div`
-  height: 15em;
+  height: 30vh;
+  min-height: 100px
   display: flex;
 `
 

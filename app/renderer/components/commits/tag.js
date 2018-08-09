@@ -8,10 +8,10 @@ const Wrapper = styled.div`
   background-color: rgba(255, 255, 255, 0.8);
   border-radius: 5px;
 
-  padding-left: 0.2em;
-  padding-right: 0.2em;
-  padding-bottom: 0.1em;
-  margin-right: 0.3em;
+  padding-left: 3px;
+  padding-right: 3px;
+  padding-bottom: 2px;
+  margin-right: 5px;
 
   color: rgba(0, 0, 0, 0.5);
 `

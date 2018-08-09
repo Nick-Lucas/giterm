@@ -9,10 +9,23 @@ import * as props from './props'
 import Header from './header'
 import Row from './row'
 import { checkoutCommit } from '../../store/commits'
+import Graph from '../graph'
 
 const TableWrapper = styled.div`
   overflow: auto;
+  display: flex;
+  flex-direction: row;
 `
+
+const TableGraphCol = styled.div`
+  padding-left: 3px;
+  padding-right: 10px;
+`
+const TableMainCol = styled.div`
+  flex: 1;
+`
+
+const RowHeight = 25
 
 export class Commits extends React.Component {
   constructor(props) {
@@ -41,20 +54,26 @@ export class Commits extends React.Component {
       <React.Fragment>
         <Header columns={columns} />
         <TableWrapper>
-          {commits.map((commit) => (
-            <RightClickArea
-              key={commit.sha}
-              menuItems={this.getMenuItems(commit)}>
-              <Row
-                commit={commit}
-                columns={columns}
-                branches={branches}
-                selected={selectedSHA === commit.sha}
-                onSelect={this.handleSelect}
-                onDoubleClick={checkoutCommit}
-              />
-            </RightClickArea>
-          ))}
+          <TableGraphCol style={{ width: columns[0].width }}>
+            <Graph rowHeight={RowHeight} />
+          </TableGraphCol>
+          <TableMainCol>
+            {commits.map((commit, i) => (
+              <RightClickArea
+                key={commit.sha}
+                menuItems={this.getMenuItems(commit)}>
+                <Row
+                  commit={commit}
+                  columns={columns}
+                  branches={branches}
+                  selected={selectedSHA === commit.sha}
+                  onSelect={this.handleSelect}
+                  onDoubleClick={checkoutCommit}
+                  height={RowHeight}
+                />
+              </RightClickArea>
+            ))}
+          </TableMainCol>
         </TableWrapper>
       </React.Fragment>
     )
@@ -68,10 +87,11 @@ Commits.propTypes = {
 }
 
 const columns = [
-  { name: 'SHA', key: 'sha7', width: '3.5em' },
-  { name: 'Message', key: 'message', width: '40em', showTags: true },
-  { name: 'Author', key: 'authorStr', width: '8em' },
-  { name: 'Date', key: 'dateStr', width: '8em' },
+  { name: '*', key: 'graph', width: '60px', skipRowRender: true },
+  { name: 'SHA', key: 'sha7', width: '50px' },
+  { name: 'Message', key: 'message', width: '500px', showTags: true },
+  { name: 'Author', key: 'authorStr', width: '150px' },
+  { name: 'Date', key: 'dateStr', width: '150px' },
 ]
 
 export default connect(
