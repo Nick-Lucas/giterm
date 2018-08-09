@@ -54,7 +54,11 @@ export class Commits extends React.Component {
       <React.Fragment>
         <Header columns={columns} />
         <TableWrapper>
-          <TableGraphCol style={{ width: columns[0].width }}>
+          <TableGraphCol
+            style={{
+              height: RowHeight * commits.length,
+              width: columns[0].width,
+            }}>
             <Graph rowHeight={RowHeight} />
           </TableGraphCol>
           <TableMainCol>
