@@ -10,7 +10,7 @@
   "repository": "",
   "license": "",
   "scripts": {
-    "postinstall": "electron-builder install-app-deps",
+    "build-deps": "electron-builder install-app-deps",
     "develop": "npm run private:compile -- --source-maps true && run-p -r private:watch private:serve",
     "test": "electron-mocha --renderer -R spec --require babel-core/register test/**/*.spec.js",
     "lint": "eslint --no-ignore scripts app test *.js",
@@ -35,6 +35,7 @@
     "d3": "^5.5.0",
     "dateformat": "^3.0.3",
     "history": "^4.6.3",
+    "node-pty": "^0.7.6",
     "nodegit": "^0.22.2",
     "prop-types": "^15.5.10",
     "react": "^16.2.0",

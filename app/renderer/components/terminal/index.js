@@ -3,7 +3,10 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as XTerm from 'xterm'
 import * as fit from 'xterm/lib/addons/fit/fit'
-import * as terminado from 'xterm/lib/addons/terminado/terminado'
+
+import os from 'os'
+import { spawn } from 'node-pty'
+console.log(spawn)
 
 const TerminalContainer = styled.div`
   display: flex;
@@ -22,9 +25,18 @@ export default class Terminal extends React.Component {
   }
 
   setupTerminal = () => {
-    XTerm.Terminal.applyAddon(fit)
-    XTerm.Terminal.applyAddon(terminado)
+    // PTY
+    const shell = process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
+    const ptyProcess = spawn(shell, [], {
+      name: 'xterm-color',
+      cols: 80,
+      rows: 30,
+      cwd: process.cwd(),
+      env: process.env,
+    })
 
+    // XTERM
+    XTerm.Terminal.applyAddon(fit)
     this.terminal = new XTerm.Terminal({
       allowTransparency: true,
       fontFamily: 'Inconsolata, monospace',
@@ -33,22 +45,18 @@ export default class Terminal extends React.Component {
         background: 'rgba(255, 255, 255, 0)',
       },
     })
-
-    console.log(location)
-    var socket = new WebSocket('ws://localhost:8010/websocket')
-
-    socket.addEventListener('open', () => {
-      console.log('CONNECTED')
-      this.terminal.terminadoAttach(socket, true, false)
-    })
-
-    socket.addEventListener('close', () => {
-      this.setupTerminal()
-    })
-
     this.terminal.open(this.container.current)
     // this.terminal.write('giterm> ')
     this.terminal.fit()
+
+    // EVENTS
+    const term = this.terminal
+    this.terminal.on('data', (data) => {
+      ptyProcess.write(data)
+    })
+    ptyProcess.on('data', function(data) {
+      term.write(data)
+    })
   }
 
   render() {
