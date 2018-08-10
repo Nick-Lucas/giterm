@@ -10,7 +10,7 @@
   "repository": "",
   "license": "",
   "scripts": {
-    "build-deps": "electron-builder install-app-deps",
+    "postinstall": "electron-builder install-app-deps",
     "develop": "npm run private:compile -- --source-maps true && run-p -r private:watch private:serve",
     "test": "electron-mocha --renderer -R spec --require babel-core/register test/**/*.spec.js",
     "lint": "eslint --no-ignore scripts app test *.js",
@@ -50,6 +50,7 @@
     "redux-actions": "^2.2.1",
     "redux-localstorage": "^0.4.1",
     "redux-thunk": "^2.2.0",
+    "simple-git": "^1.96.0",
     "styled-components": "^3.4.0",
     "tslib": "^1.9.3",
     "xterm": "^3.5.1"

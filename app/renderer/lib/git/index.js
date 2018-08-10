@@ -1,4 +1,5 @@
 import NodeGit from 'nodegit'
+import SimpleGit from 'simple-git'
 import DateFormat from 'dateformat'
 
 export async function openRepo(workingDir) {
@@ -94,19 +95,19 @@ export async function loadAllCommits(repo) {
 
 export async function checkout(repo, sha) {
   const branches = await getAllBranches(repo)
-  const commit = await repo.getCommit(sha)
   const branch = branches.reduce((out, b) => {
-    if (!out && b.headSHA === commit.sha()) {
-      return b
+    if (!out && b.headSHA === sha) {
+      return b.id
     }
     return out
   }, null)
 
-  const obj = branch || commit
-
-  await NodeGit.Checkout.tree(repo, obj, {
-    checkoutStrategy: NodeGit.Checkout.STRATEGY.SAFE,
-  })
-
-  repo.setHead(obj, repo.defaultSignature, 'Checkout: HEAD ' + commit.id())
+  if (branch) {
+    await repo.checkoutBranch(branch)
+  } else {
+    const git = SimpleGit('/Users/nick/dev/domain-store')
+    await new Promise((resolve) => {
+      git.checkout(sha, () => resolve())
+    })
+  }
 }

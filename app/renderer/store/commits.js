@@ -26,7 +26,7 @@ export const checkoutCommit = (commit) => {
 
     await git.checkout(repo, commit.sha)
 
-    dispatch(refreshApplication())
+    await dispatch(refreshApplication())
   }
 }
 
