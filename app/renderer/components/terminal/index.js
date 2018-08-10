@@ -1,12 +1,16 @@
 import React from 'react'
 import PropTypes from 'prop-types'
+import { connect } from 'react-redux'
 import styled from 'styled-components'
+
+import { refreshApplication } from '../../store/coreapp'
+
 import * as XTerm from 'xterm'
 import * as fit from 'xterm/lib/addons/fit/fit'
-
 import os from 'os'
 import { spawn } from 'node-pty'
-console.log(spawn)
+
+import debounce from 'debounce'
 
 const TerminalContainer = styled.div`
   display: flex;
@@ -14,10 +18,11 @@ const TerminalContainer = styled.div`
   margin: 5px;
 `
 
-export default class Terminal extends React.Component {
+export class Terminal extends React.Component {
   constructor(props) {
     super(props)
     this.container = React.createRef()
+    this.debouncedRefreshApplication = debounce(props.refreshApplication, 50)
   }
 
   componentDidMount() {
@@ -25,19 +30,27 @@ export default class Terminal extends React.Component {
   }
 
   setupTerminal = () => {
-    // PTY
+    this.ptyProcess = this.setupPTY()
+    this.terminal = this.setupXTerm()
+    this.setupTerminalEvents(this.ptyProcess, this.terminal)
+    this.container.current.focus()
+  }
+
+  setupPTY = () => {
     const shell = process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
     const ptyProcess = spawn(shell, [], {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
-      cwd: process.cwd(),
-      env: process.env,
+      cwd: '/Users/nick/dev/domain-store',
+      env: { ...process.env, PS1: this.getBashPrompt() },
     })
+    return ptyProcess
+  }
 
-    // XTERM
+  setupXTerm = () => {
     XTerm.Terminal.applyAddon(fit)
-    this.terminal = new XTerm.Terminal({
+    const terminal = new XTerm.Terminal({
       allowTransparency: true,
       fontFamily: 'Inconsolata, monospace',
       fontSize: 16,
@@ -45,23 +58,52 @@ export default class Terminal extends React.Component {
         background: 'rgba(255, 255, 255, 0)',
       },
     })
-    this.terminal.open(this.container.current)
-    // this.terminal.write('giterm> ')
-    this.terminal.fit()
+    terminal.open(this.container.current)
+    terminal.fit()
+    return terminal
+  }
 
-    // EVENTS
-    const term = this.terminal
-    this.terminal.on('data', (data) => {
-      ptyProcess.write(data)
+  setupTerminalEvents = () => {
+    const that = this
+
+    that.terminal.on('data', (data) => {
+      that.ptyProcess.write(data)
     })
-    ptyProcess.on('data', function(data) {
-      term.write(data)
+
+    that.terminal.on('linefeed', (e) => {
+      that.debouncedRefreshApplication()
     })
+
+    that.ptyProcess.on('data', function(data) {
+      that.terminal.write(data)
+    })
+
+    // // TODO: this doesn't work
+    // that.ptyProcess.on('exit', () => {
+    //   console.log('recreating')
+    //   that.setupXTerm()
+    //   that.setupTerminalEvents()
+    // })
+  }
+
+  getBashPrompt = () => {
+    // TODO: find a way to make this dynamic
+    // const { branchName } = this.props
+    process.env['GITERM_BRANCH'] = 'giterm'
+    return '\\W $GITERM_BRANCH> '
   }
 
   render() {
+    process.env.PS1 = this.getBashPrompt()
     return <TerminalContainer innerRef={this.container} />
   }
 }
 
 Terminal.propTypes = {}
+
+export default connect(
+  ({ status: { branchName } }) => ({ branchName }),
+  {
+    refreshApplication,
+  },
+)(Terminal)

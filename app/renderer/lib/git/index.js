@@ -93,15 +93,20 @@ export async function loadAllCommits(repo) {
 }
 
 export async function checkout(repo, sha) {
+  const branches = await getAllBranches(repo)
   const commit = await repo.getCommit(sha)
+  const branch = branches.reduce((out, b) => {
+    if (!out && b.headSHA === commit.sha()) {
+      return b
+    }
+    return out
+  }, null)
 
-  await NodeGit.Checkout.tree(repo, commit, {
+  const obj = branch || commit
+
+  await NodeGit.Checkout.tree(repo, obj, {
     checkoutStrategy: NodeGit.Checkout.STRATEGY.SAFE,
   })
 
-  repo.setHeadDetached(
-    commit,
-    repo.defaultSignature,
-    'Checkout: HEAD ' + commit.id(),
-  )
+  repo.setHead(obj, repo.defaultSignature, 'Checkout: HEAD ' + commit.id())
 }

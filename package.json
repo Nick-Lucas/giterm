@@ -34,6 +34,7 @@
     "babel-runtime": "^6.26.0",
     "d3": "^5.5.0",
     "dateformat": "^3.0.3",
+    "debounce": "^1.1.0",
     "history": "^4.6.3",
     "node-pty": "^0.7.6",
     "nodegit": "^0.22.2",
