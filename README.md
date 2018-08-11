@@ -4,19 +4,15 @@
   * giterm cli to take path
   * make terminal switching folder update the cwd of giterm, handle lack of git repo!
 
+* Settings
+  * set default directory
+  * set bash location
+  * set git auth info? ssh?
+
 * Terminal
   * Allow commands to be injected into it (ie. branch switched -> run `git status`)
   * Add fullscreen view for when git runs vim, and recognise it starting a fullscreen session
   * BUG: Fix 'move up' in vim
-  * Inject custom aliases into bash:
-    * ga - git add
-    * gaa - git add --all
-    * gs - git status
-    * gc - git commit -m
-    * gp - git push
-    * gpf - git push --force-with-lease
-    * gc - git checkout
-    * help - display alias documentation
 
 * Branches view:
   * List local branches

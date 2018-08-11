@@ -12,7 +12,3 @@ export const refreshApplication = (gitService) => {
     ])
   }
 }
-
-function dispatchAll(dispatch, funcs) {
-  return funcs.map((func) => dispatch(func()))
-}

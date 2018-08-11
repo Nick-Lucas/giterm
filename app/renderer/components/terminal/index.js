@@ -13,6 +13,16 @@ import { spawn } from 'node-pty'
 import debounce from 'debounce'
 import { bindServices } from '../../lib/di'
 
+import fs from 'fs'
+import path from 'path'
+
+const BASHRC_PATH = path.resolve('./dist-assets/.bashrc')
+console.log(BASHRC_PATH)
+if (!fs.existsSync(BASHRC_PATH)) {
+  // TODO: ensure that packaging process includes this properly
+  throw `.bashrc not found: ${BASHRC_PATH}`
+}
+
 const TerminalContainer = styled.div`
   display: flex;
   flex: 1;
@@ -41,8 +51,10 @@ export class Terminal extends React.Component {
   }
 
   setupPTY = () => {
-    const shell = process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
-    const ptyProcess = spawn(shell, [], {
+    // TODO: integrate user preferences into this. Allow for (or bundle?) git-bash on windows
+    const shell = '/bin/bash' //process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
+    process.env['GITERM_RC'] = BASHRC_PATH
+    const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
