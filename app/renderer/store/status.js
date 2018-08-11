@@ -13,12 +13,10 @@ export const statusUpdate = (branchName, commit, status) => ({
   },
 })
 
-export function doStatusUpdate() {
+export function doStatusUpdate(gitService) {
   return async (dispatch) => {
-    const path = join(process.cwd(), '../domain-store')
-    const repo = await git.openRepo(path)
-    const branch = await git.getCurrentBranchHead(repo)
-    const status = git.getStateText(repo)
+    const branch = await gitService.getCurrentBranchHead()
+    const status = await gitService.getStateText()
     const action = statusUpdate(branch.name, branch.commitSHA, status)
     await dispatch(action)
   }

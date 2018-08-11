@@ -11,6 +11,7 @@ import os from 'os'
 import { spawn } from 'node-pty'
 
 import debounce from 'debounce'
+import { bindServices } from '../../lib/di'
 
 const TerminalContainer = styled.div`
   display: flex;
@@ -22,7 +23,10 @@ export class Terminal extends React.Component {
   constructor(props) {
     super(props)
     this.container = React.createRef()
-    this.debouncedRefreshApplication = debounce(props.refreshApplication, 50)
+    this.debouncedRefreshApplication = debounce(
+      () => props.refreshApplication(props.gitService),
+      50,
+    )
   }
 
   componentDidMount() {
@@ -101,9 +105,13 @@ export class Terminal extends React.Component {
 
 Terminal.propTypes = {}
 
-export default connect(
+const ConnectedTerminal = connect(
   ({ status: { branchName } }) => ({ branchName }),
   {
     refreshApplication,
   },
 )(Terminal)
+
+export default bindServices(({ git }) => ({ gitService: git }))(
+  ConnectedTerminal,
+)

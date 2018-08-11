@@ -7,11 +7,9 @@ import { refreshApplication } from './coreapp'
 
 export const COMMITS_UPDATE = 'commits/update'
 
-export const doUpdateCommits = () => {
+export const doUpdateCommits = (gitService) => {
   return async (dispatch) => {
-    const path = join(process.cwd(), '../domain-store')
-    const repo = await openRepo(path)
-    const commits = await loadAllCommits(repo)
+    const commits = await gitService.loadAllCommits()
     await dispatch({
       type: COMMITS_UPDATE,
       payload: commits,
@@ -19,14 +17,10 @@ export const doUpdateCommits = () => {
   }
 }
 
-export const checkoutCommit = (commit) => {
+export const checkoutCommit = (gitService, commit) => {
   return async (dispatch) => {
-    const path = join(process.cwd(), '../domain-store')
-    const repo = await openRepo(path)
-
-    await git.checkout(repo, commit.sha)
-
-    await dispatch(refreshApplication())
+    await gitService.checkout(commit.sha)
+    await dispatch(refreshApplication(gitService))
   }
 }
 

@@ -8,6 +8,9 @@ import { ConnectedRouter } from 'react-router-redux'
 import { createMemoryHistory } from 'history'
 import configureStore from './store'
 
+import { ServicesProvider } from './lib/di'
+import getServices from './services'
+
 import Home from './containers/home'
 
 const syncHistoryWithStore = (store, history) => {
@@ -26,13 +29,17 @@ const rootElement = document.querySelector(
   document.currentScript.getAttribute('data-container'),
 )
 
+const services = getServices('/Users/nick/dev/domain-store')
+
 ReactDOM.render(
   <Provider store={store}>
-    <ConnectedRouter history={routerHistory}>
-      <Switch>
-        <Route exact path="/" component={Home} />
-      </Switch>
-    </ConnectedRouter>
+    <ServicesProvider services={services}>
+      <ConnectedRouter history={routerHistory}>
+        <Switch>
+          <Route exact path="/" component={Home} />
+        </Switch>
+      </ConnectedRouter>
+    </ServicesProvider>
   </Provider>,
   rootElement,
 )

@@ -10,6 +10,7 @@ import Header from './header'
 import Row from './row'
 import { checkoutCommit } from '../../store/commits'
 import Graph from '../graph'
+import { bindServices } from '../../lib/di'
 
 const TableWrapper = styled.div`
   overflow: auto;
@@ -50,7 +51,13 @@ export class Commits extends React.Component {
   ]
 
   render() {
-    const { columns, commits, branches, checkoutCommit } = this.props
+    const {
+      columns,
+      commits,
+      branches,
+      checkoutCommit,
+      gitService,
+    } = this.props
     const { selectedSHA } = this.state
 
     return (
@@ -75,7 +82,7 @@ export class Commits extends React.Component {
                   branches={branches}
                   selected={selectedSHA === commit.sha}
                   onSelect={this.handleSelect}
-                  onDoubleClick={checkoutCommit}
+                  onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
                   height={RowHeight}
                 />
               </RightClickArea>
@@ -101,7 +108,11 @@ const columns = [
   { name: 'Date', key: 'dateStr', width: '150px' },
 ]
 
-export default connect(
+const ConnectedCommits = connect(
   ({ commits, branches }) => ({ commits, branches, columns }),
   { checkoutCommit },
 )(Commits)
+
+export default bindServices(({ git }) => ({ gitService: git }))(
+  ConnectedCommits,
+)

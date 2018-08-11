@@ -5,6 +5,7 @@ import styled from 'styled-components'
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
 import { refreshApplication } from '../store/coreapp'
+import { bindServices } from '../lib/di'
 
 const CommitsWrapper = styled.div`
   flex: 1;
@@ -25,7 +26,8 @@ const Divider = styled.hr`
 
 export class Home extends PureComponent {
   componentDidMount() {
-    this.props.refreshApplication()
+    const { refreshApplication, gitService } = this.props
+    refreshApplication(gitService)
   }
 
   render() {
@@ -43,7 +45,9 @@ export class Home extends PureComponent {
   }
 }
 
-export default connect(
+const ConnectedHome = connect(
   null,
   { refreshApplication },
 )(Home)
+
+export default bindServices(({ git }) => ({ gitService: git }))(ConnectedHome)
