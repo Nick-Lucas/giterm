@@ -2,14 +2,6 @@ import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import DateFormat from 'dateformat'
 
-async function resultOrNull(func) {
-  try {
-    return await func()
-  } catch (_) {
-    return null
-  }
-}
-
 export class Git {
   // instance management
   // **********************
@@ -20,18 +12,24 @@ export class Git {
     this._complex = null
   }
 
-  getSimple = async () => {
+  getSimple = () => {
     if (!this._simple) {
-      this._simple = await resultOrNull(() => SimpleGit(this.cwd))
+      try {
+        this._simple = new SimpleGit(this.cwd)
+      } catch (_) {
+        this._simple = null
+      }
     }
     return this._simple
   }
 
   getComplex = async () => {
     if (!this._complex) {
-      this._complex = await resultOrNull(() =>
-        NodeGit.Repository.open(this.cwd),
-      )
+      try {
+        this._complex = NodeGit.Repository.open(this.cwd)
+      } catch (_) {
+        this._complex = null
+      }
     }
     return this._complex
   }
@@ -159,9 +157,9 @@ export class Git {
     if (branch) {
       await repo.checkoutBranch(branch)
     } else {
-      const git = await this.getSimple()
+      const simple = this.getSimple()
       await new Promise((resolve) => {
-        git.checkout(sha, () => resolve())
+        simple.checkout(sha, () => resolve())
       })
     }
   }
