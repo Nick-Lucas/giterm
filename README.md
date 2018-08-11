@@ -2,7 +2,6 @@
 
 * Allow setting of git repo
   * giterm cli to take path
-  * make terminal switching folder update the cwd of giterm, handle lack of git repo!
 
 * Settings
   * set default directory
