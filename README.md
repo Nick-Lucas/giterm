@@ -1,11 +1,22 @@
 # TODO:
 
+* Allow setting of git repo
+  * giterm cli to take path
+  * make terminal switching folder update the cwd of giterm, handle lack of git repo!
+
 * Terminal
-  * Link to bash in background
-  * Port over giterm code from prototype
   * Allow commands to be injected into it (ie. branch switched -> run `git status`)
-  * Refresh other views after commands are run
   * Add fullscreen view for when git runs vim, and recognise it starting a fullscreen session
+  * BUG: Fix 'move up' in vim
+  * Inject custom aliases into bash:
+    * ga - git add
+    * gaa - git add --all
+    * gs - git status
+    * gc - git commit -m
+    * gp - git push
+    * gpf - git push --force-with-lease
+    * gc - git checkout
+    * help - display alias documentation
 
 * Branches view:
   * List local branches
@@ -15,11 +26,8 @@
   * Right click the rename, delete, etc
 
 * Commits view
-  * Show graph of branches
-  * Highlight current head
-  * Show branch names & heads
+  * Show branch ahead/behind counts
   * Allow inclusion of origin in view
-  * Doubleclick to checkout commit
 
 * HUD strip
   * Show current status at top (`x files changed`, `rebasing`, etc)
