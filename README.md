@@ -1,8 +1,5 @@
 # TODO:
 
-* Allow setting of git repo
-  * giterm cli to take path
-
 * Settings
   * set default directory
   * set bash location

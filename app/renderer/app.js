@@ -29,7 +29,7 @@ syncHistoryWithStore(store, routerHistory)
 
 // Service Init
 const services = getServices(store)
-store.dispatch(updateCwd('/Users/nick/dev/giterm'))
+store.dispatch(updateCwd(process.cwd()))
 
 // DOM Init
 const rootElement = document.querySelector(
