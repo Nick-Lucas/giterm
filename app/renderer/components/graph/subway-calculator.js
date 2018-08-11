@@ -8,7 +8,7 @@ const START_X = 10
 const START_Y = 12
 const X_SEPARATION = 15
 
-export class D3Service {
+export class SubwayCalculator {
   colors = [
     '#058ED9',
     '#880044',
@@ -71,6 +71,7 @@ export class D3Service {
     })
     this.currentMap = new SubwayMap(nodes, links, nodeDict)
     this.updateMapLayout(this.currentMap)
+    this.currentMap.links.pop()
     return this.currentMap
   }
 
@@ -154,6 +155,7 @@ export class D3Service {
         }
       })
       this.updateMapLayout(this.currentMap)
+      this.currentMap.links.pop()
       return this.currentMap
     }
   }
@@ -289,10 +291,6 @@ export class D3Service {
       })
     })
     map.width = branchLines.length
-  }
-
-  scrollTo(sha) {
-    this.currentMap.scrollTo(sha)
   }
 
   getAuthor(author) {

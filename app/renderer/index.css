@@ -7,7 +7,6 @@ html {
 
 body {
   display: flex;
-  flex: 1;
   cursor:default;
 
   background-color: #001825;

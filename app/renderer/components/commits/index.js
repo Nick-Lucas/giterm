@@ -17,6 +17,7 @@ const TableWrapper = styled.div`
   display: flex;
   flex-direction: row;
   position: relative;
+  min-height: 70vh;
 `
 
 const TableGraphCol = styled.div`

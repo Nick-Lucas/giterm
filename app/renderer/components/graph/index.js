@@ -2,14 +2,14 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 
-import { D3Service } from './d3-service'
+import { SubwayCalculator } from './subway-calculator'
 import PathLine from './pathline'
 
 export class Graph extends React.Component {
   constructor(props) {
     super(props)
-    this.d3 = new D3Service(props.rowHeight)
-    this.graph = this.d3.getSubwayMap(props.commits)
+    this.calculator = new SubwayCalculator(props.rowHeight)
+    this.graph = this.calculator.getSubwayMap(props.commits)
 
     this.state = {
       initialised: false,
@@ -17,12 +17,8 @@ export class Graph extends React.Component {
   }
 
   componentDidUpdate() {
-    this.d3 = new D3Service(this.props.rowHeight)
-    this.graph = this.d3.getSubwayMap(this.props.commits)
-  }
-
-  componentDidMount() {
-    this.graph.initGraph()
+    this.calculator = new SubwayCalculator(this.props.rowHeight)
+    this.graph = this.calculator.getSubwayMap(this.props.commits)
   }
 
   getPathLinePoints(link) {
@@ -39,8 +35,8 @@ export class Graph extends React.Component {
   }
 
   render() {
-    // TODO: check performance impact of this, and resolve it
-    this.d3.updateCommits(this.props.commits)
+    this.calculator.updateCommits(this.props.commits)
+
     return (
       <svg id="graph-root" width="100%" height="100%">
         <g>
