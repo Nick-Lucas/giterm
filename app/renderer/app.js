@@ -12,6 +12,7 @@ import { ServicesProvider } from './lib/di'
 import getServices from './services'
 
 import Home from './containers/home'
+import { updateCwd } from './store/config'
 
 const syncHistoryWithStore = (store, history) => {
   const { routing } = store.getState()
@@ -20,17 +21,20 @@ const syncHistoryWithStore = (store, history) => {
   }
 }
 
+// Store Init
 const initialState = {}
 const routerHistory = createMemoryHistory()
 const store = configureStore(initialState, routerHistory)
 syncHistoryWithStore(store, routerHistory)
 
+// Service Init
+const services = getServices(store)
+store.dispatch(updateCwd('/Users/nick/dev/react-domain-store'))
+
+// DOM Init
 const rootElement = document.querySelector(
   document.currentScript.getAttribute('data-container'),
 )
-
-const services = getServices('/Users/nick/dev/domain-store')
-
 ReactDOM.render(
   <Provider store={store}>
     <ServicesProvider services={services}>

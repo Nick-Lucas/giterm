@@ -2,15 +2,15 @@ import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import DateFormat from 'dateformat'
 
-export async function openRepo(workingDir) {
-  return await NodeGit.Repository.open(workingDir)
+async function resultOrNull(func) {
+  try {
+    return await func()
+  } catch (_) {
+    return null
+  }
 }
 
 export class Git {
-  constructor(cwd) {
-    this.cwd = cwd
-  }
-
   // instance management
   // **********************
 
@@ -20,16 +20,18 @@ export class Git {
     this._complex = null
   }
 
-  getSimple = () => {
+  getSimple = async () => {
     if (!this._simple) {
-      this._simple = SimpleGit(this.cwd)
+      this._simple = await resultOrNull(() => SimpleGit(this.cwd))
     }
     return this._simple
   }
 
   getComplex = async () => {
     if (!this._complex) {
-      this._complex = await NodeGit.Repository.open(this.cwd)
+      this._complex = await resultOrNull(() =>
+        NodeGit.Repository.open(this.cwd),
+      )
     }
     return this._complex
   }
@@ -39,6 +41,10 @@ export class Git {
 
   async getStateText() {
     const repo = await this.getComplex()
+    if (!repo) {
+      return ''
+    }
+
     if (repo.isRebasing()) {
       return 'Rebasing'
     }
@@ -62,6 +68,10 @@ export class Git {
 
   getCurrentBranchHead = async () => {
     const repo = await this.getComplex()
+    if (!repo) {
+      return {}
+    }
+
     const ref = await repo.getCurrentBranch()
     const commit = await repo.getBranchCommit(ref)
     return {
@@ -72,6 +82,10 @@ export class Git {
 
   getAllBranches = async () => {
     const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
     const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
     return Promise.all(
       refs.filter((ref) => ref.isBranch()).map(async (ref) => {
@@ -90,6 +104,10 @@ export class Git {
 
   loadAllCommits = async () => {
     const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
     const headSHA = (await repo.head()).target().toString()
 
     const walker = NodeGit.Revwalk.create(repo)
@@ -126,6 +144,9 @@ export class Git {
 
   checkout = async (sha) => {
     const repo = await this.getComplex()
+    if (!repo) {
+      return
+    }
 
     const branches = await this.getAllBranches(repo)
     const branch = branches.reduce((out, b) => {
@@ -138,7 +159,7 @@ export class Git {
     if (branch) {
       await repo.checkoutBranch(branch)
     } else {
-      const git = this.getSimple()
+      const git = await this.getSimple()
       await new Promise((resolve) => {
         git.checkout(sha, () => resolve())
       })

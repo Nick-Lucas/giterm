@@ -1,7 +1,3 @@
-import { openRepo, loadAllCommits } from '../lib/git'
-import * as git from '../lib/git'
-
-import { join } from 'path'
 import { updateReducer } from './helpers'
 import { refreshApplication } from './coreapp'
 

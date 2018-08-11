@@ -1,7 +1,3 @@
-import { openRepo } from '../lib/git'
-import * as git from '../lib/git'
-
-import { join } from 'path'
 import { updateReducer } from './helpers'
 
 export const BRANCHES_UPDATE = 'branches/update'

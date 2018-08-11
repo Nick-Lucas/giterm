@@ -1,7 +1,7 @@
 export const UPDATE_CWD = 'config/update_cwd'
 export const updateCwd = (cwd) => ({
   type: UPDATE_CWD,
-  payload: cwd,
+  payload: cwd.trim(),
 })
 
 export default (state = {}, action) => {

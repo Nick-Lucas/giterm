@@ -11,7 +11,9 @@ import thunk from 'redux-thunk'
 import commits from './store/commits'
 import status from './store/status'
 import branches from './store/branches'
+import config from './store/config'
 const reducers = {
+  config,
   commits,
   status,
   branches,

@@ -59,7 +59,7 @@ export class Terminal extends React.Component {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
-      cwd: '/Users/nick/dev/domain-store',
+      cwd: this.props.cwd,
       env: {
         ...process.env,
         PS1: '\\W> ',
@@ -133,7 +133,7 @@ export class Terminal extends React.Component {
 Terminal.propTypes = {}
 
 const ConnectedTerminal = connect(
-  ({ status: { branchName } }) => ({ branchName }),
+  ({ status: { branchName }, config: { cwd } }) => ({ branchName, cwd }),
   {
     refreshApplication,
     updateCwd,
