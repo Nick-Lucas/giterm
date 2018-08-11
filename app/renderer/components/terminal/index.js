@@ -15,9 +15,10 @@ import { bindServices } from '../../lib/di'
 
 import fs from 'fs'
 import path from 'path'
+import { exec } from 'child_process'
+import { updateCwd } from '../../store/config'
 
 const BASHRC_PATH = path.resolve('./dist-assets/.bashrc')
-console.log(BASHRC_PATH)
 if (!fs.existsSync(BASHRC_PATH)) {
   // TODO: ensure that packaging process includes this properly
   throw `.bashrc not found: ${BASHRC_PATH}`
@@ -33,6 +34,7 @@ export class Terminal extends React.Component {
   constructor(props) {
     super(props)
     this.container = React.createRef()
+    this.debouncedUpdateCwd = debounce(props.updateCwd, 50)
     this.debouncedRefreshApplication = debounce(
       () => props.refreshApplication(props.gitService),
       50,
@@ -47,19 +49,22 @@ export class Terminal extends React.Component {
     this.ptyProcess = this.setupPTY()
     this.terminal = this.setupXTerm()
     this.setupTerminalEvents(this.ptyProcess, this.terminal)
-    this.container.current.focus()
+    this.terminal.focus()
   }
 
   setupPTY = () => {
     // TODO: integrate user preferences into this. Allow for (or bundle?) git-bash on windows
     const shell = '/bin/bash' //process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
-    process.env['GITERM_RC'] = BASHRC_PATH
     const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
       cols: 80,
       rows: 30,
       cwd: '/Users/nick/dev/domain-store',
-      env: { ...process.env, PS1: this.getBashPrompt() },
+      env: {
+        ...process.env,
+        PS1: '\\W> ',
+        GITERM_RC: BASHRC_PATH,
+      },
     })
     return ptyProcess
   }
@@ -86,15 +91,22 @@ export class Terminal extends React.Component {
       that.ptyProcess.write(data)
     })
 
-    that.terminal.on('linefeed', (e) => {
-      that.debouncedRefreshApplication()
-    })
+    that.terminal.on(
+      'linefeed',
+      debounce(() => {
+        that.getCWD(that.ptyProcess.pid).then((cwd) => {
+          const { updateCwd, refreshApplication, gitService } = that.props
+          updateCwd(cwd)
+          refreshApplication(gitService)
+        })
+      }, 50),
+    )
 
     that.ptyProcess.on('data', function(data) {
       that.terminal.write(data)
     })
 
-    // // TODO: this doesn't work
+    // // TODO: ensure the process can't be exited and restart if need be
     // that.ptyProcess.on('exit', () => {
     //   console.log('recreating')
     //   that.setupXTerm()
@@ -102,15 +114,18 @@ export class Terminal extends React.Component {
     // })
   }
 
-  getBashPrompt = () => {
-    // TODO: find a way to make this dynamic
-    // const { branchName } = this.props
-    process.env['GITERM_BRANCH'] = 'giterm'
-    return '\\W $GITERM_BRANCH> '
-  }
+  // TODO: check if lsof is on system and have alternatives in mind per platform
+  getCWD = async (pid) =>
+    new Promise((resolve) => {
+      exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
+        if (e) {
+          throw e
+        }
+        resolve(stdout)
+      })
+    })
 
   render() {
-    process.env.PS1 = this.getBashPrompt()
     return <TerminalContainer innerRef={this.container} />
   }
 }
@@ -121,6 +136,7 @@ const ConnectedTerminal = connect(
   ({ status: { branchName } }) => ({ branchName }),
   {
     refreshApplication,
+    updateCwd,
   },
 )(Terminal)
 
