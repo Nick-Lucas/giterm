@@ -25,7 +25,7 @@ const TerminalWrapper = styled.div`
       bottom: 0;
       left: 0;
       right: 0;
-      height: 100vh;
+      height: 99.5%;
     `};
 `
 
@@ -46,10 +46,12 @@ export class Home extends PureComponent {
     const { terminalFullscreen } = this.props
     return (
       <React.Fragment>
-        <CommitsWrapper>
-          <Commits />
-        </CommitsWrapper>
-        <Divider />
+        {terminalFullscreen || (
+          <CommitsWrapper>
+            <Commits />
+          </CommitsWrapper>
+        )}
+        {terminalFullscreen || <Divider />}
         <TerminalWrapper fullscreen={terminalFullscreen}>
           <Terminal />
         </TerminalWrapper>

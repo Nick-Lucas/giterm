@@ -25,8 +25,8 @@ if (!fs.existsSync(BASHRC_PATH)) {
 }
 
 const TerminalContainer = styled.div`
-  display: flex;
-  flex: 1;
+  height: 100%;
+  width: 100%;
   margin: 5px;
 `
 
@@ -45,6 +45,16 @@ export class Terminal extends React.Component {
     this.setupTerminal()
   }
 
+  componentDidUpdate(prevProps) {
+    if (this.terminal) {
+      const { terminalFullscreen: wasFS } = prevProps
+      const { terminalFullscreen: isFS } = this.props
+      if (wasFS !== isFS) {
+        this.terminal.fit()
+      }
+    }
+  }
+
   setupTerminal = () => {
     this.ptyProcess = this.setupPTY()
     this.terminal = this.setupXTerm()
@@ -57,15 +67,14 @@ export class Terminal extends React.Component {
     const shell = '/bin/bash' //process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
     const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
-      cols: 80,
-      rows: 30,
       cwd: this.props.cwd,
       env: {
         ...process.env,
-        PS1: '\n\\W> ',
+        PS1: '\\W> ',
         GITERM_RC: BASHRC_PATH,
       },
     })
+
     return ptyProcess
   }
 
@@ -102,6 +111,14 @@ export class Terminal extends React.Component {
       }, 50),
     )
 
+    window.addEventListener(
+      'resize',
+      debounce(() => {
+        that.terminal.fit()
+      }),
+      100,
+    )
+
     that.ptyProcess.on('data', function(data) {
       that.terminal.write(data)
     })
@@ -133,9 +150,10 @@ export class Terminal extends React.Component {
 Terminal.propTypes = {}
 
 const ConnectedTerminal = connect(
-  ({ status: { branchName }, config: { cwd } }) => ({
+  ({ status: { branchName }, config: { cwd, terminalFullscreen } }) => ({
     branchName,
     cwd,
+    terminalFullscreen,
   }),
   {
     refreshApplication,
