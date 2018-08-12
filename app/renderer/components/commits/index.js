@@ -25,6 +25,7 @@ const TableGraphCol = styled.div`
   padding-right: 10px;
   position: absolute;
   top: 0;
+  z-index: -1;
 `
 const TableMainCol = styled.div`
   flex: 1;
