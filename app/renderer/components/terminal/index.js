@@ -133,7 +133,10 @@ export class Terminal extends React.Component {
 Terminal.propTypes = {}
 
 const ConnectedTerminal = connect(
-  ({ status: { branchName }, config: { cwd } }) => ({ branchName, cwd }),
+  ({ status: { branchName }, config: { cwd } }) => ({
+    branchName,
+    cwd,
+  }),
   {
     refreshApplication,
     updateCwd,

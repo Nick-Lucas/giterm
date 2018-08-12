@@ -12,7 +12,7 @@ import { ServicesProvider } from './lib/di'
 import getServices from './services'
 
 import Home from './containers/home'
-import { updateCwd } from './store/config'
+import { updateCwd, flipTerminalFullscreen } from './store/config'
 
 const syncHistoryWithStore = (store, history) => {
   const { routing } = store.getState()
@@ -30,6 +30,19 @@ syncHistoryWithStore(store, routerHistory)
 // Service Init
 const services = getServices(store)
 store.dispatch(updateCwd(process.cwd()))
+
+// Shortcuts
+window.addEventListener(
+  'keydown',
+  (ev) => {
+    if (ev.ctrlKey && ev.code === 'Tab') {
+      store.dispatch(flipTerminalFullscreen())
+      ev.stopImmediatePropagation()
+      return
+    }
+  },
+  true,
+)
 
 // DOM Init
 const rootElement = document.querySelector(

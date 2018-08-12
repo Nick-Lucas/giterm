@@ -1,6 +1,6 @@
 import React, { PureComponent } from 'react'
 import { connect } from 'react-redux'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
@@ -15,6 +15,18 @@ const TerminalWrapper = styled.div`
   height: 30vh;
   min-height: 100px
   display: flex;
+
+  ${(props) =>
+    props.fullscreen &&
+    css`
+      background-color: #001825;
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      height: 100vh;
+    `};
 `
 
 const Divider = styled.hr`
@@ -31,13 +43,14 @@ export class Home extends PureComponent {
   }
 
   render() {
+    const { terminalFullscreen } = this.props
     return (
       <React.Fragment>
         <CommitsWrapper>
           <Commits />
         </CommitsWrapper>
         <Divider />
-        <TerminalWrapper>
+        <TerminalWrapper fullscreen={terminalFullscreen}>
           <Terminal />
         </TerminalWrapper>
       </React.Fragment>
@@ -46,7 +59,7 @@ export class Home extends PureComponent {
 }
 
 const ConnectedHome = connect(
-  null,
+  ({ config: { terminalFullscreen } }) => ({ terminalFullscreen }),
   { refreshApplication },
 )(Home)
 
