@@ -1,5 +1,8 @@
 # TODO:
 
+* Layout Issues
+  * Fix sizing of app: maximise icon doesn't appear on slimmer window sizes :(
+
 * Settings
   * set default directory
   * set bash location
@@ -19,6 +22,10 @@
 * Commits view
   * Show branch ahead/behind counts
   * Allow inclusion of origin in view
+  * Scroll to branch head when branch switched from command-line
+  * Support merge and rebase with mouse
 
 * HUD strip
   * Show current status at top (`x files changed`, `rebasing`, etc)
+
+* Load more than 500 commits 
