@@ -7,7 +7,6 @@
 
 * Terminal
   * Allow commands to be injected into it (ie. branch switched -> run `git status`)
-  * Add fullscreen view for when git runs vim, and recognise it starting a fullscreen session
   * BUG: Fix 'move up' in vim
 
 * Branches view:
