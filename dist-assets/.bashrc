@@ -18,6 +18,11 @@ alias force-push="gfp"
 alias checkout="git checkout"
 alias check="checkout"
 
+alias branches="git branch -a"
+
+alias gd="git diff HEAD"
+alias diff="gd"
+
 help() {
   printf "giterm help\n_____________\n\n"
   CNT=$(expr $(cat $GITERM_RC | wc -l) - 5)
