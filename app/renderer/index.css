@@ -7,8 +7,9 @@ html {
 
 body {
   display: flex;
-  cursor:default;
+  flex: 1;
 
+  cursor: default;
   background-color: #001825;
   color: #d6d6d6;
   font-family: 'Inconsolata', monospace;
@@ -16,6 +17,10 @@ body {
 
   user-select: none;
   overflow: hidden;
+}
+
+div {
+  display: flex;
 }
 
 #app {

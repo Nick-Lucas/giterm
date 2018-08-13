@@ -9,7 +9,6 @@ import { bindServices } from '../lib/di'
 
 const CommitsWrapper = styled.div`
   flex: 1;
-  display: inline-grid;
 
   ${(props) =>
     props.hide &&
@@ -18,7 +17,7 @@ const CommitsWrapper = styled.div`
     `};
 `
 const TerminalWrapper = styled.div`
-  height: 30vh;
+  height: 30%;
   min-height: 100px
   display: flex;
 
@@ -31,7 +30,7 @@ const TerminalWrapper = styled.div`
       bottom: 0;
       left: 0;
       right: 0;
-      height: 99.5%;
+      height: 100%;
     `};
 `
 
@@ -63,7 +62,8 @@ export class Home extends PureComponent {
         </CommitsWrapper>
         <Divider hide={terminalFullscreen} />
         <TerminalWrapper fullscreen={terminalFullscreen}>
-          <Terminal />
+          {/* <Terminal /> */}
+          <div style={{ flex: 1, backgroundColor: 'blue' }} />
         </TerminalWrapper>
       </React.Fragment>
     )

@@ -14,6 +14,7 @@ const Wrapper = styled.div`
   margin-right: 5px;
 
   color: rgba(0, 0, 0, 0.5);
+  white-space: nowrap;
 `
 
 export default class Tag extends React.Component {

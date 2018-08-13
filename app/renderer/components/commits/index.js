@@ -12,12 +12,16 @@ import { checkoutCommit } from '../../store/commits'
 import Graph from '../graph'
 import { bindServices } from '../../lib/di'
 
+const Wrapper = styled.div`
+  flex: 1;
+  flex-direction: column;
+`
+
 const TableWrapper = styled.div`
   overflow: auto;
-  display: flex;
-  flex-direction: row;
+  flex: 1;
+  display: block;
   position: relative;
-  min-height: 70vh;
 `
 
 const TableGraphCol = styled.div`
@@ -28,7 +32,7 @@ const TableGraphCol = styled.div`
   z-index: -1;
 `
 const TableMainCol = styled.div`
-  flex: 1;
+  display: block;
 `
 
 const RowHeight = 25
@@ -63,7 +67,7 @@ export class Commits extends React.Component {
     const { selectedSHA } = this.state
 
     return (
-      <React.Fragment>
+      <Wrapper>
         <Header columns={columns} />
         <TableWrapper>
           <TableGraphCol
@@ -91,7 +95,7 @@ export class Commits extends React.Component {
             ))}
           </TableMainCol>
         </TableWrapper>
-      </React.Fragment>
+      </Wrapper>
     )
   }
 }
