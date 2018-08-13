@@ -10,7 +10,11 @@ import { flipTerminalFullscreen } from '../../store/config'
 
 const Wrapper = styled.div`
   flex: 1;
-  position: relative;
+  flex-direction: column;
+`
+
+const TerminalWrapper = styled.div`
+  flex: 1;
 `
 
 const MenuPanel = styled.div`
@@ -18,10 +22,6 @@ const MenuPanel = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   padding: 3px;
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
 `
 
 const MenuItem = styled.div`
@@ -33,7 +33,6 @@ export class TerminalPanel extends React.Component {
     const { terminalFullscreen, flipTerminalFullscreen } = this.props
     return (
       <Wrapper>
-        <Terminal />
         <MenuPanel>
           <MenuItem
             title={
@@ -47,6 +46,10 @@ export class TerminalPanel extends React.Component {
             )}
           </MenuItem>
         </MenuPanel>
+        <TerminalWrapper>
+          <div style={{ flex: 1, backgroundColor: 'gray' }} />
+          {/* <Terminal /> */}
+        </TerminalWrapper>
       </Wrapper>
     )
   }

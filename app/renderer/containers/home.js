@@ -24,7 +24,6 @@ const TerminalWrapper = styled.div`
   ${(props) =>
     props.fullscreen &&
     css`
-      background-color: #001825;
       position: absolute;
       top: 0;
       bottom: 0;
@@ -62,8 +61,7 @@ export class Home extends PureComponent {
         </CommitsWrapper>
         <Divider hide={terminalFullscreen} />
         <TerminalWrapper fullscreen={terminalFullscreen}>
-          {/* <Terminal /> */}
-          <div style={{ flex: 1, backgroundColor: 'blue' }} />
+          <Terminal />
         </TerminalWrapper>
       </React.Fragment>
     )
