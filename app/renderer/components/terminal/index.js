@@ -47,8 +47,7 @@ export class TerminalPanel extends React.Component {
           </MenuItem>
         </MenuPanel>
         <TerminalWrapper>
-          <div style={{ flex: 1, backgroundColor: 'gray' }} />
-          {/* <Terminal /> */}
+          <Terminal />
         </TerminalWrapper>
       </Wrapper>
     )
