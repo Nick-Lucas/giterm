@@ -29,6 +29,16 @@ const TerminalContainer = styled.div`
   margin: 5px;
 `
 
+const terminalOpts = {
+  allowTransparency: true,
+  fontFamily: 'Inconsolata, monospace',
+  fontSize: 16,
+  theme: {
+    background: 'rgba(255, 255, 255, 0)',
+  },
+  cursorStyle: 'bar',
+}
+
 export class Terminal extends React.Component {
   constructor(props) {
     super(props)
@@ -59,7 +69,10 @@ export class Terminal extends React.Component {
   setupTerminal = () => {
     this.ptyProcess = this.setupPTY()
     this.terminal = this.setupXTerm()
-    this.resizeTerminal()
+    setTimeout(() => {
+      // Ensures that the terminal initialises with the correct style
+      this.resizeTerminal()
+    }, 5)
     this.setupTerminalEvents(this.ptyProcess, this.terminal)
     this.terminal.focus()
   }
@@ -82,15 +95,7 @@ export class Terminal extends React.Component {
 
   setupXTerm = () => {
     XTerm.Terminal.applyAddon(fit)
-    const terminal = new XTerm.Terminal({
-      allowTransparency: true,
-      fontFamily: 'Inconsolata, monospace',
-      fontSize: 16,
-      theme: {
-        background: 'rgba(255, 255, 255, 0)',
-      },
-      cursorStyle: 'bar',
-    })
+    const terminal = new XTerm.Terminal(terminalOpts)
     terminal.open(this.container.current)
     return terminal
   }
@@ -113,7 +118,7 @@ export class Terminal extends React.Component {
           updateCwd(cwd)
           refreshApplication(gitService)
         })
-      }, 50),
+      }, 20),
     )
 
     window.addEventListener('resize', debounce(this.resizeTerminal, 5), false)
