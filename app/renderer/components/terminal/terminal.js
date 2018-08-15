@@ -44,14 +44,22 @@ export class Terminal extends React.Component {
       const { terminalFullscreen: wasFS } = prevProps
       const { terminalFullscreen: isFS } = this.props
       if (wasFS !== isFS) {
-        this.terminal.fit()
+        this.resizeTerminal()
       }
+    }
+  }
+
+  resizeTerminal = () => {
+    if (this.terminal) {
+      this.terminal.resize(10, 10)
+      this.terminal.fit()
     }
   }
 
   setupTerminal = () => {
     this.ptyProcess = this.setupPTY()
     this.terminal = this.setupXTerm()
+    this.resizeTerminal()
     this.setupTerminalEvents(this.ptyProcess, this.terminal)
     this.terminal.focus()
   }
@@ -84,7 +92,6 @@ export class Terminal extends React.Component {
       cursorStyle: 'bar',
     })
     terminal.open(this.container.current)
-    terminal.fit()
     return terminal
   }
 
@@ -109,14 +116,7 @@ export class Terminal extends React.Component {
       }, 50),
     )
 
-    window.addEventListener(
-      'resize',
-      debounce(() => {
-        that.terminal.resize(10, 10)
-        that.terminal.fit()
-      }, 5),
-      false,
-    )
+    window.addEventListener('resize', debounce(this.resizeTerminal, 5), false)
     that.terminal.on(
       'resize',
       debounce(({ cols, rows }) => {
