@@ -25,8 +25,7 @@ if (!fs.existsSync(BASHRC_PATH)) {
 }
 
 const TerminalContainer = styled.div`
-  height: 100%;
-  width: 100%;
+  flex: 1;
   margin: 5px;
 `
 
@@ -82,6 +81,7 @@ export class Terminal extends React.Component {
       theme: {
         background: 'rgba(255, 255, 255, 0)',
       },
+      cursorStyle: 'bar',
     })
     terminal.open(this.container.current)
     terminal.fit()
@@ -93,6 +93,9 @@ export class Terminal extends React.Component {
 
     that.terminal.on('data', (data) => {
       that.ptyProcess.write(data)
+    })
+    that.ptyProcess.on('data', function(data) {
+      that.terminal.write(data)
     })
 
     that.terminal.on(
@@ -109,14 +112,17 @@ export class Terminal extends React.Component {
     window.addEventListener(
       'resize',
       debounce(() => {
+        that.terminal.resize(10, 10)
         that.terminal.fit()
-      }, 500),
+      }, 5),
       false,
     )
-
-    that.ptyProcess.on('data', function(data) {
-      that.terminal.write(data)
-    })
+    that.terminal.on(
+      'resize',
+      debounce(({ cols, rows }) => {
+        that.ptyProcess.resize(cols, rows)
+      }, 5),
+    )
 
     // // TODO: ensure the process can't be exited and restart if need be
     // that.ptyProcess.on('exit', () => {
