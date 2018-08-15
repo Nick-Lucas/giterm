@@ -22,6 +22,10 @@ const MenuPanel = styled.div`
   flex-direction: row;
   justify-content: flex-end;
   padding: 3px;
+
+  position: absolute;
+  left: 0;
+  right: 0;
 `
 
 const MenuItem = styled.div`
