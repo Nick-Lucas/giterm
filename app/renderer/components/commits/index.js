@@ -63,7 +63,7 @@ export class Commits extends React.Component {
       branches,
       checkoutCommit,
       gitService,
-      status: { branchName: currentBranchName },
+      status: { current: currentBranchName },
     } = this.props
     const { selectedSHA } = this.state
 

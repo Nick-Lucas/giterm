@@ -1,6 +1,7 @@
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import DateFormat from 'dateformat'
+import { stat } from '../../../../node_modules/fs-extra-p'
 
 export class Git {
   // instance management
@@ -162,5 +163,17 @@ export class Git {
         simple.checkout(sha, () => resolve())
       })
     }
+  }
+
+  getStatus = async () => {
+    const repo = this.getSimple()
+    return new Promise((resolve) => {
+      repo.status((err, status) => {
+        if (err) {
+          resolve({ err })
+        }
+        resolve(status)
+      })
+    })
   }
 }
