@@ -74,10 +74,16 @@ export default class Row extends React.Component {
   }
 
   renderTags() {
-    const { branches, commit } = this.props
+    const { branches, commit, currentBranchName } = this.props
     return branches
       .filter((branch) => commit.sha === branch.headSHA)
-      .map((branch) => <Tag key={branch.id} label={branch.name} />)
+      .map((branch) => (
+        <Tag
+          key={branch.id}
+          label={branch.name}
+          current={branch.name === currentBranchName}
+        />
+      ))
   }
 }
 
@@ -89,4 +95,5 @@ Row.propTypes = {
   branches: props.branches,
   commit: props.commit,
   height: PropTypes.number.isRequired,
+  currentBranchName: PropTypes.string.isRequired,
 }

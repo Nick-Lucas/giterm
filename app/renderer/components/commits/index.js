@@ -63,6 +63,7 @@ export class Commits extends React.Component {
       branches,
       checkoutCommit,
       gitService,
+      status: { branchName: currentBranchName },
     } = this.props
     const { selectedSHA } = this.state
 
@@ -90,6 +91,7 @@ export class Commits extends React.Component {
                   onSelect={this.handleSelect}
                   onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
                   height={RowHeight}
+                  currentBranchName={currentBranchName}
                 />
               </RightClickArea>
             ))}
@@ -115,7 +117,7 @@ const columns = [
 ]
 
 const ConnectedCommits = connect(
-  ({ commits, branches }) => ({ commits, branches, columns }),
+  ({ commits, branches, status }) => ({ commits, branches, columns, status }),
   { checkoutCommit },
 )(Commits)
 
