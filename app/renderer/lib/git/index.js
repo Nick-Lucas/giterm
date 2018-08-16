@@ -17,7 +17,8 @@ export class Git {
     if (!this._simple) {
       try {
         this._simple = new SimpleGit(this.cwd)
-      } catch (_) {
+      } catch (err) {
+        console.error(err)
         this._simple = null
       }
     }
@@ -28,7 +29,8 @@ export class Git {
     if (!this._complex) {
       try {
         this._complex = NodeGit.Repository.open(this.cwd)
-      } catch (_) {
+      } catch (err) {
+        console.error(err)
         this._complex = null
       }
     }
@@ -170,7 +172,9 @@ export class Git {
     return new Promise((resolve) => {
       repo.status((err, status) => {
         if (err) {
+          console.error(err)
           resolve({ err })
+          return
         }
         resolve(status)
       })
