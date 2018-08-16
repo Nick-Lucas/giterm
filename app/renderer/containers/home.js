@@ -6,6 +6,14 @@ import Commits from '../components/commits'
 import Terminal from '../components/terminal'
 import { refreshApplication } from '../store/coreapp'
 import { bindServices } from '../lib/di'
+import StatusBar from '../components/status-bar'
+
+const FullscreenWrapper = styled.div`
+  position: relative;
+  flex: 1;
+  flex-direction: column;
+  max-width: 100%;
+`
 
 const CommitsWrapper = styled.div`
   flex: 1;
@@ -16,6 +24,7 @@ const CommitsWrapper = styled.div`
       display: none;
     `};
 `
+
 const TerminalWrapper = styled.div`
   height: 30%;
   min-height: 100px
@@ -56,13 +65,17 @@ export class Home extends PureComponent {
     const { terminalFullscreen } = this.props
     return (
       <React.Fragment>
-        <CommitsWrapper hide={terminalFullscreen}>
-          <Commits />
-        </CommitsWrapper>
-        <Divider hide={terminalFullscreen} />
-        <TerminalWrapper fullscreen={terminalFullscreen}>
-          <Terminal />
-        </TerminalWrapper>
+        <StatusBar />
+        <Divider />
+        <FullscreenWrapper>
+          <CommitsWrapper hide={terminalFullscreen}>
+            <Commits />
+          </CommitsWrapper>
+          <Divider hide={terminalFullscreen} />
+          <TerminalWrapper fullscreen={terminalFullscreen}>
+            <Terminal />
+          </TerminalWrapper>
+        </FullscreenWrapper>
       </React.Fragment>
     )
   }
