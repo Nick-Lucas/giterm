@@ -7,6 +7,7 @@ import { refreshApplication } from '../../store/coreapp'
 
 import * as XTerm from 'xterm'
 import * as fit from 'xterm/lib/addons/fit/fit'
+import * as webLinks from 'xterm/lib/addons/webLinks/webLinks'
 import os from 'os'
 import { spawn } from 'node-pty'
 
@@ -83,11 +84,9 @@ export class Terminal extends React.Component {
     const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
       cwd: this.props.cwd,
-      env: {
-        ...process.env,
-        PS1: '\\W> ',
-        GITERM_RC: BASHRC_PATH,
-      },
+      ...process.env,
+      PS1: '\\W> ',
+      GITERM_RC: BASHRC_PATH,
     })
 
     return ptyProcess
@@ -95,8 +94,10 @@ export class Terminal extends React.Component {
 
   setupXTerm = () => {
     XTerm.Terminal.applyAddon(fit)
+    XTerm.Terminal.applyAddon(webLinks)
     const terminal = new XTerm.Terminal(terminalOpts)
     terminal.open(this.container.current)
+    terminal.webLinksInit()
     return terminal
   }
 
