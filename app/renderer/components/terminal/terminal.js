@@ -84,9 +84,11 @@ export class Terminal extends React.Component {
     const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
       cwd: this.props.cwd,
-      ...process.env,
-      PS1: '\\W> ',
-      GITERM_RC: BASHRC_PATH,
+      env: {
+        ...process.env,
+        PS1: '\\W> ',
+        GITERM_RC: BASHRC_PATH,
+      },
     })
 
     return ptyProcess
