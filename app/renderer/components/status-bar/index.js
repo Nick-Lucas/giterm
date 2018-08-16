@@ -44,7 +44,7 @@ export class StatusBar extends React.Component {
         <Group width={250}>
           <Item>Status: {state}</Item>
           <Item>
-            {files.length - staged.length}/{staged.length}
+            {staged.length}/{files.length}
           </Item>
         </Group>
         <Group width={300}>
