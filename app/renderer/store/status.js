@@ -19,4 +19,20 @@ export function doStatusUpdate(gitService) {
   }
 }
 
-export default updateReducer(STATUS_UPDATE, {})
+const initialState = {
+  not_added: [],
+  conflicted: [],
+  created: [],
+  deleted: [],
+  modified: [],
+  renamed: [],
+  files: [],
+  staged: [],
+  ahead: 0,
+  behind: 0,
+  current: '',
+  tracking: '',
+  state: '',
+}
+
+export default updateReducer(STATUS_UPDATE, initialState)
