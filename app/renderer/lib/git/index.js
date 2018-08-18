@@ -1,7 +1,6 @@
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import DateFormat from 'dateformat'
-import { stat } from '../../../../node_modules/fs-extra-p'
 
 export class Git {
   // instance management
@@ -117,6 +116,7 @@ export class Git {
     const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
     walker.pushGlob('refs/heads/*')
+    walker.pushGlob('refs/remotes/*')
 
     const foundCommits = await walker.getCommits(500)
     const commits = []
