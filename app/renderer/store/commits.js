@@ -4,8 +4,9 @@ import { refreshApplication } from './coreapp'
 export const COMMITS_UPDATE = 'commits/update'
 
 export const doUpdateCommits = (gitService) => {
-  return async (dispatch) => {
-    const commits = await gitService.loadAllCommits()
+  return async (dispatch, getState) => {
+    const { showRemoteBranches } = getState().config
+    const commits = await gitService.loadAllCommits(showRemoteBranches)
     await dispatch({
       type: COMMITS_UPDATE,
       payload: commits,

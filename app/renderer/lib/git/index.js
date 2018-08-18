@@ -105,7 +105,7 @@ export class Git {
     )
   }
 
-  loadAllCommits = async () => {
+  loadAllCommits = async (showRemote) => {
     const repo = await this.getComplex()
     if (!repo) {
       return []
@@ -116,35 +116,31 @@ export class Git {
     const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
     walker.pushGlob('refs/heads/*')
-    walker.pushGlob('refs/remotes/*')
+    if (showRemote) walker.pushGlob('refs/remotes/*')
 
     const foundCommits = await walker.getCommits(500)
-    const commits = []
-    foundCommits.forEach((c) => {
-      const cmt = {
-        sha: c.sha(),
-        sha7: c.sha().substring(0, 6),
-        message: c.message().split('\n')[0],
-        detail: c
-          .message()
-          .split('\n')
-          .splice(1, c.message().split('\n').length)
-          .join('\n'),
-        date: c.date(),
-        dateStr: DateFormat(c.date(), 'yyyy/mm/dd hh:MM'),
-        time: c.time(),
-        committer: c.committer(),
-        email: c.author().email(),
-        author: c.author().name(),
-        authorStr: `${c.author().name()} <${c.author().email()}>`,
-        parents: c.parents().map((p) => p.toString()),
-        isHead: headSHA === c.sha(),
-      }
-
-      commits.push(cmt)
-    })
-    return commits
+    return foundCommits.map((c) => ({
+      sha: c.sha(),
+      sha7: c.sha().substring(0, 6),
+      message: c.message().split('\n')[0],
+      detail: c
+        .message()
+        .split('\n')
+        .splice(1, c.message().split('\n').length)
+        .join('\n'),
+      date: c.date(),
+      dateStr: DateFormat(c.date(), 'yyyy/mm/dd hh:MM'),
+      time: c.time(),
+      committer: c.committer(),
+      email: c.author().email(),
+      author: c.author().name(),
+      authorStr: `${c.author().name()} <${c.author().email()}>`,
+      parents: c.parents().map((p) => p.toString()),
+      isHead: headSHA === c.sha(),
+    }))
   }
+
+  commitLoader = (headSHA, glob) => {}
 
   checkout = async (sha) => {
     const repo = await this.getComplex()

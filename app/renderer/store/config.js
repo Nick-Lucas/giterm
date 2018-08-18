@@ -1,3 +1,10 @@
+import { doUpdateCommits } from './commits'
+
+export const updateShowRemoteBranches = (show, gitService) => (dispatch) => {
+  dispatch(showRemoteBranches(show))
+  dispatch(doUpdateCommits(gitService))
+}
+
 export const UPDATE_CWD = 'config/update_cwd'
 export const updateCwd = (cwd) => ({
   type: UPDATE_CWD,
