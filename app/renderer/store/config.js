@@ -9,8 +9,15 @@ export const flipTerminalFullscreen = () => ({
   type: FLIP_TERMINAL_FULLSCREEN,
 })
 
+export const SHOW_REMOTE_BRANCHES = 'config/show_remote_branches'
+export const showRemoteBranches = (show) => ({
+  type: SHOW_REMOTE_BRANCHES,
+  show,
+})
+
 const initialState = {
   terminalFullscreen: false,
+  showRemoteBranches: true,
 }
 export default (state = initialState, action) => {
   switch (action.type) {
@@ -24,6 +31,12 @@ export default (state = initialState, action) => {
       return {
         ...state,
         terminalFullscreen: !state.terminalFullscreen,
+      }
+    }
+    case SHOW_REMOTE_BRANCHES: {
+      return {
+        ...state,
+        showRemoteBranches: action.show,
       }
     }
     default: {

@@ -74,9 +74,18 @@ export default class Row extends React.Component {
   }
 
   renderTags() {
-    const { branches, commit, currentBranchName } = this.props
+    const {
+      branches,
+      showRemoteBranches,
+      commit,
+      currentBranchName,
+    } = this.props
     return branches
-      .filter((branch) => commit.sha === branch.headSHA)
+      .filter(
+        (branch) =>
+          commit.sha === branch.headSHA &&
+          (branch.isRemote ? showRemoteBranches : true),
+      )
       .map((branch) => (
         <Tag
           key={branch.id}
@@ -93,6 +102,7 @@ Row.propTypes = {
   onDoubleClick: PropTypes.func,
   columns: props.columns,
   branches: props.branches,
+  showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
   height: PropTypes.number.isRequired,
   currentBranchName: PropTypes.string.isRequired,

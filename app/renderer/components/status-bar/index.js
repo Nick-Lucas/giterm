@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
 
 import { ArrowUp, ArrowDown } from 'react-feather'
+import { showRemoteBranches } from '../../store/config'
 
 const Wrapper = styled.div`
   margin: 5px;
@@ -36,9 +37,21 @@ const Item = styled.div`
     `};
 `
 
+const ToggleInput = styled.input`
+  margin: 0;
+  align-self: flex-end;
+  margin-bottom: 1px;
+`
+
 export class StatusBar extends React.Component {
+  toggleShowRemoteBranches = () => {
+    const { showRemoteBranches } = this.props
+    this.props.showRemoteBranchesAction(!showRemoteBranches)
+  }
+
   render() {
     const { state, current, ahead, behind, files, staged } = this.props.status
+    const { showRemoteBranches } = this.props
     return (
       <Wrapper>
         <Group width={250}>
@@ -56,6 +69,14 @@ export class StatusBar extends React.Component {
             {behind}
           </Item>
         </Group>
+        <Group>
+          <Item>Show Remote</Item>
+          <ToggleInput
+            type="checkbox"
+            onChange={this.toggleShowRemoteBranches}
+            defaultChecked={showRemoteBranches}
+          />
+        </Group>
       </Wrapper>
     )
   }
@@ -63,4 +84,10 @@ export class StatusBar extends React.Component {
 
 StatusBar.propTypes = {}
 
-export default connect(({ status }) => ({ status }))(StatusBar)
+export default connect(
+  ({ status, config: { showRemoteBranches } }) => ({
+    status,
+    showRemoteBranches,
+  }),
+  { showRemoteBranchesAction: showRemoteBranches },
+)(StatusBar)

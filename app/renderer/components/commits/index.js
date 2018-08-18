@@ -61,6 +61,7 @@ export class Commits extends React.Component {
       columns,
       commits,
       branches,
+      showRemoteBranches,
       checkoutCommit,
       gitService,
       status: { current: currentBranchName },
@@ -87,6 +88,7 @@ export class Commits extends React.Component {
                   commit={commit}
                   columns={columns}
                   branches={branches}
+                  showRemoteBranches={showRemoteBranches}
                   selected={selectedSHA === commit.sha}
                   onSelect={this.handleSelect}
                   onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
@@ -106,6 +108,7 @@ Commits.propTypes = {
   columns: props.columns,
   commits: props.commits,
   branches: props.branches,
+  showRemoteBranches: PropTypes.bool.isRequired,
 }
 
 const columns = [
@@ -117,7 +120,13 @@ const columns = [
 ]
 
 const ConnectedCommits = connect(
-  ({ commits, branches, status }) => ({ commits, branches, columns, status }),
+  ({ commits, branches, status, config: { showRemoteBranches } }) => ({
+    commits,
+    branches,
+    showRemoteBranches,
+    columns,
+    status,
+  }),
   { checkoutCommit },
 )(Commits)
 

@@ -89,17 +89,20 @@ export class Git {
 
     const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
     return Promise.all(
-      refs.filter((ref) => ref.isBranch()).map(async (ref) => {
-        const headRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-        const head = await repo.getCommit(headRef)
-        return {
-          name: ref.shorthand(),
-          isRemote: !!ref.isRemote(),
-          isHead: !!ref.isHead(),
-          id: ref.name(),
-          headSHA: head.sha(),
-        }
-      }),
+      refs
+        .filter((ref) => ref.isBranch() || ref.isRemote())
+        .sort((a, b) => a.isRemote() - b.isRemote())
+        .map(async (ref) => {
+          const headRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
+          const head = await repo.getCommit(headRef)
+          return {
+            name: ref.shorthand(),
+            isRemote: !!ref.isRemote(),
+            isHead: !!ref.isHead(),
+            id: ref.name(),
+            headSHA: head.sha(),
+          }
+        }),
     )
   }
 
