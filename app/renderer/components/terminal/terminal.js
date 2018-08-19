@@ -38,6 +38,14 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
+// Used by vim, ie. interactive rebase
+const isStartAlternateBuffer = (data) => data.match(/\[\?47h/)
+const isEndAlternateBuffer = (data) => data.match(/\[\?47l/)
+
+// Used by `git diff` command for scrolling around the output
+const isStartAppKeysMode = (data) => data.match(/\[\?1h=/)
+const isEndAppKeysMode = (data) => data.match(/\[\?1l/)
+
 export class Terminal extends React.Component {
   constructor(props) {
     super(props)
@@ -67,6 +75,12 @@ export class Terminal extends React.Component {
       this.terminal.fit()
     }
   }
+
+  updateAlternateBuffer = debounce((active) => {
+    this.setState({ alternateBuffer: active }, () =>
+      this.props.onAlternateBufferChange(active),
+    )
+  }, 5)
 
   setupTerminal = () => {
     this.ptyProcess = this.setupPTY()
@@ -106,7 +120,6 @@ export class Terminal extends React.Component {
 
   setupTerminalEvents = () => {
     const that = this
-    const { onAlternateBufferChange } = this.props
 
     that.terminal.on('data', (data) => {
       that.ptyProcess.write(data)
@@ -114,18 +127,14 @@ export class Terminal extends React.Component {
     that.ptyProcess.on('data', function(data) {
       that.terminal.write(data)
 
+      // ensure xterm has a few moments to trigger its
+      // own re-render before we trigger a resize
       setTimeout(() => {
-        // ensure xterm has a few moments to update its
-        // own re-render before we trigger a resize
-        if (data.match(/\[\?47h/)) {
-          that.setState({ alternateBuffer: true }, () =>
-            onAlternateBufferChange(true),
-          )
+        if (isStartAlternateBuffer(data) || isStartAppKeysMode(data)) {
+          that.updateAlternateBuffer(true)
         }
-        if (data.match(/\[\?47l/)) {
-          that.setState({ alternateBuffer: false }, () =>
-            onAlternateBufferChange(false),
-          )
+        if (isEndAlternateBuffer(data) || isEndAppKeysMode(data)) {
+          that.updateAlternateBuffer(false)
         }
       }, 5)
     })
