@@ -99,4 +99,22 @@ app.on('ready', async () => {
       ]).popup(mainWindow)
     })
   }
+
+  const appMenu = Menu.buildFromTemplate(
+    [
+      process.platform === 'darwin' ? {} : null,
+      {
+        label: 'Debug',
+        submenu: [
+          {
+            label: 'Toggle Dev Tools',
+            click() {
+              mainWindow.webContents.openDevTools()
+            },
+          },
+        ],
+      },
+    ].filter((i) => !!i),
+  )
+  Menu.setApplicationMenu(appMenu)
 })
