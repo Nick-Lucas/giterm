@@ -49,11 +49,10 @@ Load up giterm and use the command line as normal!
   * set git auth info? ssh? is this even needed if the target audience has SSH/HTTP already set up for CLI?
 
 * Terminal
-  * Performance: moving up/down in VIM causes a giterm refresh to trigger
   * Allow switching to non-root git folders.
 
 * Status bar
-  * Give functility for jump-to-branch and jump-to-commit
+  * Add functionality for jump-to-branch and jump-to-commit
 
 * Commits view
   * Support column resizing (manual or auto)
