@@ -10,7 +10,9 @@ I'm building giterm because I love to work on the CLI but miss the visualisation
 
 ## How to run it?
 
-I'm still prototyping so haven't sorted the production build yet. 
+Check of the [releases](https://github.com/Nick-Lucas/giterm/releases) tab
+
+## Building locally
 
 1. checkout
 2. `yarn`/`npm` (NodeGit can take a while to build, so be patient)
@@ -22,7 +24,7 @@ Load up giterm and use the command line as normal!
 
 * When you change folder so will giterm
 * giterm has a bunch of bash aliases ready for you (type `help`)
-* If you want a fullscreen terminal just press `ctrl+tab` to toggle it
+* If you want a fullscreen terminal just press `ctrl+tab` to toggle it, but giterm will do this for you when you enter vim or other fullscreen apps
 
 ## Work in progress!
 
