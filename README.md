@@ -35,8 +35,6 @@ Load up giterm and use the command line as normal!
 
 * App
   * Support opening from command line
-  * Change app name and icon
-  * Make production build/packaging work for Mac
   * Support Windows & Linux
   * Keyboard shortcuts display
 
