@@ -16,6 +16,12 @@ import { exec } from 'child_process'
 import { refreshApplication } from '../../store/coreapp'
 import { bindServices } from '../../lib/di'
 import { updateCwd } from '../../store/config'
+import {
+  isStartAlternateBuffer,
+  isEndAlternateBuffer,
+  isStartAppKeysMode,
+  isEndAppKeysMode,
+} from './xterm-control'
 
 const BASHRC_PATH = path.resolve('./dist-assets/.bashrc')
 if (!fs.existsSync(BASHRC_PATH)) {
@@ -37,14 +43,6 @@ const terminalOpts = {
   },
   cursorStyle: 'bar',
 }
-
-// Used by vim, ie. interactive rebase
-const isStartAlternateBuffer = (data) => data.match(/\[\?47h/)
-const isEndAlternateBuffer = (data) => data.match(/\[\?47l/)
-
-// Used by `git diff` command for scrolling around the output
-const isStartAppKeysMode = (data) => data.match(/\[\?1h=/)
-const isEndAppKeysMode = (data) => data.match(/\[\?1l/)
 
 export class Terminal extends React.Component {
   constructor(props) {
