@@ -61,6 +61,10 @@ Load up giterm and use the command line as normal!
   * Support merge and rebase with mouse
   * Load more than 500 commits on scroll down
 
+* Diff view: (Not yet implemented)
+  * Current changes against HEAD
+  * Changes between two commits (CMD+Click in Commits view)
+
 * Branches view: (Not yet implemented)
   * List local branches
   * Mark current branch
