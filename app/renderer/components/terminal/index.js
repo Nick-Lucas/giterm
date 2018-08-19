@@ -6,7 +6,10 @@ import styled from 'styled-components'
 import Terminal from './terminal'
 
 import { Minimize2, Maximize2 } from 'react-feather'
-import { flipTerminalFullscreen } from '../../store/config'
+import {
+  setTerminalFullscreen,
+  flipTerminalFullscreen,
+} from '../../store/config'
 
 const Wrapper = styled.div`
   flex: 1;
@@ -33,8 +36,13 @@ const MenuItem = styled.div`
 `
 
 export class TerminalPanel extends React.Component {
+  flipTerminalFullscreen = (e) => {
+    this.props.flipTerminalFullscreen()
+    e.stopPropagation()
+  }
+
   render() {
-    const { terminalFullscreen, flipTerminalFullscreen } = this.props
+    const { terminalFullscreen, setTerminalFullscreen } = this.props
     return (
       <Wrapper>
         <MenuPanel>
@@ -42,7 +50,7 @@ export class TerminalPanel extends React.Component {
             title={
               terminalFullscreen ? 'Minimise (ctl+tab)' : 'Maximise (ctl+tab)'
             }
-            onClick={flipTerminalFullscreen}>
+            onClick={this.flipTerminalFullscreen}>
             {terminalFullscreen ? (
               <Minimize2 size={20} />
             ) : (
@@ -51,7 +59,7 @@ export class TerminalPanel extends React.Component {
           </MenuItem>
         </MenuPanel>
         <TerminalWrapper>
-          <Terminal />
+          <Terminal onAlternateBufferChange={setTerminalFullscreen} />
         </TerminalWrapper>
       </Wrapper>
     )
@@ -64,5 +72,5 @@ export default connect(
   ({ config: { terminalFullscreen } }) => ({
     terminalFullscreen,
   }),
-  { flipTerminalFullscreen },
+  { setTerminalFullscreen, flipTerminalFullscreen },
 )(TerminalPanel)

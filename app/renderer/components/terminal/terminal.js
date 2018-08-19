@@ -40,7 +40,7 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
-export class Terminal extends React.Component {
+export class Terminal extends React.PureComponent {
   constructor(props) {
     super(props)
     this.container = React.createRef()
@@ -105,17 +105,31 @@ export class Terminal extends React.Component {
 
   setupTerminalEvents = () => {
     const that = this
+    const { onAlternateBufferChange } = this.props
 
     that.terminal.on('data', (data) => {
+      // console.log('IN data: `' + data + '`')
+      // console.log('IN linefeed?:', data === '\r')
       that.ptyProcess.write(data)
     })
     that.ptyProcess.on('data', function(data) {
+      if (data.match(/\[\?47h/)) {
+        console.log('GONE FULLSCREEN')
+        onAlternateBufferChange(true)
+      }
+      if (data.match(/\[\?47l/)) {
+        console.log('LEFT FULLSCREEN')
+        onAlternateBufferChange(false)
+      }
+      // console.log('OUT data: `' + data + '`')
+      // console.log('OUT linefeed?:', data === '\r')
       that.terminal.write(data)
     })
 
     that.terminal.on(
       'linefeed',
       debounce(() => {
+        // console.log('TRIGGER LINEFEED')
         that.getCWD(that.ptyProcess.pid).then((cwd) => {
           const { updateCwd, refreshApplication, gitService } = that.props
           updateCwd(cwd)
@@ -156,7 +170,9 @@ export class Terminal extends React.Component {
   }
 }
 
-Terminal.propTypes = {}
+Terminal.propTypes = {
+  onAlternateBufferChange: PropTypes.func.isRequired,
+}
 
 const ConnectedTerminal = connect(
   ({ status: { branchName }, config: { cwd, terminalFullscreen } }) => ({

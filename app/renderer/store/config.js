@@ -11,9 +11,16 @@ export const updateCwd = (cwd) => ({
   payload: cwd.trim(),
 })
 
+export const SET_TERMINAL_FULLSCREEN = 'config/set_terminal_fullscreen'
+export const setTerminalFullscreen = (fullscreen) => ({
+  type: SET_TERMINAL_FULLSCREEN,
+  fullscreen,
+})
+
 export const FLIP_TERMINAL_FULLSCREEN = 'config/flip_terminal_fullscreen'
-export const flipTerminalFullscreen = () => ({
+export const flipTerminalFullscreen = (fullscreen) => ({
   type: FLIP_TERMINAL_FULLSCREEN,
+  fullscreen,
 })
 
 export const SHOW_REMOTE_BRANCHES = 'config/show_remote_branches'
@@ -38,6 +45,12 @@ export default (state = initialState, action) => {
       return {
         ...state,
         terminalFullscreen: !state.terminalFullscreen,
+      }
+    }
+    case SET_TERMINAL_FULLSCREEN: {
+      return {
+        ...state,
+        terminalFullscreen: action.fullscreen,
       }
     }
     case SHOW_REMOTE_BRANCHES: {
