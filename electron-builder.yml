@@ -27,13 +27,16 @@ dmg:
     - type: file
       x: 130
       y: 150
+  icon: icon.icns
 
 mac:
   target: dmg
   category: public.app-category.tools
+  icon: icon.icns
 
 win:
   target: nsis
+  icon: icon.ico
 
 linux:
   target:
