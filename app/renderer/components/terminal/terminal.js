@@ -2,21 +2,19 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { connect } from 'react-redux'
 import styled from 'styled-components'
-
-import { refreshApplication } from '../../store/coreapp'
+import debounce from 'debounce'
 
 import * as XTerm from 'xterm'
 import * as fit from 'xterm/lib/addons/fit/fit'
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks'
-import os from 'os'
 import { spawn } from 'node-pty'
-
-import debounce from 'debounce'
-import { bindServices } from '../../lib/di'
 
 import fs from 'fs'
 import path from 'path'
 import { exec } from 'child_process'
+
+import { refreshApplication } from '../../store/coreapp'
+import { bindServices } from '../../lib/di'
 import { updateCwd } from '../../store/config'
 
 const BASHRC_PATH = path.resolve('./dist-assets/.bashrc')
@@ -40,10 +38,13 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
-export class Terminal extends React.PureComponent {
+export class Terminal extends React.Component {
   constructor(props) {
     super(props)
     this.container = React.createRef()
+    this.state = {
+      alternateBuffer: false,
+    }
   }
 
   componentDidMount() {
@@ -108,32 +109,37 @@ export class Terminal extends React.PureComponent {
     const { onAlternateBufferChange } = this.props
 
     that.terminal.on('data', (data) => {
-      // console.log('IN data: `' + data + '`')
-      // console.log('IN linefeed?:', data === '\r')
       that.ptyProcess.write(data)
     })
     that.ptyProcess.on('data', function(data) {
-      if (data.match(/\[\?47h/)) {
-        console.log('GONE FULLSCREEN')
-        onAlternateBufferChange(true)
-      }
-      if (data.match(/\[\?47l/)) {
-        console.log('LEFT FULLSCREEN')
-        onAlternateBufferChange(false)
-      }
-      // console.log('OUT data: `' + data + '`')
-      // console.log('OUT linefeed?:', data === '\r')
       that.terminal.write(data)
+
+      setTimeout(() => {
+        // ensure xterm has a few moments to update its
+        // own re-render before we trigger a resize
+        if (data.match(/\[\?47h/)) {
+          that.setState({ alternateBuffer: true }, () =>
+            onAlternateBufferChange(true),
+          )
+        }
+        if (data.match(/\[\?47l/)) {
+          that.setState({ alternateBuffer: false }, () =>
+            onAlternateBufferChange(false),
+          )
+        }
+      }, 5)
     })
 
     that.terminal.on(
       'linefeed',
       debounce(() => {
-        // console.log('TRIGGER LINEFEED')
         that.getCWD(that.ptyProcess.pid).then((cwd) => {
           const { updateCwd, refreshApplication, gitService } = that.props
-          updateCwd(cwd)
-          refreshApplication(gitService)
+          const { alternateBuffer } = that.state
+          if (!alternateBuffer) {
+            updateCwd(cwd)
+            refreshApplication(gitService)
+          }
         })
       }, 20),
     )
