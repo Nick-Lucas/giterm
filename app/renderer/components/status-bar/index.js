@@ -51,7 +51,14 @@ export class StatusBar extends React.Component {
   }
 
   render() {
-    const { state, current, ahead, behind, files, staged } = this.props.status
+    const {
+      state = '',
+      current = '',
+      ahead = 0,
+      behind = 0,
+      files = [],
+      staged = [],
+    } = this.props.status
     const { showRemoteBranches } = this.props
     return (
       <Wrapper>

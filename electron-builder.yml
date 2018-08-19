@@ -1,6 +1,6 @@
-appId: com.example.app
+appId: com.example.giterm
 copyright: Example co
-productName: MyApp
+productName: Giterm
 
 asar: true
 
@@ -13,7 +13,10 @@ files:
   - init.js
   - build/
   - node_modules/
-  - dist-assets/.bashrc
+
+extraFiles:
+  - from: app/renderer/components/terminal/bashrc
+    to: bashrc
 
 dmg:
   contents:

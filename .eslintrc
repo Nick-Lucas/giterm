@@ -24,7 +24,9 @@
     "no-unused-expressions" : "error",
     "block-scoped-var": "error",
     "react/prop-types": "off",
-    "prettier/prettier": "error"
+    "prettier/prettier": "error",
+    "no-redeclare": "error",
+    "no-undef": "error"
   },
   "settings": {
     "react": {

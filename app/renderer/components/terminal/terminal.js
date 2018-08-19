@@ -9,8 +9,6 @@ import * as fit from 'xterm/lib/addons/fit/fit'
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks'
 import { spawn } from 'node-pty'
 
-import fs from 'fs'
-import path from 'path'
 import { exec } from 'child_process'
 
 import { refreshApplication } from '../../store/coreapp'
@@ -22,12 +20,7 @@ import {
   isStartAppKeysMode,
   isEndAppKeysMode,
 } from './xterm-control'
-
-const BASHRC_PATH = path.resolve('./dist-assets/.bashrc')
-if (!fs.existsSync(BASHRC_PATH)) {
-  // TODO: ensure that packaging process includes this properly
-  throw `.bashrc not found: ${BASHRC_PATH}`
-}
+import { BASHRC_PATH } from './bash-config'
 
 const TerminalContainer = styled.div`
   flex: 1;

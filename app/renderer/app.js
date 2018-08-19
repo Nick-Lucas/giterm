@@ -13,6 +13,7 @@ import getServices from './services'
 
 import Home from './containers/home'
 import { updateCwd, flipTerminalFullscreen } from './store/config'
+import { remote } from 'electron'
 
 const syncHistoryWithStore = (store, history) => {
   const { routing } = store.getState()
@@ -29,7 +30,8 @@ syncHistoryWithStore(store, routerHistory)
 
 // Service Init
 const services = getServices(store)
-store.dispatch(updateCwd(process.cwd()))
+const cwd = process.cwd()
+store.dispatch(updateCwd(cwd === '/' ? remote.app.getPath('home') : cwd))
 
 // Shortcuts
 window.addEventListener(
