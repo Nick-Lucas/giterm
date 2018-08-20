@@ -38,7 +38,6 @@ Load up giterm and use the command line as normal!
 * App
   * Support opening from command line
   * Support Windows & Linux
-  * Keyboard shortcuts display
 
 * General
   * Unit / integration tests! As soon as the prototype is done
@@ -60,12 +59,15 @@ Load up giterm and use the command line as normal!
   * Scroll to branch head when branch switched from command-line
   * Support merge and rebase with mouse
   * Load more than 500 commits on scroll down
+  * Fix the subway graph in more complex projects. It goes a bit crazy!
 
 * Diff view: (Not yet implemented)
   * Current changes against HEAD
   * Changes between two commits (CMD+Click in Commits view)
 
-* Branches view: (Not yet implemented)
+## Later / Maybe
+
+* Branches view
   * List local branches
   * Mark current branch
   * Display commits ahead/behind
