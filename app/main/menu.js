@@ -9,8 +9,15 @@ export default function menu(mainWindow) {
       submenu: [{ role: 'minimize' }, { type: 'separator' }, { role: 'quit' }],
     },
     {
-      label: 'Display',
+      label: 'Terminal',
       submenu: [
+        {
+          role: 'copy',
+        },
+        {
+          role: 'paste',
+        },
+        { type: 'separator' },
         {
           label: 'Expand Terminal',
           accelerator: 'Control+Tab',
@@ -19,7 +26,14 @@ export default function menu(mainWindow) {
             // so functionality is handled within app.js as a result
           },
         },
+      ],
+    },
+    {
+      label: 'Window',
+      submenu: [
+        { role: 'toggleFullScreen' },
         { type: 'separator' },
+        { role: 'resetZoom' },
         { role: 'zoomIn' },
         { role: 'zoomOut' },
         { type: 'separator' },
