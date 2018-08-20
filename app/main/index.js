@@ -1,5 +1,6 @@
 import path from 'path'
 import { app, crashReporter, BrowserWindow, Menu } from 'electron'
+import getMenu from './menu'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -100,21 +101,5 @@ app.on('ready', async () => {
     })
   }
 
-  const appMenu = Menu.buildFromTemplate(
-    [
-      process.platform === 'darwin' ? {} : null,
-      {
-        label: 'Debug',
-        submenu: [
-          {
-            label: 'Toggle Dev Tools',
-            click() {
-              mainWindow.webContents.openDevTools()
-            },
-          },
-        ],
-      },
-    ].filter((i) => !!i),
-  )
-  Menu.setApplicationMenu(appMenu)
+  Menu.setApplicationMenu(getMenu(mainWindow))
 })
