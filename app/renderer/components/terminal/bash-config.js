@@ -9,7 +9,6 @@ if (process.env.NODE_ENV === 'development') {
   bashPath = path.resolve(remote.app.getPath('exe'), '../../bashrc')
 }
 
-console.log('BASHRC:', bashPath)
 export const BASHRC_PATH = bashPath
 if (!fs.existsSync(BASHRC_PATH)) {
   // TODO: ensure that packaging process includes this properly
