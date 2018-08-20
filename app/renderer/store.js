@@ -12,11 +12,13 @@ import commits from './store/commits'
 import status from './store/status'
 import branches from './store/branches'
 import config from './store/config'
+import terminal from './store/terminal'
 const reducers = {
   config,
   commits,
   status,
   branches,
+  terminal,
 }
 
 export default function configureStore(initialState, routerHistory) {

@@ -82,7 +82,7 @@ export class Home extends PureComponent {
 }
 
 const ConnectedHome = connect(
-  ({ config: { terminalFullscreen } }) => ({ terminalFullscreen }),
+  ({ terminal: { fullscreen } }) => ({ terminalFullscreen: fullscreen }),
   { refreshApplication },
 )(Home)
 

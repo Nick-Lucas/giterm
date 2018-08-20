@@ -12,7 +12,8 @@ import { ServicesProvider } from './lib/di'
 import getServices from './services'
 
 import Home from './containers/home'
-import { updateCwd, flipTerminalFullscreen } from './store/config'
+import { updateCwd } from './store/config'
+import { flipUserTerminalFullscreen } from './store/terminal'
 import { remote } from 'electron'
 
 const syncHistoryWithStore = (store, history) => {
@@ -38,7 +39,7 @@ window.addEventListener(
   'keydown',
   (ev) => {
     if (ev.ctrlKey && ev.code === 'Tab') {
-      store.dispatch(flipTerminalFullscreen())
+      store.dispatch(flipUserTerminalFullscreen())
       ev.stopImmediatePropagation()
       return
     }

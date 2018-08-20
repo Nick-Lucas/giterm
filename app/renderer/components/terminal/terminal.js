@@ -181,10 +181,15 @@ Terminal.propTypes = {
 }
 
 const ConnectedTerminal = connect(
-  ({ status: { branchName }, config: { cwd, terminalFullscreen } }) => ({
+  ({
+    status: { branchName },
+    config: { cwd },
+    terminal: { terminalFullscreen = false, autoTerminalFullscreen = false },
+  }) => ({
     branchName,
     cwd,
     terminalFullscreen,
+    autoTerminalFullscreen,
   }),
   {
     refreshApplication,

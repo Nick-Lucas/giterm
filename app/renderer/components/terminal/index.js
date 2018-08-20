@@ -7,9 +7,9 @@ import Terminal from './terminal'
 
 import { Minimize2, Maximize2 } from 'react-feather'
 import {
-  setTerminalFullscreen,
-  flipTerminalFullscreen,
-} from '../../store/config'
+  setAutoTerminalFullscreen,
+  flipUserTerminalFullscreen,
+} from '../../store/terminal'
 
 const Wrapper = styled.div`
   flex: 1;
@@ -36,30 +36,24 @@ const MenuItem = styled.div`
 `
 
 export class TerminalPanel extends React.Component {
-  flipTerminalFullscreen = (e) => {
-    this.props.flipTerminalFullscreen()
+  flipUserTerminalFullscreen = (e) => {
+    this.props.flipUserTerminalFullscreen()
     e.stopPropagation()
   }
 
   render() {
-    const { terminalFullscreen, setTerminalFullscreen } = this.props
+    const { fullscreen, setAutoTerminalFullscreen } = this.props
     return (
       <Wrapper>
         <MenuPanel>
           <MenuItem
-            title={
-              terminalFullscreen ? 'Minimise (ctl+tab)' : 'Maximise (ctl+tab)'
-            }
-            onClick={this.flipTerminalFullscreen}>
-            {terminalFullscreen ? (
-              <Minimize2 size={20} />
-            ) : (
-              <Maximize2 size={20} />
-            )}
+            title={fullscreen ? 'Minimise (ctl+tab)' : 'Maximise (ctl+tab)'}
+            onClick={this.flipUserTerminalFullscreen}>
+            {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
           </MenuItem>
         </MenuPanel>
         <TerminalWrapper>
-          <Terminal onAlternateBufferChange={setTerminalFullscreen} />
+          <Terminal onAlternateBufferChange={setAutoTerminalFullscreen} />
         </TerminalWrapper>
       </Wrapper>
     )
@@ -69,8 +63,8 @@ export class TerminalPanel extends React.Component {
 TerminalPanel.propTypes = {}
 
 export default connect(
-  ({ config: { terminalFullscreen } }) => ({
-    terminalFullscreen,
+  ({ terminal: { fullscreen } }) => ({
+    fullscreen,
   }),
-  { setTerminalFullscreen, flipTerminalFullscreen },
+  { setAutoTerminalFullscreen, flipUserTerminalFullscreen },
 )(TerminalPanel)
