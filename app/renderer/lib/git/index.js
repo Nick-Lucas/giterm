@@ -1,13 +1,14 @@
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import DateFormat from 'dateformat'
+import repoResolver from './repo-resolver'
 
 export class Git {
   // instance management
   // **********************
 
   updateCwd = (newCwd) => {
-    this.cwd = newCwd
+    this.cwd = repoResolver(newCwd)
     this._simple = null
     this._complex = null
   }
