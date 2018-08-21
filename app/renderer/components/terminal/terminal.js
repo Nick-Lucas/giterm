@@ -52,8 +52,8 @@ export class Terminal extends React.Component {
 
   componentDidUpdate(prevProps) {
     if (this.terminal) {
-      const { terminalFullscreen: wasFS } = prevProps
-      const { terminalFullscreen: isFS } = this.props
+      const { fullscreen: wasFS } = prevProps
+      const { fullscreen: isFS } = this.props
       if (wasFS !== isFS) {
         this.resizeTerminal()
       }
@@ -181,15 +181,10 @@ Terminal.propTypes = {
 }
 
 const ConnectedTerminal = connect(
-  ({
-    status: { branchName },
-    config: { cwd },
-    terminal: { terminalFullscreen = false, autoTerminalFullscreen = false },
-  }) => ({
+  ({ status: { branchName }, config: { cwd }, terminal: { fullscreen } }) => ({
     branchName,
     cwd,
-    terminalFullscreen,
-    autoTerminalFullscreen,
+    fullscreen,
   }),
   {
     refreshApplication,
