@@ -12,7 +12,7 @@ import { ServicesProvider } from './lib/di'
 import getServices from './services'
 
 import Home from './containers/home'
-import { updateCwd } from './store/config'
+import { updateCwd, updateShowRemoteBranches } from './store/config'
 import { flipUserTerminalFullscreen } from './store/terminal'
 import { remote } from 'electron'
 
@@ -40,6 +40,16 @@ window.addEventListener(
   (ev) => {
     if (ev.ctrlKey && ev.code === 'Tab') {
       store.dispatch(flipUserTerminalFullscreen())
+      ev.stopImmediatePropagation()
+      return
+    }
+    if (ev.ctrlKey && ev.key === 'r') {
+      store.dispatch(
+        updateShowRemoteBranches(
+          !store.getState().config.showRemoteBranches,
+          services.git,
+        ),
+      )
       ev.stopImmediatePropagation()
       return
     }

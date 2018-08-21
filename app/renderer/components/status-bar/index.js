@@ -82,7 +82,7 @@ export class StatusBar extends React.Component {
           <ToggleInput
             type="checkbox"
             onChange={this.toggleShowRemoteBranches}
-            defaultChecked={showRemoteBranches}
+            checked={showRemoteBranches}
           />
         </Group>
       </Wrapper>

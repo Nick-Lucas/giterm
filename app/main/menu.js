@@ -2,6 +2,9 @@
 
 import { Menu } from 'electron'
 
+// NOTE
+// Accelerators don't work from menu when focus is within xterm.js
+// so functionality is handled within app.js as a result
 export default function menu(mainWindow) {
   return Menu.buildFromTemplate([
     {
@@ -22,8 +25,19 @@ export default function menu(mainWindow) {
           label: 'Expand Terminal',
           accelerator: 'Control+Tab',
           click() {
-            // Doesn't work from menu when focus is within xterm.js
-            // so functionality is handled within app.js as a result
+            // app.js
+          },
+        },
+      ],
+    },
+    {
+      label: 'Git',
+      submenu: [
+        {
+          label: 'Toggle Remote Data',
+          accelerator: 'Control+R',
+          click() {
+            // app.js
           },
         },
       ],
