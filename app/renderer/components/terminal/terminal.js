@@ -68,9 +68,12 @@ export class Terminal extends React.Component {
   }
 
   updateAlternateBuffer = debounce((active) => {
-    this.setState({ alternateBuffer: active }, () =>
-      this.props.onAlternateBufferChange(active),
-    )
+    // ensure xterm has a few moments to trigger its
+    // own re-render before we trigger a resize
+    setTimeout(() => {
+      this.setState({ alternateBuffer: active })
+      this.props.onAlternateBufferChange(active)
+    }, 5)
   }, 5)
 
   setupTerminal = () => {
@@ -118,16 +121,12 @@ export class Terminal extends React.Component {
     that.ptyProcess.on('data', function(data) {
       that.terminal.write(data)
 
-      // ensure xterm has a few moments to trigger its
-      // own re-render before we trigger a resize
-      setTimeout(() => {
-        if (isStartAlternateBuffer(data) || isStartAppKeysMode(data)) {
-          that.updateAlternateBuffer(true)
-        }
-        if (isEndAlternateBuffer(data) || isEndAppKeysMode(data)) {
-          that.updateAlternateBuffer(false)
-        }
-      }, 5)
+      if (isStartAlternateBuffer(data) || isStartAppKeysMode(data)) {
+        that.updateAlternateBuffer(true)
+      }
+      if (isEndAlternateBuffer(data) || isEndAppKeysMode(data)) {
+        that.updateAlternateBuffer(false)
+      }
     })
 
     that.terminal.on(
