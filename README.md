@@ -31,45 +31,6 @@ Load up giterm and use the command line as normal!
 * giterm probably only works on Mac right now. There are some dependencies like bash and lsof/grep/awk which are currently required
 * Cross-platform support is a personal priority! I'm also a Windows user at times, and Linux should be trivial with Mac support. Help here is especially welcome.
 
-## TODO:
+## Todo
 
-###### At some point I will move these into github issues
-
-* App
-  * Support opening from command line
-  * Support Windows & Linux
-
-* General
-  * Unit / integration tests! As soon as the prototype is done
-
-* Config
-  * set default directory for when the app is opened
-  * set bash location
-  * set git auth info? ssh? is this even needed if the target audience has SSH/HTTP already set up for CLI?
-
-* Terminal
-  * Allow switching to non-root git folders.
-
-* Status bar
-  * Add functionality for jump-to-branch and jump-to-commit
-
-* Commits view
-  * Support column resizing (manual or auto)
-  * Show branch ahead/behind counts
-  * Scroll to branch head when branch switched from command-line
-  * Support merge and rebase with mouse
-  * Load more than 500 commits on scroll down
-  * Fix the subway graph in more complex projects. It goes a bit crazy!
-
-* Diff view: (Not yet implemented)
-  * Current changes against HEAD
-  * Changes between two commits (CMD+Click in Commits view)
-
-## Later / Maybe
-
-* Branches view
-  * List local branches
-  * Mark current branch
-  * Display commits ahead/behind
-  * Double click to check out
-  * Right click the rename, delete, etc
+Check out the github issues for details!
