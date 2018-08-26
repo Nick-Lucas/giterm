@@ -30,132 +30,146 @@ export class SubwayCalculator {
     const nodes = []
     const links = []
     const that = this
+
+    // Initialise default nodes for each commit
     commits.forEach((c) => {
       const node = new Node(c.sha)
-      // Y offset, just increment;
       node.y = START_Y
-      // X is tricky, do it later
       node.x = START_X
       node.commit = c
       node.color = Color.parseHex(that.colors[0])
       node.secondColor = Color.parseHex(that.colors[0])
+
       nodes.push(node)
       nodeDict[node.commit.sha] = node
     }, this)
-    // edge creation
-    commits.forEach((c) => {
-      if (c.parents.length === 0) {
-        const infinityNode = new Node('infty-' + c.sha)
-        infinityNode.x = nodeDict[c.sha].x
+
+    // Initialise connecting lines
+    commits.forEach((commit) => {
+      if (commit.parents.length === 0) {
+        const infinityNode = new Node('infty-' + commit.sha)
+        infinityNode.x = nodeDict[commit.sha].x
         infinityNode.y = _infinityY
-        const newLink = new Link(nodeDict[c.sha], infinityNode)
-        newLink.color = nodeDict[c.sha].color
-        links.push(newLink)
+
+        const link = new Link(nodeDict[commit.sha], infinityNode)
+        link.color = nodeDict[commit.sha].color
+
+        links.push(link)
       } else {
-        c.parents.forEach((p) => {
-          if (nodeDict[p]) {
-            const newLink = new Link(nodeDict[c.sha], nodeDict[p])
-            if (c.parents.length > 1) {
-              newLink.color = nodeDict[p].color
-              nodeDict[c.sha].secondColor = nodeDict[p].color
-              newLink.merge = true
+        commit.parents.forEach((parentSha) => {
+          const parent = nodeDict[parentSha]
+          if (parent) {
+            const link = new Link(nodeDict[commit.sha], parent)
+
+            if (commit.parents.length > 1) {
+              link.color = parent.color
+              nodeDict[commit.sha].secondColor = parent.color
+              link.merge = true
             } else {
-              newLink.color = nodeDict[c.sha].color
-              newLink.merge = false
+              link.color = nodeDict[commit.sha].color
+              link.merge = false
             }
-            links.push(newLink)
+
+            links.push(link)
           }
         })
       }
     })
+    links.pop()
+
     this.currentMap = new SubwayMap(nodes, links, nodeDict)
     this.updateMapLayout(this.currentMap)
-    this.currentMap.links.pop()
     return this.currentMap
   }
 
-  updateCommits(newCommits) {
+  updateCommits(commits) {
+    if (!this.currentMap) {
+      return
+    }
+
     const nodes = this.currentMap.nodes
     const nodeDict = this.currentMap.nodeDict
-    if (this.currentMap) {
-      // remove not exist commits
-      const removed = []
-      const newKeys = newCommits.map((c) => c.sha)
-      const oldKeys = Object.keys(nodeDict)
-      oldKeys.forEach((k) => {
-        if (newKeys.indexOf(k) === -1) {
-          removed.push(k)
-        }
-      })
-      removed.forEach((k) => {
-        this.currentMap.nodes.splice(
-          this.currentMap.nodes.indexOf(nodeDict[k]),
-          1,
-        )
-        delete nodeDict[k]
-      })
-      // add in new commits in correct place
-      let i = 0
-      let j = 0
-      // newCommits will be >= than old nodes now
-      // since we remove all nodes in old that's not in new
-      while (i < newCommits.length || j < nodes.length) {
-        if (j >= nodes.length || nodes[j].commit.sha !== newCommits[i].sha) {
-          // if node is not in already, create new one
-          const node = new Node(newCommits[i].sha)
-          // Y offset, just increment;
-          node.y = START_Y
-          // X is tricky, do it later
-          node.x = START_X
-          node.commit = newCommits[i]
-          node.color = Color.parseHex(this.colors[0])
-          node.secondColor = Color.parseHex(this.colors[0])
-          if (j < nodes.length) {
-            nodes.splice(j, 0, node)
-          } else {
-            nodes.splice(nodes.length, 0, node)
-          }
-          nodeDict[node.commit.sha] = node
-        }
-        j += 1
-        i += 1
+
+    // remove non-existant commits
+    const shas = commits.map((c) => c.sha)
+    const oldShas = Object.keys(nodeDict)
+    oldShas.forEach((sha) => {
+      if (shas.indexOf(sha) > -1) {
+        return
       }
-      this.currentMap.nodes.map((n) => {
-        n.processed = false
-      })
-      this.currentMap.links = []
-      // edge creation
-      const _infinityY = this.rowHeight * (nodes.length + 1)
-      nodes.forEach((n) => {
-        const c = n.commit
-        if (c.parents.length === 0) {
-          const infinityNode = new Node('infty-' + c.sha)
-          infinityNode.x = nodeDict[c.sha].x
-          infinityNode.y = _infinityY
-          const newLink = new Link(nodeDict[c.sha], infinityNode)
-          newLink.color = nodeDict[c.sha].color
-          this.currentMap.links.push(newLink)
+
+      nodes.splice(nodes.indexOf(nodeDict[sha]), 1)
+      delete nodeDict[sha]
+    })
+
+    // add new commits
+    let i = 0
+    let j = 0
+    // newCommits will be >= than old nodes now
+    // since we remove all nodes in old that's not in new
+    while (i < commits.length || j < nodes.length) {
+      if (j >= nodes.length || nodes[j].commit.sha !== commits[i].sha) {
+        // if node is not in already, create new one
+        const node = new Node(commits[i].sha)
+        node.y = START_Y
+        node.x = START_X
+        node.commit = commits[i]
+        node.color = Color.parseHex(this.colors[0])
+        node.secondColor = Color.parseHex(this.colors[0])
+
+        if (j < nodes.length) {
+          nodes.splice(j, 0, node)
         } else {
-          c.parents.forEach((p) => {
-            if (nodeDict[p]) {
-              const newLink = new Link(nodeDict[c.sha], nodeDict[p])
-              if (c.parents.length > 1) {
-                newLink.color = nodeDict[p].color
-                nodeDict[c.sha].secondColor = nodeDict[p].color
-                newLink.merge = true
-              } else {
-                newLink.color = nodeDict[c.sha].color
-                newLink.merge = false
-              }
-              this.currentMap.links.push(newLink)
-            }
-          })
+          nodes.splice(nodes.length, 0, node)
         }
-      })
-      this.updateMapLayout(this.currentMap)
-      this.currentMap.links.pop()
-      return this.currentMap
+        nodeDict[node.commit.sha] = node
+      }
+      j += 1
+      i += 1
     }
+
+    nodes.map((n) => {
+      n.processed = false
+    })
+    this.currentMap.links = []
+
+    // edge creation
+    const _infinityY = this.rowHeight * (nodes.length + 1)
+    nodes.forEach((n) => {
+      const commit = n.commit
+      if (commit.parents.length === 0) {
+        const infinityNode = new Node('infty-' + commit.sha)
+        infinityNode.x = nodeDict[commit.sha].x
+        infinityNode.y = _infinityY
+
+        const newLink = new Link(nodeDict[commit.sha], infinityNode)
+        newLink.color = nodeDict[commit.sha].color
+
+        this.currentMap.links.push(newLink)
+      } else {
+        commit.parents.forEach((parentSha) => {
+          const parent = nodeDict[parentSha]
+          if (parent) {
+            const link = new Link(nodeDict[commit.sha], parent)
+
+            if (commit.parents.length > 1) {
+              link.color = parent.color
+              nodeDict[commit.sha].secondColor = parent.color
+              link.merge = true
+            } else {
+              link.color = nodeDict[commit.sha].color
+              link.merge = false
+            }
+
+            this.currentMap.links.push(link)
+          }
+        })
+      }
+    })
+    this.currentMap.links.pop()
+
+    this.updateMapLayout(this.currentMap)
+    return this.currentMap
   }
 
   updateMapLayout(map) {
