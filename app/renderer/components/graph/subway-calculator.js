@@ -292,35 +292,4 @@ export class SubwayCalculator {
     })
     map.width = branchLines.length
   }
-
-  getAuthor(author) {
-    const firstChars = author
-      .split(' ')
-      .map((n) => (n.length > 0 ? n[0].toUpperCase() : ''))
-    let name = ''
-    firstChars.forEach((f) => {
-      if (f > 'A' && f < 'Z' && name.length < 2) {
-        name += f
-      }
-    })
-    return name
-  }
-
-  hashCode(str) {
-    let hash = 0
-    for (let i = 0; i < str.length; i++) {
-      hash = str.charCodeAt(i) + (((hash << 4) + hash * 2) >> 2)
-    }
-    return hash
-  }
-
-  intToRGB(i) {
-    const c = (i & 0x00ffffff).toString(16).toUpperCase()
-
-    return '00000'.substring(0, 6 - c.length) + c
-  }
-
-  getColorByAuthor(email) {
-    return `#${this.intToRGB(this.hashCode(email))}`
-  }
 }
