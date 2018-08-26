@@ -1,8 +1,8 @@
 import { Link } from './models/link'
 import { Node } from './models/node'
 import { SubwayMap } from './models/subway-map'
-
 import { Color } from './models/color'
+import BranchLinesCalculator from './branchlines-calculator'
 
 const START_X = 10
 const START_Y = 12
@@ -128,9 +128,6 @@ export class SubwayCalculator {
       i += 1
     }
 
-    nodes.map((n) => {
-      n.processed = false
-    })
     this.currentMap.links = []
 
     // edge creation
@@ -166,125 +163,32 @@ export class SubwayCalculator {
         })
       }
     })
-    this.currentMap.links.pop()
 
     this.updateMapLayout(this.currentMap)
+    this.currentMap.links.pop()
     return this.currentMap
   }
 
   updateMapLayout(map) {
-    const nodes = map.nodes
-    const nodeDict = map.nodeDict
-    // New x algorithm, branch lines, closed and open concept
-    // let's see, start from top, start a "branch line" and add that commit, mark as open
-    // a merge commit comes in, add one parent in it's line, add another to "new branch", mark open
-    // a commit is removed from nodeDict if processed
-    // any new commits, add to a existing branch if "its sha is any of existing's parent", if all fail, put it in new branch line
-    // a branch line can only close if "a commit with only 1 parent and that parent is already in a branch" comes in
-    const branchLines = []
+    const branchLinesCalc = new BranchLinesCalculator()
 
-    function placeNodeInNewOrClosed(node) {
-      let addedToBl = null
-      branchLines.forEach((bl) => {
-        if (node.processed) {
-          return
-        }
-
-        if (!bl.open) {
-          addedToBl = bl
-          bl.nodes.push(node)
-          bl.open = true
-          node.processed = true
-        }
-      })
-
-      if (!addedToBl) {
-        // still can't add, create a new branchline
-        branchLines.push({ nodes: [node], open: true })
-        addedToBl = branchLines[branchLines.length - 1]
-        node.processed = true
-      }
-
-      return addedToBl
-    }
-
-    function placeNodeInExisting(node) {
-      // if node is the parent of some branchline we append it
-      let addedToBl = null
-      branchLines.forEach((bl) => {
-        if (
-          !node.processed &&
-          bl.nodes[bl.nodes.length - 1].commit.parents[0] === node.commit.sha
-        ) {
-          addedToBl = bl
-          bl.nodes.push(node)
-          node.processed = true
-        }
-      })
-      return addedToBl
-    }
-
-    function processParents(n, bl) {
-      // pecial case for it's parents, always put the first with itself
-      const parent0 = nodeDict[n.commit.parents[0]]
-      let processGrandparent0 = false
-      if (parent0 && !parent0.processed) {
-        bl.nodes.push(parent0)
-        if (nodeDict[n.commit.parents[0]].commit.parents.length > 1) {
-          processGrandparent0 = true
-        }
-        nodeDict[n.commit.parents[0]].processed = true
-      }
-      // if there's a second parent, try to place that too
-      const parent1 = nodeDict[n.commit.parents[1]]
-      let newbl
-      let processGrandparent = false
-      if (parent1 && !parent1.processed) {
-        if (!placeNodeInExisting(parent1)) {
-          if (parent1.commit.parents.length > 1) {
-            processGrandparent = true
-          }
-          newbl = placeNodeInNewOrClosed(parent1)
-        }
-      }
-      if (processGrandparent0) {
-        processParents(nodeDict[n.commit.parents[0]], bl)
-      }
-      if (processGrandparent) {
-        processParents(parent1, newbl)
-      }
-    }
-
-    nodes.forEach((node, i) => {
+    map.nodes.forEach((node, i) => {
       node.y = START_Y + i * this.rowHeight
-
-      if (!node.processed) {
-        const branchLine =
-          placeNodeInExisting(node) || placeNodeInNewOrClosed(node)
-        processParents(node, branchLine)
-      }
-
-      // close finished branchlines
-      branchLines.forEach((bl) => {
-        if (last(bl.nodes).commit.parents.indexOf(node.commit.sha) > -1) {
-          bl.open = false
-        }
-      })
+      branchLinesCalc.includeNode(node, i)
     })
 
     // style branch lines
+    const branchLines = branchLinesCalc.retrieve()
+    console.log(branchLines)
     branchLines.forEach((branchLine, i) => {
-      branchLine.nodes.forEach((node) => {
-        node.x = START_X + i * X_SEPARATION
+      branchLine.forEachNode((node, nodeI) => {
+        if (nodeI === 0) {
+          console.log('HERE', branchLine)
+        }
+        const activeLines = branchLinesCalc.numberOfActiveLinesAt(i, nodeI)
+        node.x = START_X + activeLines * X_SEPARATION
         node.color.setHex(this.colors[i % this.colors.length])
-        node.x_order = i
-      })
+      }, this)
     }, this)
-
-    map.width = branchLines.length
   }
-}
-
-function last(array) {
-  return array[array.length - 1]
 }

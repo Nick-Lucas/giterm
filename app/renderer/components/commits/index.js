@@ -112,7 +112,7 @@ Commits.propTypes = {
 }
 
 const columns = [
-  { name: '', key: 'graph', width: '60px' },
+  { name: '', key: 'graph', width: '100px' },
   { name: 'SHA', key: 'sha7', width: '50px' },
   { name: 'Message', key: 'message', width: '500px', showTags: true },
   { name: 'Author', key: 'authorStr', width: '150px' },

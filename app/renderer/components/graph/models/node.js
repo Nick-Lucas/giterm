@@ -7,8 +7,5 @@ export class Node {
     this.y = null
     this.color = null
     this.secondColor = null
-
-    this.processed = false
-    this.x_order = 0
   }
 }
