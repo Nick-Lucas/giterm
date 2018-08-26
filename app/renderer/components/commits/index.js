@@ -80,7 +80,7 @@ export class Commits extends React.Component {
             <Graph rowHeight={RowHeight} />
           </TableGraphCol>
           <TableMainCol>
-            {commits.map((commit, i) => (
+            {commits.map((commit) => (
               <RightClickArea
                 key={commit.sha}
                 menuItems={this.getMenuItems(commit)}>
@@ -112,7 +112,7 @@ Commits.propTypes = {
 }
 
 const columns = [
-  { name: '', key: 'graph', width: '60px' },
+  { name: '', key: 'graph', width: '100px' },
   { name: 'SHA', key: 'sha7', width: '50px' },
   { name: 'Message', key: 'message', width: '500px', showTags: true },
   { name: 'Author', key: 'authorStr', width: '150px' },
