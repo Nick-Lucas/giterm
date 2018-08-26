@@ -54,8 +54,14 @@ export class Graph extends React.Component {
               key={node.commit.sha}
               cx={node.x}
               cy={node.y}
-              fill={node.color.stringValue()}
               r={5}
+              fill={
+                node.secondColor
+                  ? node.secondColor.stringValue()
+                  : node.color.stringValue()
+              }
+              strokeWidth={3}
+              stroke={node.color.stringValue()}
             />
           ))}
         </g>

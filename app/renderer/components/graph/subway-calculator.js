@@ -38,7 +38,7 @@ export class SubwayCalculator {
       node.x = START_X
       node.commit = c
       node.color = Color.parseHex(that.colors[0])
-      node.secondColor = Color.parseHex(that.colors[0])
+      node.secondColor = null
 
       nodes.push(node)
       nodeDict[node.commit.sha] = node
@@ -115,7 +115,7 @@ export class SubwayCalculator {
         node.x = START_X
         node.commit = commits[i]
         node.color = Color.parseHex(this.colors[0])
-        node.secondColor = Color.parseHex(this.colors[0])
+        node.secondColor = null
 
         if (j < nodes.length) {
           nodes.splice(j, 0, node)
