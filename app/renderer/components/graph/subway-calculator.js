@@ -179,67 +179,51 @@ export class SubwayCalculator {
     // let's see, start from top, start a "branch line" and add that commit, mark as open
     // a merge commit comes in, add one parent in it's line, add another to "new branch", mark open
     // a commit is removed from nodeDict if processed
-    // any new commits, add to a existing branch if "it's sha is any of existing's parent", if all fail, put it in new branch line
+    // any new commits, add to a existing branch if "its sha is any of existing's parent", if all fail, put it in new branch line
     // a branch line can only close if "a commit with only 1 parent and that parent is already in a branch" comes in
     const branchLines = []
+
     function placeNodeInNewOrClosed(node) {
       let addedToBl = null
       branchLines.forEach((bl) => {
-        if (!node.processed) {
-          // now a bl can be closed if all the commits in there is after this node
-          // let allAfter = bl.nodes.every(bln => nodes.indexOf(bln) > nodes.indexOf(node));
-          // check if any parent is above this node but that node is after this node
-          // let's see if this works better
-          // let parentAbove = bl.nodes.find(bln => {
-          //   if (!bln.commit.parents.length) {
-          //     return false;
-          //   } else {
-          //     return (!bln.commit.parents.every(parent => nodes.indexOf(nodeDict[parent]) > nodes.indexOf(node)) && nodes.indexOf(bln) > nodes.indexOf(node));
-          //   }
-          // });
-          const lastCross = !bl.nodes[bl.nodes.length - 1].commit.parents.every(
-            (parent) => {
-              return nodes.indexOf(nodeDict[parent]) > nodes.indexOf(node)
-            },
-          )
-          if (lastCross) {
-            // bl.open = false;
-          }
+        if (node.processed) {
+          return
+        }
 
-          if (!bl.open) {
-            addedToBl = bl
-            bl.nodes.push(node)
-            bl.open = true
-            node.processed = true
-          }
+        if (!bl.open) {
+          addedToBl = bl
+          bl.nodes.push(node)
+          bl.open = true
+          node.processed = true
         }
       })
+
       if (!addedToBl) {
-        // still can't add, create a new branch
+        // still can't add, create a new branchline
         branchLines.push({ nodes: [node], open: true })
         addedToBl = branchLines[branchLines.length - 1]
         node.processed = true
       }
+
       return addedToBl
     }
+
     function placeNodeInExisting(node) {
+      // if node is the parent of some branchline we append it
       let addedToBl = null
       branchLines.forEach((bl) => {
-        if (!node.processed) {
-          if (
-            bl.nodes[bl.nodes.length - 1].commit.parents[0] === node.commit.sha
-          ) {
-            // else if a bl's last node is it's parent
-            // it's impossible for anything other than the last one to be the parent
-            // because that whould have been a merge which is processed in special case
-            addedToBl = bl
-            bl.nodes.push(node)
-            node.processed = true
-          }
+        if (
+          !node.processed &&
+          bl.nodes[bl.nodes.length - 1].commit.parents[0] === node.commit.sha
+        ) {
+          addedToBl = bl
+          bl.nodes.push(node)
+          node.processed = true
         }
       })
       return addedToBl
     }
+
     function processParents(n, bl) {
       // pecial case for it's parents, always put the first with itself
       const parent0 = nodeDict[n.commit.parents[0]]
@@ -270,38 +254,37 @@ export class SubwayCalculator {
         processParents(parent1, newbl)
       }
     }
-    nodes.forEach((n, i) => {
-      n.y = START_Y + i * this.rowHeight
-      const currentSha = n.commit.sha
-      // if this node is unprocessed
-      if (!n.processed) {
-        let addedToBl = null
-        // see if I can add to an existing branch
-        addedToBl = placeNodeInExisting(n)
-        if (!addedToBl) {
-          addedToBl = placeNodeInNewOrClosed(n) // this method must return a bl
-        }
-        processParents(n, addedToBl)
+
+    nodes.forEach((node, i) => {
+      node.y = START_Y + i * this.rowHeight
+
+      if (!node.processed) {
+        const branchLine =
+          placeNodeInExisting(node) || placeNodeInNewOrClosed(node)
+        processParents(node, branchLine)
       }
-      // check for closed branch line, make it available for adding
+
+      // close finished branchlines
       branchLines.forEach((bl) => {
-        if (
-          bl.nodes[bl.nodes.length - 1].commit.parents.indexOf(currentSha) !==
-          -1
-        ) {
+        if (last(bl.nodes).commit.parents.indexOf(node.commit.sha) > -1) {
           bl.open = false
         }
       })
     })
-    // process all branch lines
-    const that = this
+
+    // style branch lines
     branchLines.forEach((bl, i) => {
       bl.nodes.forEach((n) => {
         n.x = START_X + i * X_SEPARATION
-        n.color.setHex(that.colors[i % that.colors.length])
+        n.color.setHex(this.colors[i % this.colors.length])
         n.x_order = i
       })
-    })
+    }, this)
+
     map.width = branchLines.length
   }
+}
+
+function last(array) {
+  return array[array.length - 1]
 }
