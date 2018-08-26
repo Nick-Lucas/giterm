@@ -1,5 +1,3 @@
-import { Node } from './node'
-
 export class Link {
   constructor(source, target) {
     this.color = null

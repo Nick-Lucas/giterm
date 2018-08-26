@@ -1,5 +1,3 @@
-import { Color } from './color'
-
 export class Node {
   constructor(id) {
     this.id = id
