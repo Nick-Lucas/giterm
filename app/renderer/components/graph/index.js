@@ -28,10 +28,7 @@ export class Graph extends React.Component {
     const y2 = link.target.y
     return [
       { x: x1, y: y1 },
-      // { x: x1, y: lerp(y1, y2, 0.4) },
-      // { x: lerp(x1, x2, 0.6), y: y2 },
       x1 < x2 ? { x: x2, y: y1 } : { x: x1, y: y2 },
-
       { x: x2, y: y2 },
     ]
   }
@@ -69,10 +66,6 @@ export class Graph extends React.Component {
 
 Graph.propTypes = {
   rowHeight: PropTypes.number.isRequired,
-}
-
-function lerp(a, b, fraction) {
-  return a + (b - a) * fraction
 }
 
 export default connect(({ commits }) => ({ commits }))(Graph)
