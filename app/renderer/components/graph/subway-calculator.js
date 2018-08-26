@@ -273,11 +273,11 @@ export class SubwayCalculator {
     })
 
     // style branch lines
-    branchLines.forEach((bl, i) => {
-      bl.nodes.forEach((n) => {
-        n.x = START_X + i * X_SEPARATION
-        n.color.setHex(this.colors[i % this.colors.length])
-        n.x_order = i
+    branchLines.forEach((branchLine, i) => {
+      branchLine.nodes.forEach((node) => {
+        node.x = START_X + i * X_SEPARATION
+        node.color.setHex(this.colors[i % this.colors.length])
+        node.x_order = i
       })
     }, this)
 
