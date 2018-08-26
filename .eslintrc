@@ -26,7 +26,8 @@
     "react/prop-types": "off",
     "prettier/prettier": "error",
     "no-redeclare": "error",
-    "no-undef": "error"
+    "no-undef": "error",
+    "no-unused-vars": "error"
   },
   "settings": {
     "react": {

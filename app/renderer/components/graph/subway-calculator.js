@@ -29,9 +29,8 @@ export class SubwayCalculator {
     const nodeDict = {}
     const nodes = []
     const links = []
-    const treeOffset = 0
     const that = this
-    commits.forEach((c, i) => {
+    commits.forEach((c) => {
       const node = new Node(c.sha)
       // Y offset, just increment;
       node.y = START_Y
@@ -76,7 +75,6 @@ export class SubwayCalculator {
   }
 
   updateCommits(newCommits) {
-    const links = this.currentMap.links
     const nodes = this.currentMap.nodes
     const nodeDict = this.currentMap.nodeDict
     if (this.currentMap) {
