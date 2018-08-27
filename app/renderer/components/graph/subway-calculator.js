@@ -179,12 +179,8 @@ export class SubwayCalculator {
 
     // style branch lines
     const branchLines = branchLinesCalc.retrieve()
-    console.log(branchLines)
     branchLines.forEach((branchLine, i) => {
       branchLine.forEachNode((node, nodeI) => {
-        if (nodeI === 0) {
-          console.log('HERE', branchLine)
-        }
         const activeLines = branchLinesCalc.numberOfActiveLinesAt(i, nodeI)
         node.x = START_X + activeLines * X_SEPARATION
         node.color.setHex(this.colors[i % this.colors.length])
