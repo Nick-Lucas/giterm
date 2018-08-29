@@ -169,7 +169,7 @@ context('branchlines calculator', () => {
       data = () => [
         // BRANCHLINE 0
         newNode({ sha: 'a', parents: ['g', 'i'] }),
-        //        BRANCHLINE 2
+        //        BRANCHLINE 1
         /**/ /**/ newNode({ sha: 'b', parents: ['e'] }),
         //             BRANCHLINE 3
         /**/ /**/ /**/ newNode({ sha: 'c', parents: ['d'] }),
@@ -178,7 +178,7 @@ context('branchlines calculator', () => {
         /**/ /**/ newNode({ sha: 'f', parents: ['h'] }),
         newNode({ sha: 'g', parents: ['k'] }),
         /**/ /**/ newNode({ sha: 'h', parents: ['k'] }),
-        //   BRANCHLINE 1
+        //   BRANCHLINE 2
         /**/ newNode({ sha: 'i', parents: ['j'] }),
         /**/ newNode({ sha: 'j', parents: ['k'] }),
         newNode({ sha: 'k', parents: [] }),
@@ -207,7 +207,7 @@ context('branchlines calculator', () => {
       expect(calculator.numberOfActiveLinesAt(0, 2)).to.equal(0)
     })
 
-    it.only('complex', () => {
+    it('complex', () => {
       data = () => [
         // BRANCHLINE 0
         newNode({ sha: 'a', parents: ['g', 'i'] }),
