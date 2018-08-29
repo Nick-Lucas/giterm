@@ -4,9 +4,9 @@ import { SubwayMap } from './models/subway-map'
 import { Color } from './models/color'
 import BranchLinesCalculator from './branchlines-calculator'
 
-const START_X = 10
-const START_Y = 12
-const X_SEPARATION = 15
+export const START_X = 10
+export const START_Y = 12
+export const X_SEPARATION = 15
 
 export class SubwayCalculator {
   colors = [
