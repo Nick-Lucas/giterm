@@ -91,5 +91,38 @@ context('branchlines calculator', () => {
 
       equal(subwayMap, expectedMap)
     })
+
+    it('should construct a pair of branches', () => {
+      data = () => [
+        newCommit('a', ['b']),
+        newCommit('b', ['d']),
+        newCommit('c', ['d']),
+        newCommit('d', []),
+      ]
+
+      const subwayMap = calculate()
+
+      const nodes = getNodes(
+        data(),
+        {
+          colour: calculator.colors[0],
+          indexes: [0, 1, 3],
+        },
+        {
+          colour: calculator.colors[1],
+          indexes: [2],
+        },
+      )
+      const links = getLinks(
+        nodes,
+        { pair: [0, 1], colour: calculator.colors[0] },
+        { pair: [1, 3], colour: calculator.colors[0] },
+        { pair: [2, 3], colour: calculator.colors[1] },
+      )
+      const dict = getNodeDict(nodes)
+      const expectedMap = new SubwayMap(nodes, links, dict)
+
+      equal(subwayMap, expectedMap)
+    })
   })
 })
