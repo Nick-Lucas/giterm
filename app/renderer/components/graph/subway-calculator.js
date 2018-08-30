@@ -175,7 +175,7 @@ export class SubwayCalculator {
         }
       })
 
-      rows[i] = { yOffset: this.rowHeight * i - START_Y, node, links }
+      rows[i] = { yOffset: this.rowHeight * i, node, links }
     }
 
     this.rows = rows

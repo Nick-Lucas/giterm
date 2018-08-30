@@ -28,6 +28,7 @@ const RowColumn = styled.div`
   flex-direction: row;
 
   padding-right: 10px;
+  max-height: 100%;
 `
 
 const ColumnText = styled.div`
