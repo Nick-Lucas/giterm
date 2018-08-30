@@ -8,16 +8,28 @@ export const START_X = 10
 export const START_Y = 12
 export const X_SEPARATION = 15
 
+export const Colours = [
+  '#058ED9',
+  '#880044',
+  '#875053',
+  '#129490',
+  '#E5A823',
+  '#0055A2',
+  '#96C5F7',
+]
+
+const makeNode = (commit) => {
+  const node = new Node(commit.sha)
+  node.y = START_Y
+  node.x = START_X
+  node.commit = commit
+  node.color = Color.parseHex(Colours[0])
+  node.secondColor = null
+  return node
+}
+
 export class SubwayCalculator {
-  colors = [
-    '#058ED9',
-    '#880044',
-    '#875053',
-    '#129490',
-    '#E5A823',
-    '#0055A2',
-    '#96C5F7',
-  ]
+  colors = Colours
   currentMap = null
 
   constructor(rowHeight) {
@@ -25,58 +37,12 @@ export class SubwayCalculator {
   }
 
   getSubwayMap(commits) {
-    const _infinityY = this.rowHeight * (commits.length + 1)
-    const nodeDict = {}
-    const nodes = []
-    const links = []
-    const that = this
-
-    // Initialise default nodes for each commit
-    commits.forEach((c) => {
-      const node = new Node(c.sha)
-      node.y = START_Y
-      node.x = START_X
-      node.commit = c
-      node.color = Color.parseHex(that.colors[0])
-      node.secondColor = null
-
-      nodes.push(node)
-      nodeDict[node.commit.sha] = node
-    }, this)
-
-    // Initialise connecting lines
-    commits.forEach((commit) => {
-      if (commit.parents.length === 0) {
-        const infinityNode = new Node('infty-' + commit.sha)
-        infinityNode.x = nodeDict[commit.sha].x
-        infinityNode.y = _infinityY
-
-        const link = new Link(nodeDict[commit.sha], infinityNode)
-        link.color = nodeDict[commit.sha].color
-
-        links.push(link)
-      } else {
-        commit.parents.forEach((parentSha) => {
-          const parent = nodeDict[parentSha]
-          if (parent) {
-            const link = new Link(nodeDict[commit.sha], parent)
-
-            if (commit.parents.length > 1) {
-              link.color = parent.color
-              nodeDict[commit.sha].secondColor = parent.color
-              link.merge = true
-            } else {
-              link.color = nodeDict[commit.sha].color
-              link.merge = false
-            }
-
-            links.push(link)
-          }
-        })
-      }
-    })
-    links.pop()
-
+    const nodes = commits.map(makeNode)
+    const nodeDict = nodes.reduce((agg, node) => {
+      agg[node.commit.sha] = node
+      return agg
+    }, {})
+    const links = this.generateLinks(nodes, nodeDict)
     this.currentMap = new SubwayMap(nodes, links, nodeDict)
     this.updateMapLayout(this.currentMap)
     return this.currentMap
@@ -105,18 +71,9 @@ export class SubwayCalculator {
     // add new commits
     let i = 0
     let j = 0
-    // newCommits will be >= than old nodes now
-    // since we remove all nodes in old that's not in new
     while (i < commits.length || j < nodes.length) {
       if (j >= nodes.length || nodes[j].commit.sha !== commits[i].sha) {
-        // if node is not in already, create new one
-        const node = new Node(commits[i].sha)
-        node.y = START_Y
-        node.x = START_X
-        node.commit = commits[i]
-        node.color = Color.parseHex(this.colors[0])
-        node.secondColor = null
-
+        const node = makeNode(commits[i])
         if (j < nodes.length) {
           nodes.splice(j, 0, node)
         } else {
@@ -124,16 +81,21 @@ export class SubwayCalculator {
         }
         nodeDict[node.commit.sha] = node
       }
+
       j += 1
       i += 1
     }
 
-    this.currentMap.links = []
+    this.currentMap.links = this.generateLinks(nodes, nodeDict)
+    this.updateMapLayout(this.currentMap)
+    return this.currentMap
+  }
 
-    // edge creation
+  generateLinks = (nodes, nodeDict) => {
+    const links = []
     const _infinityY = this.rowHeight * (nodes.length + 1)
-    nodes.forEach((n) => {
-      const commit = n.commit
+    nodes.forEach((node) => {
+      const commit = node.commit
       if (commit.parents.length === 0) {
         const infinityNode = new Node('infty-' + commit.sha)
         infinityNode.x = nodeDict[commit.sha].x
@@ -142,7 +104,7 @@ export class SubwayCalculator {
         const newLink = new Link(nodeDict[commit.sha], infinityNode)
         newLink.color = nodeDict[commit.sha].color
 
-        this.currentMap.links.push(newLink)
+        links.push(newLink)
       } else {
         commit.parents.forEach((parentSha) => {
           const parent = nodeDict[parentSha]
@@ -158,15 +120,14 @@ export class SubwayCalculator {
               link.merge = false
             }
 
-            this.currentMap.links.push(link)
+            links.push(link)
           }
         })
       }
     })
+    links.pop()
 
-    this.updateMapLayout(this.currentMap)
-    this.currentMap.links.pop()
-    return this.currentMap
+    return links
   }
 
   updateMapLayout(map) {
@@ -183,7 +144,7 @@ export class SubwayCalculator {
       branchLine.forEachNode((node, nodeI) => {
         const activeLines = branchLinesCalc.numberOfActiveLinesAt(i, nodeI)
         node.x = START_X + activeLines * X_SEPARATION
-        node.color.setHex(this.colors[i % this.colors.length])
+        node.color.setHex(Colours[i % Colours.length])
       }, this)
     }, this)
   }

@@ -5,6 +5,7 @@ import {
   START_X,
   START_Y,
   X_SEPARATION,
+  Colours,
 } from './subway-calculator'
 import { Node } from './models/node'
 import { Link } from './models/link'
@@ -78,13 +79,13 @@ context('branchlines calculator', () => {
       const subwayMap = calculate()
 
       const nodes = getNodes(data(), {
-        colour: calculator.colors[0],
+        colour: Colours[0],
         indexes: [0, 1, 2],
       })
       const links = getLinks(
         nodes,
-        { pair: [0, 1], colour: calculator.colors[0] },
-        { pair: [1, 2], colour: calculator.colors[0] },
+        { pair: [0, 1], colour: Colours[0] },
+        { pair: [1, 2], colour: Colours[0] },
       )
       const dict = getNodeDict(nodes)
       const expectedMap = new SubwayMap(nodes, links, dict)
@@ -105,19 +106,19 @@ context('branchlines calculator', () => {
       const nodes = getNodes(
         data(),
         {
-          colour: calculator.colors[0],
+          colour: Colours[0],
           indexes: [0, 1, 3],
         },
         {
-          colour: calculator.colors[1],
+          colour: Colours[1],
           indexes: [2],
         },
       )
       const links = getLinks(
         nodes,
-        { pair: [0, 1], colour: calculator.colors[0] },
-        { pair: [1, 3], colour: calculator.colors[0] },
-        { pair: [2, 3], colour: calculator.colors[1] },
+        { pair: [0, 1], colour: Colours[0] },
+        { pair: [1, 3], colour: Colours[0] },
+        { pair: [2, 3], colour: Colours[1] },
       )
       const dict = getNodeDict(nodes)
       const expectedMap = new SubwayMap(nodes, links, dict)
