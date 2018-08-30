@@ -21,7 +21,6 @@
     "new-cap": "off",
     "no-param-reassign": "warn",
     "func-names": "off",
-    "no-unused-expressions" : "error",
     "block-scoped-var": "error",
     "react/prop-types": "off",
     "prettier/prettier": "error",

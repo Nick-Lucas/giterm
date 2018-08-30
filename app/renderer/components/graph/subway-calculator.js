@@ -147,5 +147,23 @@ export class SubwayCalculator {
         node.color.setHex(Colours[i % Colours.length])
       }, this)
     }, this)
+
+    // construct slices for per-commit rendering
+    const rows = new Array(map.nodes.length)
+    for (let i = 0; i < map.nodes.length; i++) {
+      const node = map.nodes[i]
+      const links = []
+      branchLines.forEach((branchLine) => {
+        const belongsToBranch = branchLine.indexInThisBranch(i)
+        const [pointAbove, pointBelow] = branchLine.pointsAroundIndex(i)
+        if (belongsToBranch) {
+          links.push(new Link(pointAbove, node), new Link(node, pointBelow))
+        } else {
+          links.push(new Link(pointAbove, pointBelow))
+        }
+      })
+
+      rows[i] = [{ yOffset: this.rowHeight * i, node, links }]
+    }
   }
 }

@@ -2,10 +2,18 @@ import { expect } from 'chai'
 
 import Calculator, { BranchLine } from './branchlines-calculator'
 import { Node } from './models/node'
+import { Point } from './models/point'
 
 const newNode = (commit) => {
   const n = new Node(commit.sha)
   n.commit = commit
+  return n
+}
+
+const newXYNode = (commit, x, y) => {
+  const n = newNode(commit)
+  n.x = x
+  n.y = y
   return n
 }
 
@@ -237,6 +245,72 @@ context('branchlines calculator', () => {
       expect(calculator.numberOfActiveLinesAt(3, 3)).to.equal(2)
       expect(calculator.numberOfActiveLinesAt(3, 2)).to.equal(2)
       expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(1)
+    })
+  })
+
+  context.only('pointsAroundIndex', () => {
+    it('current branch', () => {
+      const bl = new BranchLine()
+      bl.nodes = [
+        newXYNode({ sha: 'a' }, 0, 1),
+        newXYNode({ sha: 'b' }, 1, 2),
+        newXYNode({ sha: 'c' }, 3, 4),
+        newXYNode({ sha: 'd' }, 5, 6),
+        newXYNode({ sha: 'e' }, 7, 8),
+      ]
+      bl.startIndex = 0
+      bl.endIndex = 4
+      bl.indexes = [0, 1, 2, 3, 4]
+
+      const points = bl.pointsAroundIndex(2)
+      expect(points).to.not.be.null
+      equal(points, [new Point({ x: 1, y: 2 }), new Point({ x: 5, y: 6 })])
+    })
+
+    it('other branch', () => {
+      const bl = new BranchLine()
+      bl.nodes = [
+        newXYNode({ sha: 'a' }, 0, 1),
+        newXYNode({ sha: 'b' }, 1, 2),
+        newXYNode({ sha: 'd' }, 5, 6),
+        newXYNode({ sha: 'e' }, 7, 8),
+      ]
+      bl.startIndex = 0
+      bl.endIndex = 4
+      bl.indexes = [0, 1, 3, 4]
+
+      const points = bl.pointsAroundIndex(2)
+      expect(points).to.not.be.null
+      equal(points, [new Point({ x: 1, y: 2 }), new Point({ x: 5, y: 6 })])
+    })
+
+    it('out of range above', () => {
+      const bl = new BranchLine()
+      bl.startIndex = 1
+      bl.endIndex = 4
+
+      const points = bl.pointsAroundIndex(0)
+      expect(points).to.be.null
+    })
+
+    it('out of range below', () => {
+      const bl = new BranchLine()
+      bl.startIndex = 0
+      bl.endIndex = 4
+
+      const points = bl.pointsAroundIndex(5)
+      expect(points).to.be.null
+    })
+
+    it('only one node and current', () => {
+      const bl = new BranchLine()
+      bl.startIndex = 0
+      bl.endIndex = 0
+      bl.nodes = [{}]
+      bl.indexes = [0]
+
+      const points = bl.pointsAroundIndex(0)
+      expect(points).to.be.null
     })
   })
 })
