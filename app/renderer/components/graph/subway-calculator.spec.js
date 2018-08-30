@@ -95,7 +95,7 @@ context('branchlines calculator', () => {
       // TODO: this is just a test
     })
 
-    it.only('should construct a pair of branches', () => {
+    it('should construct a pair of branches', () => {
       data = () => [
         newCommit('a', ['b']),
         newCommit('b', ['d']),

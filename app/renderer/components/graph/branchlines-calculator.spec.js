@@ -288,8 +288,8 @@ context('branchlines calculator', () => {
       const bl = new BranchLine()
       bl.nodes = [newXYNode({ sha: 'a' }, 0, 1), newXYNode({ sha: 'e' }, 7, 8)]
       bl.startIndex = 0
-      bl.endIndex = 4
-      bl.indexes = [0, 4]
+      bl.endIndex = 1
+      bl.indexes = [0, 1]
 
       const points = bl.pointsAroundIndex(0)
       expect(points).to.not.be.null
@@ -300,10 +300,10 @@ context('branchlines calculator', () => {
       const bl = new BranchLine()
       bl.nodes = [newXYNode({ sha: 'a' }, 0, 1), newXYNode({ sha: 'e' }, 7, 8)]
       bl.startIndex = 0
-      bl.endIndex = 4
-      bl.indexes = [0, 4]
+      bl.endIndex = 1
+      bl.indexes = [0, 1]
 
-      const points = bl.pointsAroundIndex(4)
+      const points = bl.pointsAroundIndex(1)
       expect(points).to.not.be.null
       equal(points, [new Point({ x: 0, y: 1 }), new Point({ x: 7, y: 8 })])
     })
@@ -334,6 +334,17 @@ context('branchlines calculator', () => {
       bl.indexes = [0]
 
       const points = bl.pointsAroundIndex(0)
+      expect(points).to.be.null
+    })
+
+    it('no nodes', () => {
+      const bl = new BranchLine()
+      bl.startIndex = 3
+      bl.endIndex = 3
+      bl.nodes = []
+      bl.indexes = []
+
+      const points = bl.pointsAroundIndex(3)
       expect(points).to.be.null
     })
   })

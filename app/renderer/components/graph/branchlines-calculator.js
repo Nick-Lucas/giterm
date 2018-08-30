@@ -74,7 +74,7 @@ export class BranchLine {
     if (
       searchIndex < this.startIndex ||
       searchIndex > this.endIndex ||
-      this.nodes.length === 1
+      this.nodes.length <= 1
     ) {
       return null
     }
