@@ -248,7 +248,7 @@ context('branchlines calculator', () => {
     })
   })
 
-  context.only('pointsAroundIndex', () => {
+  context('pointsAroundIndex', () => {
     it('current branch', () => {
       const bl = new BranchLine()
       bl.nodes = [
@@ -282,6 +282,30 @@ context('branchlines calculator', () => {
       const points = bl.pointsAroundIndex(2)
       expect(points).to.not.be.null
       equal(points, [new Point({ x: 1, y: 2 }), new Point({ x: 5, y: 6 })])
+    })
+
+    it('edge of branch 1', () => {
+      const bl = new BranchLine()
+      bl.nodes = [newXYNode({ sha: 'a' }, 0, 1), newXYNode({ sha: 'e' }, 7, 8)]
+      bl.startIndex = 0
+      bl.endIndex = 4
+      bl.indexes = [0, 4]
+
+      const points = bl.pointsAroundIndex(0)
+      expect(points).to.not.be.null
+      equal(points, [new Point({ x: 0, y: 1 }), new Point({ x: 7, y: 8 })])
+    })
+
+    it('edge of branch 2', () => {
+      const bl = new BranchLine()
+      bl.nodes = [newXYNode({ sha: 'a' }, 0, 1), newXYNode({ sha: 'e' }, 7, 8)]
+      bl.startIndex = 0
+      bl.endIndex = 4
+      bl.indexes = [0, 4]
+
+      const points = bl.pointsAroundIndex(4)
+      expect(points).to.not.be.null
+      equal(points, [new Point({ x: 0, y: 1 }), new Point({ x: 7, y: 8 })])
     })
 
     it('out of range above', () => {

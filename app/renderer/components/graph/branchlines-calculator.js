@@ -92,7 +92,7 @@ export class BranchLine {
         above = i
 
         if (nodeIndexBelow === searchIndex) {
-          if (iBelow < this.indexes.length) {
+          if (iBelow < this.indexes.length - 1) {
             below = iBelow + 1
           }
         } else {

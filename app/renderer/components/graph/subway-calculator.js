@@ -155,7 +155,12 @@ export class SubwayCalculator {
       const links = []
       branchLines.forEach((branchLine) => {
         const belongsToBranch = branchLine.indexInThisBranch(i)
-        const [pointAbove, pointBelow] = branchLine.pointsAroundIndex(i)
+        const pointsAroundIndex = branchLine.pointsAroundIndex(i)
+        if (!pointsAroundIndex) {
+          return
+        }
+
+        const [pointAbove, pointBelow] = pointsAroundIndex
         if (belongsToBranch) {
           links.push(new Link(pointAbove, node), new Link(node, pointBelow))
         } else {
@@ -165,5 +170,7 @@ export class SubwayCalculator {
 
       rows[i] = [{ yOffset: this.rowHeight * i, node, links }]
     }
+
+    this.rows = rows
   }
 }
