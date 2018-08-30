@@ -69,7 +69,7 @@ context('branchlines calculator', () => {
   }
 
   context('getSubwayMap', () => {
-    it('should construct a simple branch', () => {
+    it.only('should construct a simple branch', () => {
       data = () => [
         newCommit('a', ['b']),
         newCommit('b', ['c']),
@@ -91,8 +91,6 @@ context('branchlines calculator', () => {
       const expectedMap = new SubwayMap(nodes, links, dict)
 
       equal(subwayMap, expectedMap)
-
-      // TODO: this is just a test
     })
 
     it('should construct a pair of branches', () => {

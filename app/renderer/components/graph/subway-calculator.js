@@ -146,6 +146,7 @@ export class SubwayCalculator {
         node.x = START_X + activeLines * X_SEPARATION
         node.color.setHex(Colours[i % Colours.length])
       }, this)
+      branchLine.color = new Color().setHex(Colours[i % Colours.length])
     }, this)
 
     // construct slices for per-commit rendering
@@ -162,13 +163,19 @@ export class SubwayCalculator {
 
         const [pointAbove, pointBelow] = pointsAroundIndex
         if (belongsToBranch) {
-          links.push(new Link(pointAbove, node), new Link(node, pointBelow))
+          const a = new Link(pointAbove, node)
+          const b = new Link(node, pointBelow)
+          a.color = branchLine.color
+          b.color = branchLine.color
+          links.push(a, b)
         } else {
-          links.push(new Link(pointAbove, pointBelow))
+          const a = new Link(pointAbove, pointBelow)
+          a.color = branchLine.color
+          links.push(a)
         }
       })
 
-      rows[i] = [{ yOffset: this.rowHeight * i, node, links }]
+      rows[i] = { yOffset: this.rowHeight * i - START_Y, node, links }
     }
 
     this.rows = rows

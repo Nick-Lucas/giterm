@@ -11,7 +11,7 @@ export class Color {
     this.b = b
   }
 
-  setHex(value) {
+  setHex = (value) => {
     const parsed = value.split('#')
     if (parsed.length > 1 && parsed[1].length === 6) {
       const segment1 = parsed[1].substring(0, 2)
@@ -21,6 +21,7 @@ export class Color {
       this.g = parseInt(segment2, 16)
       this.b = parseInt(segment3, 16)
     }
+    return this
   }
 
   stringValue() {

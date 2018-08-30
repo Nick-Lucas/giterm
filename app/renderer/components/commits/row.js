@@ -3,6 +3,7 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as props from './props'
 import Tag from './tag'
+import { PathLine } from '../graph/pathline'
 
 const RowWrapper = styled.div`
   display: flex;
@@ -66,7 +67,12 @@ export default class Row extends React.Component {
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
             {column.showTags && this.renderTags()}
-            <ColumnText>{commit[column.key]}</ColumnText>
+
+            {column.key === 'graph' ? (
+              this.renderGraphItem()
+            ) : (
+              <ColumnText>{commit[column.key]}</ColumnText>
+            )}
           </RowColumn>
         ))}
       </RowWrapper>
@@ -93,6 +99,51 @@ export default class Row extends React.Component {
           current={branch.name === currentBranchName}
         />
       ))
+  }
+
+  renderGraphItem() {
+    const {
+      graphItem: { yOffset, node, links },
+    } = this.props
+    return (
+      <svg>
+        {links.map((link) => (
+          <PathLine
+            key={link.sourceSha() + '__' + link.targetSha()}
+            points={this.getPathLinePoints(link, yOffset)}
+            stroke={link.color.stringValue()}
+            strokeWidth={3}
+            fill="none"
+            r={5}
+          />
+        ))}
+        <circle
+          key={node.commit.sha}
+          cx={node.x}
+          cy={node.y - yOffset}
+          r={5}
+          fill={
+            node.secondColor
+              ? node.secondColor.stringValue()
+              : node.color.stringValue()
+          }
+          strokeWidth={3}
+          stroke={node.color.stringValue()}
+        />
+      </svg>
+    )
+  }
+
+  getPathLinePoints(link, yOffset) {
+    const x1 = link.source.x
+    const y1 = link.source.y - yOffset
+    const x2 = link.target.x
+    const y2 = link.target.y - yOffset
+    return [
+      { x: x1, y: y1 },
+      x1 < x2 ? { x: x2, y: y1 } : { x: x1, y: y2 },
+      { x: x2, y: y2 },
+    ]
   }
 }
 
