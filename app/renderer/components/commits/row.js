@@ -115,7 +115,7 @@ export default class Row extends React.Component {
             stroke={link.color.stringValue()}
             strokeWidth={3}
             fill="none"
-            r={5}
+            r={20}
           />
         ))}
         <circle
