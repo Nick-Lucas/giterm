@@ -9,7 +9,7 @@ import * as props from './props'
 import Header from './header'
 import Row from './row'
 import { checkoutCommit } from '../../store/commits'
-import Graph from '../graph'
+
 import { bindServices } from '../../lib/di'
 import { SubwayCalculator } from '../graph/subway-calculator'
 
@@ -25,13 +25,6 @@ const TableWrapper = styled.div`
   position: relative;
 `
 
-const TableGraphCol = styled.div`
-  padding-left: 3px;
-  padding-right: 10px;
-  position: absolute;
-  top: 0;
-  z-index: -1;
-`
 const TableMainCol = styled.div`
   display: block;
 `
@@ -46,7 +39,6 @@ export class Commits extends React.Component {
     }
 
     this.calculator = new SubwayCalculator(RowHeight)
-    this.calculator.getSubwayMap(props.commits)
   }
 
   handleSelect = (commit) => {
@@ -72,19 +64,12 @@ export class Commits extends React.Component {
     } = this.props
     const { selectedSHA } = this.state
 
-    this.calculator.updateCommits(commits)
+    const graphRows = this.calculator.retrieve(commits)
 
     return (
       <Wrapper>
         <Header columns={columns} />
         <TableWrapper>
-          {/* <TableGraphCol
-            style={{
-              height: RowHeight * commits.length,
-              width: columns[0].width,
-            }}>
-            <Graph rowHeight={RowHeight} />
-          </TableGraphCol> */}
           <TableMainCol>
             {commits.map((commit, i) => (
               <RightClickArea
@@ -100,7 +85,7 @@ export class Commits extends React.Component {
                   onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
                   height={RowHeight}
                   currentBranchName={currentBranchName}
-                  graphItem={this.calculator.rows[i]}
+                  graphItem={graphRows[i]}
                 />
               </RightClickArea>
             ))}

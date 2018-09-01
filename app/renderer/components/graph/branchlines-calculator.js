@@ -1,5 +1,3 @@
-import { Point } from './models/point'
-
 export default class BranchLinesCalculator {
   branchLines = []
 
@@ -66,43 +64,5 @@ export class BranchLine {
     this.nodes.forEach((node, i) => {
       callback.bind(thisArg)(node, this.indexes[i])
     })
-  }
-
-  indexInThisBranch = (searchIndex) => this.indexes.indexOf(searchIndex) >= 0
-
-  pointsAroundIndex = (searchIndex) => {
-    if (
-      searchIndex < this.startIndex ||
-      searchIndex > this.endIndex ||
-      this.nodes.length <= 1
-    ) {
-      return null
-    }
-
-    // TODO: on massive branches do a binary search, maybe?
-
-    let above = 0
-    let below = this.indexes.length - 1
-    for (let i = 0; i < this.indexes.length - 1; i++) {
-      const nodeIndex = this.indexes[i]
-      const iBelow = i + 1
-      const nodeIndexBelow = this.indexes[iBelow]
-
-      if (nodeIndex < searchIndex && nodeIndexBelow >= searchIndex) {
-        above = i
-
-        if (nodeIndexBelow === searchIndex) {
-          if (iBelow < this.indexes.length - 1) {
-            below = iBelow + 1
-          }
-        } else {
-          below = iBelow
-        }
-
-        break
-      }
-    }
-
-    return [new Point(this.nodes[above]), new Point(this.nodes[below])]
   }
 }

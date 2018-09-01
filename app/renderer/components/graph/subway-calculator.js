@@ -30,31 +30,33 @@ const makeNode = (commit) => {
 
 export class SubwayCalculator {
   colors = Colours
-  currentMap = null
+  map = null
+  rows = []
 
   constructor(rowHeight) {
     this.rowHeight = rowHeight
   }
 
-  getSubwayMap(commits) {
+  retrieve = (commits) =>
+    this.map ? this.update(commits) : this.create(commits)
+
+  // privates
+
+  create(commits) {
     const nodes = commits.map(makeNode)
     const nodeDict = nodes.reduce((agg, node) => {
       agg[node.commit.sha] = node
       return agg
     }, {})
     const links = this.generateLinks(nodes, nodeDict)
-    this.currentMap = new SubwayMap(nodes, links, nodeDict)
-    this.updateMapLayout(this.currentMap)
-    return this.currentMap
+    this.map = new SubwayMap(nodes, links, nodeDict)
+    this.rows = this.updateMapLayout()
+    return this.rows
   }
 
-  updateCommits(commits) {
-    if (!this.currentMap) {
-      return
-    }
-
-    const nodes = this.currentMap.nodes
-    const nodeDict = this.currentMap.nodeDict
+  update(commits) {
+    const nodes = this.map.nodes
+    const nodeDict = this.map.nodeDict
 
     // remove non-existant commits
     const shas = commits.map((c) => c.sha)
@@ -86,9 +88,9 @@ export class SubwayCalculator {
       i += 1
     }
 
-    this.currentMap.links = this.generateLinks(nodes, nodeDict)
-    this.updateMapLayout(this.currentMap)
-    return this.currentMap
+    this.map.links = this.generateLinks(nodes, nodeDict)
+    this.rows = this.updateMapLayout(this.currentMap)
+    return this.rows
   }
 
   generateLinks = (nodes, nodeDict) => {
@@ -130,7 +132,8 @@ export class SubwayCalculator {
     return links
   }
 
-  updateMapLayout(map) {
+  updateMapLayout() {
+    const map = this.map
     const branchLinesCalc = new BranchLinesCalculator()
 
     map.nodes.forEach((node, i) => {
@@ -152,32 +155,17 @@ export class SubwayCalculator {
     // construct slices for per-commit rendering
     const rows = new Array(map.nodes.length)
     for (let i = 0; i < map.nodes.length; i++) {
-      const node = map.nodes[i]
-      const links = []
-      branchLines.forEach((branchLine) => {
-        const belongsToBranch = branchLine.indexInThisBranch(i)
-        const pointsAroundIndex = branchLine.pointsAroundIndex(i)
-        if (!pointsAroundIndex) {
-          return
-        }
+      const yStart = i * this.rowHeight
+      const yEnd = yStart + this.rowHeight
 
-        const [pointAbove, pointBelow] = pointsAroundIndex
-        if (belongsToBranch) {
-          const a = new Link(pointAbove, node)
-          const b = new Link(node, pointBelow)
-          a.color = branchLine.color
-          b.color = branchLine.color
-          links.push(a, b)
-        } else {
-          const a = new Link(pointAbove, pointBelow)
-          a.color = branchLine.color
-          links.push(a)
-        }
-      })
+      const node = map.nodes.find((n) => n.y >= yStart && n.y < yEnd)
+      const links = map.links.filter(
+        (link) => link.source.y <= yEnd && link.target.y >= yStart,
+      )
 
-      rows[i] = { yOffset: this.rowHeight * i, node, links }
+      rows[i] = { yOffset: yStart, node, links }
     }
 
-    this.rows = rows
+    return rows
   }
 }
