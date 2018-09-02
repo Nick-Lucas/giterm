@@ -150,6 +150,7 @@ const ConnectedCommits = connect(
     columns,
     status,
   }),
+  // TODO: not sure why but the condensed form isn't working here...
   (dispatch) => {
     return {
       checkoutCommit: (...args) => dispatch(checkoutCommit(...args)),
