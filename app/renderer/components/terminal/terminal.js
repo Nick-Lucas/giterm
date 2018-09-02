@@ -14,12 +14,7 @@ import { exec } from 'child_process'
 import { refreshApplication } from '../../store/coreapp'
 import { bindServices } from '../../lib/di'
 import { updateCwd } from '../../store/config'
-import {
-  isStartAlternateBuffer,
-  isEndAlternateBuffer,
-  isStartAppKeysMode,
-  isEndAppKeysMode,
-} from './xterm-control'
+import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
 const TerminalContainer = styled.div`

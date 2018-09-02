@@ -1,15 +1,15 @@
 import { expect } from 'chai'
 
 import {
-  SubwayCalculator,
+  GraphCalculator,
   START_X,
   START_Y,
   X_SEPARATION,
   Colours,
-} from './subway-calculator'
+} from './graph-calculator'
 import { Node } from './models/node'
 import { Link } from './models/link'
-import { SubwayMap } from './models/subway-map'
+import { GraphMap } from './models/graph-map'
 import { Color } from './models/color'
 
 const newCommit = (sha, parents) => ({
@@ -57,12 +57,12 @@ const equal = (target, expected) => {
   }
 }
 
-context('branchlines calculator', () => {
+context('git graph calculator', () => {
   let data = () => []
 
   let calculator
   const calculate = () => {
-    calculator = new SubwayCalculator(1)
+    calculator = new GraphCalculator(1)
 
     const commits = data()
     calculator.retrieve(commits)
@@ -82,7 +82,7 @@ context('branchlines calculator', () => {
       })
 
       it('should construct map correctly', () => {
-        const subwayMap = calculator.map
+        const graphMap = calculator.map
 
         const nodes = getNodes(data(), {
           colour: Colours[0],
@@ -94,9 +94,9 @@ context('branchlines calculator', () => {
           { pair: [1, 2], colour: Colours[0] },
         )
         const dict = getNodeDict(nodes)
-        const expectedMap = new SubwayMap(nodes, links, dict)
+        const expectedMap = new GraphMap(nodes, links, dict)
 
-        equal(subwayMap, expectedMap)
+        equal(graphMap, expectedMap)
       })
 
       it('should construct rows correctly', () => {
@@ -135,7 +135,7 @@ context('branchlines calculator', () => {
       })
 
       it('should construct map correctly', () => {
-        const subwayMap = calculator.map
+        const graphMap = calculator.map
 
         const nodes = getNodes(
           data(),
@@ -155,9 +155,9 @@ context('branchlines calculator', () => {
           { pair: [2, 3], colour: Colours[1] },
         )
         const dict = getNodeDict(nodes)
-        const expectedMap = new SubwayMap(nodes, links, dict)
+        const expectedMap = new GraphMap(nodes, links, dict)
 
-        equal(subwayMap, expectedMap)
+        equal(graphMap, expectedMap)
       })
 
       it('should construct rows correctly', () => {

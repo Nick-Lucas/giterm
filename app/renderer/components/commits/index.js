@@ -11,7 +11,7 @@ import Row from './row'
 import { checkoutCommit } from '../../store/commits'
 
 import { bindServices } from '../../lib/di'
-import { SubwayCalculator } from '../graph/subway-calculator'
+import { GraphCalculator } from '../graph/graph-calculator'
 
 const Wrapper = styled.div`
   flex: 1;
@@ -38,7 +38,7 @@ export class Commits extends React.Component {
       selectedSHA: '',
     }
 
-    this.calculator = new SubwayCalculator(RowHeight)
+    this.calculator = new GraphCalculator(RowHeight)
   }
 
   handleSelect = (commit) => {

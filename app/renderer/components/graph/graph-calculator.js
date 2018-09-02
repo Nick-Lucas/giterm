@@ -1,6 +1,6 @@
 import { Link } from './models/link'
 import { Node } from './models/node'
-import { SubwayMap } from './models/subway-map'
+import { GraphMap } from './models/graph-map'
 import { Color } from './models/color'
 import BranchLinesCalculator from './branchlines-calculator'
 
@@ -28,7 +28,7 @@ const makeNode = (commit) => {
   return node
 }
 
-export class SubwayCalculator {
+export class GraphCalculator {
   colors = Colours
   map = null
   rows = []
@@ -49,7 +49,7 @@ export class SubwayCalculator {
       return agg
     }, {})
     const links = this.generateLinks(nodes, nodeDict)
-    this.map = new SubwayMap(nodes, links, nodeDict)
+    this.map = new GraphMap(nodes, links, nodeDict)
     this.rows = this.updateMapLayout()
     return this.rows
   }
