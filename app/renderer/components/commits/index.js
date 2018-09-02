@@ -24,11 +24,16 @@ const TableWrapper = styled.div`
   flex: 1;
 `
 
+const VirtualList = styled(List)`
+  outline: none;
+`
+
 export const RowHeight = 25
 
 export class Commits extends React.Component {
   constructor(props) {
     super(props)
+    this.list = React.createRef()
     this.state = {
       selectedSHA: '',
     }
@@ -59,6 +64,10 @@ export class Commits extends React.Component {
     true,
   )
 
+  componentWillUpdate() {
+    this.list.current.forceUpdateGrid()
+  }
+
   render() {
     const { columns, graphRows } = this.props
 
@@ -68,7 +77,8 @@ export class Commits extends React.Component {
         <TableWrapper>
           <AutoSizer>
             {({ width, height }) => (
-              <List
+              <VirtualList
+                innerRef={this.list}
                 width={width}
                 height={height}
                 rowHeight={RowHeight}
