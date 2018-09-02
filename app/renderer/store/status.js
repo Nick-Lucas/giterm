@@ -15,7 +15,7 @@ export function doStatusUpdate(gitService) {
     const state = await gitService.getStateText()
     const status = await gitService.getStatus()
     const action = statusUpdate(status, state)
-    await dispatch(action)
+    dispatch(action)
   }
 }
 

@@ -10,7 +10,7 @@ import debounce from 'debounce'
 import * as props from './props'
 import Header from './header'
 import Row from './row'
-import { checkoutCommit } from '../../store/commits'
+import { checkoutCommit, loadMoreCommits } from '../../store/commits'
 
 import { bindServices } from '../../lib/di'
 
@@ -54,9 +54,7 @@ export class Commits extends React.Component {
   }
 
   loadMoreItems = debounce(
-    () => {
-      console.log('FETCH NOW')
-    },
+    () => this.props.loadMoreCommits(this.props.gitService),
     1000,
     true,
   )
@@ -139,7 +137,7 @@ const columns = [
 
 const ConnectedCommits = connect(
   ({
-    commits,
+    commits: { commits = [] } = {},
     graph: graphRows = [],
     branches,
     status,
@@ -152,7 +150,12 @@ const ConnectedCommits = connect(
     columns,
     status,
   }),
-  { checkoutCommit },
+  (dispatch) => {
+    return {
+      checkoutCommit: (...args) => dispatch(checkoutCommit(...args)),
+      loadMoreCommits: (...args) => dispatch(loadMoreCommits(...args)),
+    }
+  },
 )(Commits)
 
 export default bindServices(({ git }) => ({ gitService: git }))(
