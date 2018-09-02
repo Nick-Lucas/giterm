@@ -65,65 +65,131 @@ context('branchlines calculator', () => {
     calculator = new SubwayCalculator(1)
 
     const commits = data()
-    return calculator.getSubwayMap(commits)
+    calculator.retrieve(commits)
+    return calculator
   }
 
-  context('getSubwayMap', () => {
-    it.only('should construct a simple branch', () => {
-      data = () => [
-        newCommit('a', ['b']),
-        newCommit('b', ['c']),
-        newCommit('c', []),
-      ]
+  context('retrieve', () => {
+    context('should construct a simple branch', () => {
+      beforeEach(() => {
+        data = () => [
+          newCommit('a', ['b']),
+          newCommit('b', ['c']),
+          newCommit('c', []),
+        ]
 
-      const subwayMap = calculate()
-
-      const nodes = getNodes(data(), {
-        colour: Colours[0],
-        indexes: [0, 1, 2],
+        calculate()
       })
-      const links = getLinks(
-        nodes,
-        { pair: [0, 1], colour: Colours[0] },
-        { pair: [1, 2], colour: Colours[0] },
-      )
-      const dict = getNodeDict(nodes)
-      const expectedMap = new SubwayMap(nodes, links, dict)
 
-      equal(subwayMap, expectedMap)
+      it('should construct map correctly', () => {
+        const subwayMap = calculator.map
+
+        const nodes = getNodes(data(), {
+          colour: Colours[0],
+          indexes: [0, 1, 2],
+        })
+        const links = getLinks(
+          nodes,
+          { pair: [0, 1], colour: Colours[0] },
+          { pair: [1, 2], colour: Colours[0] },
+        )
+        const dict = getNodeDict(nodes)
+        const expectedMap = new SubwayMap(nodes, links, dict)
+
+        equal(subwayMap, expectedMap)
+      })
+
+      it('should construct rows correctly', () => {
+        const rows = calculator.rows
+
+        const nodes = getNodes(data(), {
+          colour: Colours[0],
+          indexes: [0, 1, 2],
+        })
+        const links = getLinks(
+          nodes,
+          { pair: [0, 1], colour: Colours[0] },
+          { pair: [1, 2], colour: Colours[0] },
+        )
+
+        const expectedRows = [
+          { yOffset: 0, node: nodes[0], links: [links[0]] },
+          { yOffset: 1, node: nodes[1], links: [links[0], links[1]] },
+          { yOffset: 2, node: nodes[2], links: [links[1]] },
+        ]
+
+        equal(rows, expectedRows)
+      })
     })
 
-    it('should construct a pair of branches', () => {
-      data = () => [
-        newCommit('a', ['b']),
-        newCommit('b', ['d']),
-        newCommit('c', ['d']),
-        newCommit('d', []),
-      ]
+    context('should construct a pair of branches', () => {
+      beforeEach(() => {
+        data = () => [
+          newCommit('a', ['b']),
+          newCommit('b', ['d']),
+          newCommit('c', ['d']),
+          newCommit('d', []),
+        ]
 
-      const subwayMap = calculate()
+        calculate()
+      })
 
-      const nodes = getNodes(
-        data(),
-        {
-          colour: Colours[0],
-          indexes: [0, 1, 3],
-        },
-        {
-          colour: Colours[1],
-          indexes: [2],
-        },
-      )
-      const links = getLinks(
-        nodes,
-        { pair: [0, 1], colour: Colours[0] },
-        { pair: [1, 3], colour: Colours[0] },
-        { pair: [2, 3], colour: Colours[1] },
-      )
-      const dict = getNodeDict(nodes)
-      const expectedMap = new SubwayMap(nodes, links, dict)
+      it('should construct map correctly', () => {
+        const subwayMap = calculator.map
 
-      equal(subwayMap, expectedMap)
+        const nodes = getNodes(
+          data(),
+          {
+            colour: Colours[0],
+            indexes: [0, 1, 3],
+          },
+          {
+            colour: Colours[1],
+            indexes: [2],
+          },
+        )
+        const links = getLinks(
+          nodes,
+          { pair: [0, 1], colour: Colours[0] },
+          { pair: [1, 3], colour: Colours[0] },
+          { pair: [2, 3], colour: Colours[1] },
+        )
+        const dict = getNodeDict(nodes)
+        const expectedMap = new SubwayMap(nodes, links, dict)
+
+        equal(subwayMap, expectedMap)
+      })
+
+      it('should construct rows correctly', () => {
+        const rows = calculator.rows
+
+        const nodes = getNodes(
+          data(),
+          {
+            colour: Colours[0],
+            indexes: [0, 1, 3],
+          },
+          {
+            colour: Colours[1],
+            indexes: [2],
+          },
+        )
+        const links = getLinks(
+          nodes,
+          { pair: [0, 1], colour: Colours[0] },
+          { pair: [1, 3], colour: Colours[0] },
+          { pair: [2, 3], colour: Colours[1] },
+        )
+
+        const expectedRows = [
+          { yOffset: 0, node: nodes[0], links: [links[0]] },
+          { yOffset: 1, node: nodes[1], links: [links[0], links[1]] },
+          { yOffset: 2, node: nodes[2], links: [links[1], links[2]] },
+          { yOffset: 3, node: nodes[3], links: [links[1], links[2]] },
+        ]
+
+        equal(rows, expectedRows)
+      })
     })
   })
 })

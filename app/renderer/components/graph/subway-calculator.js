@@ -155,15 +155,15 @@ export class SubwayCalculator {
     // construct slices for per-commit rendering
     const rows = new Array(map.nodes.length)
     for (let i = 0; i < map.nodes.length; i++) {
-      const yStart = i * this.rowHeight
-      const yEnd = yStart + this.rowHeight
+      const sliceStart = START_Y + i * this.rowHeight
+      const sliceEnd = sliceStart + this.rowHeight
 
-      const node = map.nodes.find((n) => n.y >= yStart && n.y < yEnd)
+      const node = map.nodes.find((n) => n.y >= sliceStart && n.y < sliceEnd)
       const links = map.links.filter(
-        (link) => link.source.y <= yEnd && link.target.y >= yStart,
+        (link) => link.source.y < sliceEnd && link.target.y >= sliceStart,
       )
 
-      rows[i] = { yOffset: yStart, node, links }
+      rows[i] = { yOffset: sliceStart - START_Y, node, links }
     }
 
     return rows
