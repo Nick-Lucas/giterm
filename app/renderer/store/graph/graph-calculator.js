@@ -1,7 +1,6 @@
 import { Link } from './models/link'
 import { Node } from './models/node'
 import { GraphMap } from './models/graph-map'
-import { Color } from './models/color'
 import BranchLinesCalculator from './branchlines-calculator'
 
 export const START_X = 10
@@ -42,65 +41,66 @@ export class GraphCalculator {
     this.rows = rows
   }
 
-  retrieve = (commits) =>
-    this.map ? this.update(commits) : this.create(commits)
-
-  // privates
-
-  create(commits) {
+  retrieve = (commits) => {
     const nodes = commits.map(makeNode)
     const nodeDict = nodes.reduce((agg, node) => {
       agg[node.commit.sha] = node
       return agg
     }, {})
-    this.updateLayout(nodes)
-    const links = this.generateLinks(nodes, nodeDict)
+
+    this._calculateLayout(nodes)
+    const links = this._generateLinks(nodes, nodeDict)
+
     this.map = new GraphMap(nodes, links, nodeDict)
-    this.rows = this.updateRowSlices()
+    this.rows = this._calculateRowSlices()
+
     return this.rows
   }
 
-  update(commits) {
-    const nodes = this.map.nodes
-    const nodeDict = this.map.nodeDict
+  // privates
 
-    // remove non-existant commits
-    const shas = commits.map((c) => c.sha)
-    const oldShas = Object.keys(nodeDict)
-    oldShas.forEach((sha) => {
-      if (shas.indexOf(sha) > -1) {
-        return
-      }
+  // TODO: might need this one-day?
+  // update(commits) {
+  //   const nodes = this.map.nodes
+  //   const nodeDict = this.map.nodeDict
 
-      nodes.splice(nodes.indexOf(nodeDict[sha]), 1)
-      delete nodeDict[sha]
-    })
+  //   // remove non-existant commits
+  //   const shas = commits.map((c) => c.sha)
+  //   const oldShas = Object.keys(nodeDict)
+  //   oldShas.forEach((sha) => {
+  //     if (shas.indexOf(sha) > -1) {
+  //       return
+  //     }
 
-    // add new commits
-    let i = 0
-    let j = 0
-    while (i < commits.length || j < nodes.length) {
-      if (j >= nodes.length || nodes[j].commit.sha !== commits[i].sha) {
-        const node = makeNode(commits[i])
-        if (j < nodes.length) {
-          nodes.splice(j, 0, node)
-        } else {
-          nodes.splice(nodes.length, 0, node)
-        }
-        nodeDict[node.commit.sha] = node
-      }
+  //     nodes.splice(nodes.indexOf(nodeDict[sha]), 1)
+  //     delete nodeDict[sha]
+  //   })
 
-      j += 1
-      i += 1
-    }
+  //   // add new commits
+  //   let i = 0
+  //   let j = 0
+  //   while (i < commits.length || j < nodes.length) {
+  //     if (j >= nodes.length || nodes[j].commit.sha !== commits[i].sha) {
+  //       const node = makeNode(commits[i])
+  //       if (j < nodes.length) {
+  //         nodes.splice(j, 0, node)
+  //       } else {
+  //         nodes.splice(nodes.length, 0, node)
+  //       }
+  //       nodeDict[node.commit.sha] = node
+  //     }
 
-    this.updateLayout()
-    this.map.links = this.generateLinks(nodes, nodeDict)
-    this.rows = this.updateRowSlices()
-    return this.rows
-  }
+  //     j += 1
+  //     i += 1
+  //   }
 
-  generateLinks = (nodes, nodeDict) => {
+  //   this.updateLayout()
+  //   this.map.links = this.generateLinks(nodes, nodeDict)
+  //   this.rows = this.updateRowSlices()
+  //   return this.rows
+  // }
+
+  _generateLinks = (nodes, nodeDict) => {
     const links = []
     const _infinityY = this.rowHeight * (nodes.length + 1)
     nodes.forEach((node) => {
@@ -139,7 +139,7 @@ export class GraphCalculator {
     return links
   }
 
-  updateLayout = (nodes) => {
+  _calculateLayout = (nodes) => {
     const branchLinesCalc = new BranchLinesCalculator()
 
     nodes.forEach((node, i) => {
@@ -159,7 +159,7 @@ export class GraphCalculator {
     }, this)
   }
 
-  updateRowSlices = () => {
+  _calculateRowSlices = () => {
     const map = this.map
 
     // construct slices for per-commit rendering

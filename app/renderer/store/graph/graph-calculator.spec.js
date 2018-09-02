@@ -10,7 +10,6 @@ import {
 import { Node } from './models/node'
 import { Link } from './models/link'
 import { GraphMap } from './models/graph-map'
-import { Color } from './models/color'
 
 const newCommit = (sha, parents) => ({
   sha,
@@ -29,7 +28,7 @@ const getNodes = (commits, ...columns) => {
   columns.forEach(({ colour, indexes }, columnIndex) => {
     indexes.forEach((i) => {
       nodes[i].x = START_X + X_SEPARATION * columnIndex
-      nodes[i].color = Color.parseHex(colour)
+      nodes[i].color = colour
     })
   })
 
@@ -39,7 +38,7 @@ const getNodes = (commits, ...columns) => {
 const getLinks = (nodes, ...pairs) =>
   pairs.map(({ pair: [l, r], colour }) => {
     const link = new Link(nodes[l], nodes[r])
-    link.color = Color.parseHex(colour)
+    link.color = colour
     return link
   })
 

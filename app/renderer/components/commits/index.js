@@ -59,7 +59,7 @@ export class Commits extends React.Component {
 
   renderList = ({ width, height }) => {
     const { graphRows } = this.props
-    console.log(graphRows)
+
     return (
       <List
         width={width}
