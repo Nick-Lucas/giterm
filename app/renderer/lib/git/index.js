@@ -141,8 +141,6 @@ export class Git {
     }))
   }
 
-  commitLoader = (headSHA, glob) => {}
-
   checkout = async (sha) => {
     const repo = await this.getComplex()
     if (!repo) {

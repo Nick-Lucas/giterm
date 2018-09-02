@@ -19,5 +19,8 @@ function getSha(node) {
   if (node && node.commit && node.commit.sha) {
     return node.commit.sha
   }
-  return ''
+  if (node && node.id) {
+    return node.id
+  }
+  return 'NO_SHA'
 }

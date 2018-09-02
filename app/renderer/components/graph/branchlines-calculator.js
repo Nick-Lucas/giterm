@@ -1,7 +1,10 @@
 export default class BranchLinesCalculator {
   branchLines = []
 
-  retrieve = () => this.branchLines.sort((a, b) => b.length() - a.length())
+  retrieve = () =>
+    this.branchLines.sort(
+      (a, b) => b.length() - a.length() || b.nodes.length - a.nodes.length,
+    )
 
   findChildBranchLine = (sha) =>
     this.branchLines.find((bl) => {
