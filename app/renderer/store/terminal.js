@@ -7,9 +7,8 @@ export const setAutoTerminalFullscreen = (fullscreen) => ({
 
 export const FLIP_USER_TERMINAL_FULLSCREEN =
   'config/flip_user_terminal_fullscreen'
-export const flipUserTerminalFullscreen = (fullscreen) => ({
+export const flipUserTerminalFullscreen = () => ({
   type: FLIP_USER_TERMINAL_FULLSCREEN,
-  fullscreen,
 })
 
 const initialState = {
@@ -26,11 +25,15 @@ const initialState = {
 export default (state = initialState, action) => {
   switch (action.type) {
     case FLIP_USER_TERMINAL_FULLSCREEN: {
-      const userNext = !state.userTerminalFullscreen
+      const userNext = !state.fullscreen
+      const autoNext = state.autoTerminalFullscreen
+        ? userNext
+        : state.autoTerminalFullscreen
       return {
         ...state,
         userTerminalFullscreen: userNext,
-        fullscreen: userNext || state.autoTerminalFullscreen,
+        autoTerminalFullscreen: autoNext,
+        fullscreen: userNext || autoNext,
       }
     }
     case SET_AUTO_TERMINAL_FULLSCREEN: {
