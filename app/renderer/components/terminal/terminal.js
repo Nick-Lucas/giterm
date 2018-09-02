@@ -121,10 +121,10 @@ export class Terminal extends React.Component {
     that.ptyProcess.on('data', function(data) {
       that.terminal.write(data)
 
-      if (isStartAlternateBuffer(data) || isStartAppKeysMode(data)) {
+      if (isStartAlternateBuffer(data)) {
         that.updateAlternateBuffer(true)
       }
-      if (isEndAlternateBuffer(data) || isEndAppKeysMode(data)) {
+      if (isEndAlternateBuffer(data)) {
         that.updateAlternateBuffer(false)
       }
     })
