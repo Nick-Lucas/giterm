@@ -5,6 +5,7 @@ import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 import styled from 'styled-components'
 import { List, AutoSizer } from 'react-virtualized'
+import debounce from 'debounce'
 
 import * as props from './props'
 import Header from './header'
@@ -44,31 +45,44 @@ export class Commits extends React.Component {
     },
   ]
 
+  considerLoadMoreItems = ({ clientHeight, scrollHeight, scrollTop }) => {
+    const scrollBottom = scrollTop + clientHeight
+    const remainingRows = Math.trunc((scrollHeight - scrollBottom) / RowHeight)
+    if (remainingRows < 20) {
+      this.loadMoreItems()
+    }
+  }
+
+  loadMoreItems = debounce(
+    () => {
+      console.log('FETCH NOW')
+    },
+    1000,
+    true,
+  )
+
   render() {
-    const { columns } = this.props
+    const { columns, graphRows } = this.props
 
     return (
       <Wrapper>
         <Header columns={columns} />
         <TableWrapper>
-          <AutoSizer>{this.renderList}</AutoSizer>
+          <AutoSizer>
+            {({ width, height }) => (
+              <List
+                width={width}
+                height={height}
+                rowHeight={RowHeight}
+                rowCount={graphRows.length}
+                overscanRowCount={2}
+                rowRenderer={this.renderRow}
+                onScroll={this.considerLoadMoreItems}
+              />
+            )}
+          </AutoSizer>
         </TableWrapper>
       </Wrapper>
-    )
-  }
-
-  renderList = ({ width, height }) => {
-    const { graphRows } = this.props
-
-    return (
-      <List
-        width={width}
-        height={height}
-        rowHeight={RowHeight}
-        rowCount={graphRows.length}
-        overscanRowCount={2}
-        rowRenderer={this.renderRow}
-      />
     )
   }
 
