@@ -1,5 +1,6 @@
 import { updateReducer } from './helpers'
 import { refreshApplication } from './coreapp'
+import { doUpdateGraph } from './graph'
 
 export const COMMITS_UPDATE = 'commits/update'
 
@@ -11,6 +12,7 @@ export const doUpdateCommits = (gitService) => {
       type: COMMITS_UPDATE,
       payload: commits,
     })
+    await dispatch(doUpdateGraph())
   }
 }
 

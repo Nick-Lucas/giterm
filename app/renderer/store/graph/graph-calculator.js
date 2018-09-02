@@ -23,7 +23,7 @@ const makeNode = (commit) => {
   node.y = START_Y
   node.x = START_X
   node.commit = commit
-  node.color = Color.parseHex(Colours[0])
+  node.color = Colours[0]
   node.secondColor = null
   return node
 }
@@ -37,6 +37,11 @@ export class GraphCalculator {
     this.rowHeight = rowHeight
   }
 
+  rehydrate = (mapData, rows) => {
+    this.map = new GraphMap(mapData.nodes, mapData.links, mapData.nodeDict)
+    this.rows = rows
+  }
+
   retrieve = (commits) =>
     this.map ? this.update(commits) : this.create(commits)
 
@@ -48,9 +53,10 @@ export class GraphCalculator {
       agg[node.commit.sha] = node
       return agg
     }, {})
+    this.updateLayout(nodes)
     const links = this.generateLinks(nodes, nodeDict)
     this.map = new GraphMap(nodes, links, nodeDict)
-    this.rows = this.updateMapLayout()
+    this.rows = this.updateRowSlices()
     return this.rows
   }
 
@@ -88,8 +94,9 @@ export class GraphCalculator {
       i += 1
     }
 
+    this.updateLayout()
     this.map.links = this.generateLinks(nodes, nodeDict)
-    this.rows = this.updateMapLayout(this.currentMap)
+    this.rows = this.updateRowSlices()
     return this.rows
   }
 
@@ -132,11 +139,10 @@ export class GraphCalculator {
     return links
   }
 
-  updateMapLayout() {
-    const map = this.map
+  updateLayout = (nodes) => {
     const branchLinesCalc = new BranchLinesCalculator()
 
-    map.nodes.forEach((node, i) => {
+    nodes.forEach((node, i) => {
       node.y = START_Y + i * this.rowHeight
       branchLinesCalc.includeNode(node, i)
     })
@@ -147,10 +153,14 @@ export class GraphCalculator {
       branchLine.forEachNode((node, nodeI) => {
         const activeLines = branchLinesCalc.numberOfActiveLinesAt(i, nodeI)
         node.x = START_X + activeLines * X_SEPARATION
-        node.color.setHex(Colours[i % Colours.length])
+        node.color = Colours[i % Colours.length]
       }, this)
-      branchLine.color = new Color().setHex(Colours[i % Colours.length])
+      branchLine.color = Colours[i % Colours.length]
     }, this)
+  }
+
+  updateRowSlices = () => {
+    const map = this.map
 
     // construct slices for per-commit rendering
     const rows = new Array(map.nodes.length)

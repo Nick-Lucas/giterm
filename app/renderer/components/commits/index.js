@@ -12,7 +12,6 @@ import Row from './row'
 import { checkoutCommit } from '../../store/commits'
 
 import { bindServices } from '../../lib/di'
-import { GraphCalculator } from '../graph/graph-calculator'
 
 const Wrapper = styled.div`
   display: flex;
@@ -21,13 +20,10 @@ const Wrapper = styled.div`
 `
 
 const TableWrapper = styled.div`
-  overflow: auto;
   flex: 1;
-  display: block;
-  position: relative;
 `
 
-const RowHeight = 25
+export const RowHeight = 25
 
 export class Commits extends React.Component {
   constructor(props) {
@@ -35,8 +31,6 @@ export class Commits extends React.Component {
     this.state = {
       selectedSHA: '',
     }
-
-    this.calculator = new GraphCalculator(RowHeight)
   }
 
   handleSelect = (commit) => {
@@ -51,9 +45,37 @@ export class Commits extends React.Component {
   ]
 
   render() {
+    const { columns } = this.props
+
+    return (
+      <Wrapper>
+        <Header columns={columns} />
+        <TableWrapper>
+          <AutoSizer>{this.renderList}</AutoSizer>
+        </TableWrapper>
+      </Wrapper>
+    )
+  }
+
+  renderList = ({ width, height }) => {
+    const { graphRows } = this.props
+    console.log(graphRows)
+    return (
+      <List
+        width={width}
+        height={height}
+        rowHeight={RowHeight}
+        rowCount={graphRows.length}
+        overscanRowCount={2}
+        rowRenderer={this.renderRow}
+      />
+    )
+  }
+
+  renderRow = ({ index, style }) => {
     const {
       columns,
-      commits,
+      graphRows,
       branches,
       showRemoteBranches,
       checkoutCommit,
@@ -62,34 +84,26 @@ export class Commits extends React.Component {
     } = this.props
     const { selectedSHA } = this.state
 
-    // TODO: calculate this and store into redux
-    // will improve both debugging and render performance
-    const graphRows = this.calculator.retrieve(commits)
-
+    const row = graphRows[index]
+    const commit = row.node.commit
     return (
-      <Wrapper>
-        <Header columns={columns} />
-        <TableWrapper>
-          {commits.map((commit, i) => (
-            <RightClickArea
-              key={commit.sha}
-              menuItems={this.getMenuItems(commit)}>
-              <Row
-                commit={commit}
-                columns={columns}
-                branches={branches}
-                showRemoteBranches={showRemoteBranches}
-                selected={selectedSHA === commit.sha}
-                onSelect={this.handleSelect}
-                onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
-                height={RowHeight}
-                currentBranchName={currentBranchName}
-                graphItem={graphRows[i]}
-              />
-            </RightClickArea>
-          ))}
-        </TableWrapper>
-      </Wrapper>
+      <RightClickArea
+        key={commit.sha}
+        menuItems={this.getMenuItems(commit)}
+        style={style}>
+        <Row
+          commit={commit}
+          columns={columns}
+          branches={branches}
+          showRemoteBranches={showRemoteBranches}
+          selected={selectedSHA === commit.sha}
+          onSelect={this.handleSelect}
+          onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
+          height={RowHeight}
+          currentBranchName={currentBranchName}
+          graphItem={row}
+        />
+      </RightClickArea>
     )
   }
 }
@@ -110,8 +124,15 @@ const columns = [
 ]
 
 const ConnectedCommits = connect(
-  ({ commits, branches, status, config: { showRemoteBranches } }) => ({
+  ({
     commits,
+    graph: graphRows = [],
+    branches,
+    status,
+    config: { showRemoteBranches },
+  }) => ({
+    commits,
+    graphRows,
     branches,
     showRemoteBranches,
     columns,

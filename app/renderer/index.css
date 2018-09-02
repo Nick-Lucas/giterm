@@ -19,10 +19,6 @@ body {
   overflow: hidden;
 }
 
-div {
-  display: flex;
-}
-
 #app {
   display: flex;
   flex: 1;
