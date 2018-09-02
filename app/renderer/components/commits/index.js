@@ -4,6 +4,7 @@ import PropTypes from 'prop-types'
 import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 import styled from 'styled-components'
+import { List, AutoSizer } from 'react-virtualized'
 
 import * as props from './props'
 import Header from './header'
@@ -24,10 +25,6 @@ const TableWrapper = styled.div`
   flex: 1;
   display: block;
   position: relative;
-`
-
-const TableMainCol = styled.div`
-  display: block;
 `
 
 const RowHeight = 25
@@ -65,32 +62,32 @@ export class Commits extends React.Component {
     } = this.props
     const { selectedSHA } = this.state
 
+    // TODO: calculate this and store into redux
+    // will improve both debugging and render performance
     const graphRows = this.calculator.retrieve(commits)
 
     return (
       <Wrapper>
         <Header columns={columns} />
         <TableWrapper>
-          <TableMainCol>
-            {commits.map((commit, i) => (
-              <RightClickArea
-                key={commit.sha}
-                menuItems={this.getMenuItems(commit)}>
-                <Row
-                  commit={commit}
-                  columns={columns}
-                  branches={branches}
-                  showRemoteBranches={showRemoteBranches}
-                  selected={selectedSHA === commit.sha}
-                  onSelect={this.handleSelect}
-                  onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
-                  height={RowHeight}
-                  currentBranchName={currentBranchName}
-                  graphItem={graphRows[i]}
-                />
-              </RightClickArea>
-            ))}
-          </TableMainCol>
+          {commits.map((commit, i) => (
+            <RightClickArea
+              key={commit.sha}
+              menuItems={this.getMenuItems(commit)}>
+              <Row
+                commit={commit}
+                columns={columns}
+                branches={branches}
+                showRemoteBranches={showRemoteBranches}
+                selected={selectedSHA === commit.sha}
+                onSelect={this.handleSelect}
+                onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
+                height={RowHeight}
+                currentBranchName={currentBranchName}
+                graphItem={graphRows[i]}
+              />
+            </RightClickArea>
+          ))}
         </TableWrapper>
       </Wrapper>
     )
