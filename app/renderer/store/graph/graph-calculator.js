@@ -36,11 +36,6 @@ export class GraphCalculator {
     this.rowHeight = rowHeight
   }
 
-  rehydrate = (mapData, rows) => {
-    this.map = new GraphMap(mapData.nodes, mapData.links, mapData.nodeDict)
-    this.rows = rows
-  }
-
   retrieve = (commits) => {
     const nodes = commits.map(makeNode)
     const nodeDict = nodes.reduce((agg, node) => {

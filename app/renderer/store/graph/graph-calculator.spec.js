@@ -69,7 +69,7 @@ context('git graph calculator', () => {
   }
 
   context('retrieve', () => {
-    context('should construct a simple branch', () => {
+    context('simple branch', () => {
       beforeEach(() => {
         data = () => [
           newCommit('a', ['b']),
@@ -121,7 +121,7 @@ context('git graph calculator', () => {
       })
     })
 
-    context('should construct a pair of branches', () => {
+    context('pair of branches', () => {
       beforeEach(() => {
         data = () => [
           newCommit('a', ['b']),
@@ -185,6 +185,101 @@ context('git graph calculator', () => {
           { yOffset: 1, node: nodes[1], links: [links[0], links[1]] },
           { yOffset: 2, node: nodes[2], links: [links[1], links[2]] },
           { yOffset: 3, node: nodes[3], links: [links[1], links[2]] },
+        ]
+
+        equal(rows, expectedRows)
+      })
+    })
+
+    context('edge case with two branches coming off same root commit', () => {
+      beforeEach(() => {
+        data = () => [
+          newCommit('a', ['b']),
+          newCommit('b', ['e']),
+
+          // Branch 1
+          newCommit('c', ['e']),
+
+          // Branch 2
+          newCommit('d', ['e']),
+
+          newCommit('e', []),
+        ]
+
+        calculate()
+      })
+
+      it('should construct map correctly', () => {
+        const graphMap = calculator.map
+
+        const nodes = getNodes(
+          data(),
+          {
+            colour: Colours[0],
+            indexes: [0, 1, 4],
+          },
+          {
+            colour: Colours[1],
+            indexes: [2],
+          },
+          {
+            colour: Colours[2],
+            indexes: [3],
+          },
+        )
+        const links = getLinks(
+          nodes,
+          { pair: [0, 1], colour: Colours[0] },
+          { pair: [1, 4], colour: Colours[0] },
+          { pair: [2, 4], colour: Colours[1] },
+          { pair: [3, 4], colour: Colours[2] },
+        )
+        const dict = getNodeDict(nodes)
+        const expectedMap = new GraphMap(nodes, links, dict)
+
+        equal(graphMap, expectedMap)
+      })
+
+      it('should construct rows correctly', () => {
+        const rows = calculator.rows
+
+        const nodes = getNodes(
+          data(),
+          {
+            colour: Colours[0],
+            indexes: [0, 1, 4],
+          },
+          {
+            colour: Colours[1],
+            indexes: [2],
+          },
+          {
+            colour: Colours[2],
+            indexes: [3],
+          },
+        )
+        const links = getLinks(
+          nodes,
+          { pair: [0, 1], colour: Colours[0] },
+          { pair: [1, 4], colour: Colours[0] },
+          { pair: [2, 4], colour: Colours[1] },
+          { pair: [3, 4], colour: Colours[2] },
+        )
+
+        const expectedRows = [
+          { yOffset: 0, node: nodes[0], links: [links[0]] },
+          { yOffset: 1, node: nodes[1], links: [links[0], links[1]] },
+          { yOffset: 2, node: nodes[2], links: [links[1], links[2]] },
+          {
+            yOffset: 3,
+            node: nodes[3],
+            links: [links[1], links[2], links[3]],
+          },
+          {
+            yOffset: 4,
+            node: nodes[4],
+            links: [links[1], links[2], links[3]],
+          },
         ]
 
         equal(rows, expectedRows)
