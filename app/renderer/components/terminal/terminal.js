@@ -18,6 +18,7 @@ import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
 const TerminalContainer = styled.div`
+  display: flex;
   flex: 1;
   margin: 5px;
 `

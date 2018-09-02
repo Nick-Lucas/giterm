@@ -32,6 +32,7 @@ const RowColumn = styled.div`
 `
 
 const ColumnText = styled.div`
+  display: flex;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;

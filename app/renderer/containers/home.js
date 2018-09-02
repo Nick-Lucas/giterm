@@ -9,6 +9,7 @@ import { bindServices } from '../lib/di'
 import StatusBar from '../components/status-bar'
 
 const FullscreenWrapper = styled.div`
+  display: flex;
   position: relative;
   flex: 1;
   flex-direction: column;
@@ -16,6 +17,7 @@ const FullscreenWrapper = styled.div`
 `
 
 const CommitsWrapper = styled.div`
+  display: flex;
   flex: 1;
 
   ${(props) =>
@@ -26,9 +28,9 @@ const CommitsWrapper = styled.div`
 `
 
 const TerminalWrapper = styled.div`
-  height: 30%;
-  min-height: 100px
   display: flex;
+  height: 30%;
+  min-height: 100px;
 
   ${(props) =>
     props.fullscreen &&

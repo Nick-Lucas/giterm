@@ -14,6 +14,7 @@ import { bindServices } from '../../lib/di'
 import { GraphCalculator } from '../graph/graph-calculator'
 
 const Wrapper = styled.div`
+  display: flex;
   flex: 1;
   flex-direction: column;
 `

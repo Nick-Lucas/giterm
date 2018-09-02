@@ -11,11 +11,13 @@ import {
 } from '../../store/terminal'
 
 const Wrapper = styled.div`
+  display: flex;
   flex: 1;
   flex-direction: column;
 `
 
 const TerminalWrapper = styled.div`
+  display: flex;
   flex: 1;
 `
 
@@ -31,6 +33,7 @@ const MenuPanel = styled.div`
 `
 
 const MenuItem = styled.div`
+  display: flex;
   cursor: pointer;
 `
 

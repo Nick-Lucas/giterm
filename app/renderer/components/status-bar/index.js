@@ -7,10 +7,12 @@ import { updateShowRemoteBranches } from '../../store/config'
 import { bindServices } from '../../lib/di'
 
 const Wrapper = styled.div`
+  display: flex;
   margin: 5px;
 `
 
 const Group = styled.div`
+  display: flex;
   margin-right: 5px;
 
   ${(props) =>
@@ -22,6 +24,7 @@ const Group = styled.div`
 `
 
 const Item = styled.div`
+  display: flex;
   margin-right: 5px;
   align-items: center;
 
