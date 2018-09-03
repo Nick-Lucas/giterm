@@ -27,8 +27,10 @@ const RowColumn = styled.div`
   display: flex;
   flex-direction: row;
 
-  padding-right: 10px;
+  margin-right: 10px;
   max-height: 100%;
+
+  overflow: hidden;
 `
 
 const ColumnText = styled.div`
