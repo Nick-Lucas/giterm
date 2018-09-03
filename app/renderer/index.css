@@ -13,14 +13,11 @@ body {
   background-color: #001825;
   color: #d6d6d6;
   font-family: 'Inconsolata', monospace;
+  font-size: 15px;
   margin: 0;
 
   user-select: none;
   overflow: hidden;
-}
-
-div {
-  display: flex;
 }
 
 #app {

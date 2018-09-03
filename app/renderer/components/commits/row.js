@@ -27,11 +27,14 @@ const RowColumn = styled.div`
   display: flex;
   flex-direction: row;
 
-  padding-right: 10px;
+  margin-right: 10px;
   max-height: 100%;
+
+  overflow: hidden;
 `
 
 const ColumnText = styled.div`
+  display: flex;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -110,9 +113,9 @@ export default class Row extends React.Component {
       <svg>
         {links.map((link) => (
           <PathLine
-            key={link.sourceSha() + '__' + link.targetSha()}
+            key={link.sourceSha + '__' + link.targetSha}
             points={this.getPathLinePoints(link, yOffset)}
-            stroke={link.color.stringValue()}
+            stroke={link.color}
             strokeWidth={3}
             fill="none"
             r={20}
@@ -123,13 +126,9 @@ export default class Row extends React.Component {
           cx={node.x}
           cy={node.y - yOffset}
           r={5}
-          fill={
-            node.secondColor
-              ? node.secondColor.stringValue()
-              : node.color.stringValue()
-          }
+          fill={node.secondColor ? node.secondColor : node.color}
           strokeWidth={3}
-          stroke={node.color.stringValue()}
+          stroke={node.color}
         />
       </svg>
     )

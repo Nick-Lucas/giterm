@@ -106,7 +106,7 @@ export class Git {
     )
   }
 
-  loadAllCommits = async (showRemote) => {
+  loadAllCommits = async (showRemote, number = 500) => {
     const repo = await this.getComplex()
     if (!repo) {
       return []
@@ -119,7 +119,7 @@ export class Git {
     walker.pushGlob('refs/heads/*')
     if (showRemote) walker.pushGlob('refs/remotes/*')
 
-    const foundCommits = await walker.getCommits(500)
+    const foundCommits = await walker.getCommits(number)
     return foundCommits.map((c) => ({
       sha: c.sha(),
       sha7: c.sha().substring(0, 6),

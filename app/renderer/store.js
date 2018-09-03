@@ -5,6 +5,7 @@ import thunk from 'redux-thunk'
 
 // Reducers
 import commits from './store/commits'
+import graph from './store/graph'
 import status from './store/status'
 import branches from './store/branches'
 import config from './store/config'
@@ -12,6 +13,7 @@ import terminal from './store/terminal'
 const reducers = {
   config,
   commits,
+  graph,
   status,
   branches,
   terminal,
@@ -34,7 +36,7 @@ export default function configureStore(initialState, routerHistory) {
 
   const enhancer = composeEnhancers(
     applyMiddleware(...middlewares),
-    persistState(),
+    // persistState(),
   )
   const rootReducer = combineReducers(reducers)
 

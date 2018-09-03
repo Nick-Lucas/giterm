@@ -13,6 +13,7 @@ const HeaderWrapper = styled.div`
 `
 
 const HeaderColumn = styled.div`
+  display: flex;
   padding-right: 10px;
 `
 

@@ -9,12 +9,14 @@ const newNode = (commit) => {
   return n
 }
 
-const newBranchLine = (allNodes, ...indexes) => {
+const newBranchLine = (allNodes, indexes = [], rootIndex = null) => {
   const nodes = indexes.map((i) => allNodes[i])
 
   const b = new BranchLine()
   b.startIndex = indexes[0]
   b.endIndex = indexes[indexes.length - 1]
+  b.rootIndex = rootIndex
+
   b.indexes = indexes
   b.nodes = nodes
   b.nextSha = nodes[nodes.length - 1].commit.parents[0]
@@ -54,7 +56,7 @@ context('branchlines calculator', () => {
       calculate()
 
       const branches = calculator.branchLines
-      const expected = [newBranchLine(data(), 0, 1, 2, 3)]
+      const expected = [newBranchLine(data(), [0, 1, 2, 3])]
       equal(branches, expected)
     })
 
@@ -70,8 +72,8 @@ context('branchlines calculator', () => {
 
       const branches = calculator.branchLines
       const expected = [
-        newBranchLine(data(), 0, 2, 3),
-        newBranchLine(data(), 1),
+        newBranchLine(data(), [0, 2, 3]),
+        newBranchLine(data(), [1], 2),
       ]
       equal(branches, expected)
     })
@@ -88,8 +90,8 @@ context('branchlines calculator', () => {
 
       const branches = calculator.branchLines
       const expected = [
-        newBranchLine(data(), 0, 2, 3),
-        newBranchLine(data(), 1),
+        newBranchLine(data(), [0, 2, 3]),
+        newBranchLine(data(), [1], 2),
       ]
       equal(branches, expected)
     })
@@ -109,8 +111,8 @@ context('branchlines calculator', () => {
 
       const branches = calculator.branchLines
       const expected = [
-        newBranchLine(data(), 0, 5, 6),
-        newBranchLine(data(), 1, 2, 3, 4),
+        newBranchLine(data(), [0, 5, 6]),
+        newBranchLine(data(), [1, 2, 3, 4], 5),
       ]
       equal(branches, expected)
     })
@@ -130,8 +132,8 @@ context('branchlines calculator', () => {
 
       const branches = calculator.branchLines
       const expected = [
-        newBranchLine(data(), 0, 5, 6),
-        newBranchLine(data(), 1, 2, 3, 4),
+        newBranchLine(data(), [0, 5, 6]),
+        newBranchLine(data(), [1, 2, 3, 4], 5),
       ]
       equal(branches, expected)
     })
@@ -155,21 +157,21 @@ context('branchlines calculator', () => {
 
       const branches = calculator.branchLines
       const expected = [
-        newBranchLine(data(), 0, 6, 10),
-        newBranchLine(data(), 2, 3),
-        newBranchLine(data(), 1, 4, 5, 7),
-        newBranchLine(data(), 8, 9),
+        newBranchLine(data(), [0, 6, 10]),
+        newBranchLine(data(), [2, 3], 6),
+        newBranchLine(data(), [1, 4, 5, 7], 10),
+        newBranchLine(data(), [8, 9], 10),
       ]
       equal(branches, expected)
     })
   })
 
-  context('retrieve sorting', () => {
+  context('retrieve sorted in order of branch discovery', () => {
     it('complex', () => {
       data = () => [
         // BRANCHLINE 0
         newNode({ sha: 'a', parents: ['g', 'i'] }),
-        //        BRANCHLINE 1
+        //        BRANCHLINE 2
         /**/ /**/ newNode({ sha: 'b', parents: ['e'] }),
         //             BRANCHLINE 3
         /**/ /**/ /**/ newNode({ sha: 'c', parents: ['d'] }),
@@ -178,7 +180,7 @@ context('branchlines calculator', () => {
         /**/ /**/ newNode({ sha: 'f', parents: ['h'] }),
         newNode({ sha: 'g', parents: ['k'] }),
         /**/ /**/ newNode({ sha: 'h', parents: ['k'] }),
-        //   BRANCHLINE 2
+        //   BRANCHLINE 1
         /**/ newNode({ sha: 'i', parents: ['j'] }),
         /**/ newNode({ sha: 'j', parents: ['k'] }),
         newNode({ sha: 'k', parents: [] }),
@@ -187,7 +189,7 @@ context('branchlines calculator', () => {
       calculate()
 
       const branchLineIndexes = calculator.retrieve().map((bl) => bl.indexes)
-      const expected = [[0, 6, 10], [1, 4, 5, 7], [8, 9], [2, 3]]
+      const expected = [[0, 6, 10], [8, 9], [1, 4, 5, 7], [2, 3]]
       expect(branchLineIndexes).to.have.deep.ordered.members(expected)
     })
   })
@@ -207,36 +209,50 @@ context('branchlines calculator', () => {
       expect(calculator.numberOfActiveLinesAt(0, 2)).to.equal(0)
     })
 
-    it('complex', () => {
-      data = () => [
-        // BRANCHLINE 0
-        newNode({ sha: 'a', parents: ['g', 'i'] }),
-        //        BRANCHLINE 1
-        /**/ /**/ newNode({ sha: 'b', parents: ['e'] }),
-        //             BRANCHLINE 3
-        /**/ /**/ /**/ newNode({ sha: 'c', parents: ['d'] }),
-        /**/ /**/ /**/ newNode({ sha: 'd', parents: ['g'] }),
-        /**/ /**/ newNode({ sha: 'e', parents: ['f'] }),
-        /**/ /**/ newNode({ sha: 'f', parents: ['h'] }),
-        newNode({ sha: 'g', parents: ['k'] }),
-        /**/ /**/ newNode({ sha: 'h', parents: ['k'] }),
-        //   BRANCHLINE 2
-        /**/ newNode({ sha: 'i', parents: ['j'] }),
-        /**/ newNode({ sha: 'j', parents: ['k'] }),
-        newNode({ sha: 'k', parents: [] }),
-      ]
+    context('complex', () => {
+      beforeEach(() => {
+        data = () => [
+          // BRANCHLINE 0
+          newNode({ sha: 'a', parents: ['g', 'i'] }),
+          //        BRANCHLINE 2
+          /**/ /**/ newNode({ sha: 'b', parents: ['e'] }),
+          //             BRANCHLINE 3
+          /**/ /**/ /**/ newNode({ sha: 'c', parents: ['d'] }),
+          /**/ /**/ /**/ newNode({ sha: 'd', parents: ['g'] }),
+          /**/ /**/ newNode({ sha: 'e', parents: ['f'] }),
+          /**/ /**/ newNode({ sha: 'f', parents: ['h'] }),
+          newNode({ sha: 'g', parents: ['k'] }),
+          /**/ /**/ newNode({ sha: 'h', parents: ['k'] }),
+          //   BRANCHLINE 1
+          /**/ newNode({ sha: 'i', parents: ['j'] }),
+          /**/ newNode({ sha: 'j', parents: ['k'] }),
+          newNode({ sha: 'k', parents: [] }),
+        ]
 
-      calculate()
+        calculate()
+      })
 
-      // remember that the branchLineIndex parameter is an index ordered by branch commit-index-length
-      expect(calculator.numberOfActiveLinesAt(0, 3)).to.equal(0)
-      expect(calculator.numberOfActiveLinesAt(1, 3)).to.equal(1)
-      expect(calculator.numberOfActiveLinesAt(2, 10)).to.equal(1)
-      expect(calculator.numberOfActiveLinesAt(2, 9)).to.equal(1)
-      expect(calculator.numberOfActiveLinesAt(2, 9)).to.equal(1)
-      expect(calculator.numberOfActiveLinesAt(3, 3)).to.equal(2)
-      expect(calculator.numberOfActiveLinesAt(3, 2)).to.equal(2)
-      expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(1)
+      it('branch 0, index 3', () => {
+        expect(calculator.numberOfActiveLinesAt(0, 3)).to.equal(0)
+      })
+      it('branch 1, index 3', () => {
+        expect(calculator.numberOfActiveLinesAt(1, 3)).to.equal(1)
+      })
+      it('branch 2, index 10', () => {
+        expect(calculator.numberOfActiveLinesAt(2, 10)).to.equal(2)
+      })
+      it('branch 2, index 9', () => {
+        expect(calculator.numberOfActiveLinesAt(2, 9)).to.equal(2)
+      })
+      it('branch 3, index 3', () => {
+        expect(calculator.numberOfActiveLinesAt(3, 3)).to.equal(2)
+      })
+      it('branch 3, index 2', () => {
+        expect(calculator.numberOfActiveLinesAt(3, 2)).to.equal(2)
+      })
+      it('branch 3, index 0', () => {
+        expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(1)
+      })
     })
   })
 })

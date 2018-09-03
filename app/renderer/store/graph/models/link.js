@@ -3,15 +3,9 @@ export class Link {
     this.color = null
     this.merge = false
     this.source = source
+    this.sourceSha = getSha(this.source)
     this.target = target
-  }
-
-  sourceSha() {
-    return getSha(this.source)
-  }
-
-  targetSha() {
-    return getSha(this.target)
+    this.targetSha = getSha(this.target)
   }
 }
 

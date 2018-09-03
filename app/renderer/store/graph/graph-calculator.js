@@ -1,7 +1,6 @@
 import { Link } from './models/link'
 import { Node } from './models/node'
 import { GraphMap } from './models/graph-map'
-import { Color } from './models/color'
 import BranchLinesCalculator from './branchlines-calculator'
 
 export const START_X = 10
@@ -23,7 +22,7 @@ const makeNode = (commit) => {
   node.y = START_Y
   node.x = START_X
   node.commit = commit
-  node.color = Color.parseHex(Colours[0])
+  node.color = Colours[0]
   node.secondColor = null
   return node
 }
@@ -37,63 +36,66 @@ export class GraphCalculator {
     this.rowHeight = rowHeight
   }
 
-  retrieve = (commits) =>
-    this.map ? this.update(commits) : this.create(commits)
-
-  // privates
-
-  create(commits) {
+  retrieve = (commits) => {
     const nodes = commits.map(makeNode)
     const nodeDict = nodes.reduce((agg, node) => {
       agg[node.commit.sha] = node
       return agg
     }, {})
-    const links = this.generateLinks(nodes, nodeDict)
+
+    this._calculateLayout(nodes)
+    const links = this._generateLinks(nodes, nodeDict)
+
     this.map = new GraphMap(nodes, links, nodeDict)
-    this.rows = this.updateMapLayout()
+    this.rows = this._calculateRowSlices()
+
     return this.rows
   }
 
-  update(commits) {
-    const nodes = this.map.nodes
-    const nodeDict = this.map.nodeDict
+  // privates
 
-    // remove non-existant commits
-    const shas = commits.map((c) => c.sha)
-    const oldShas = Object.keys(nodeDict)
-    oldShas.forEach((sha) => {
-      if (shas.indexOf(sha) > -1) {
-        return
-      }
+  // TODO: might need this one-day?
+  // update(commits) {
+  //   const nodes = this.map.nodes
+  //   const nodeDict = this.map.nodeDict
 
-      nodes.splice(nodes.indexOf(nodeDict[sha]), 1)
-      delete nodeDict[sha]
-    })
+  //   // remove non-existant commits
+  //   const shas = commits.map((c) => c.sha)
+  //   const oldShas = Object.keys(nodeDict)
+  //   oldShas.forEach((sha) => {
+  //     if (shas.indexOf(sha) > -1) {
+  //       return
+  //     }
 
-    // add new commits
-    let i = 0
-    let j = 0
-    while (i < commits.length || j < nodes.length) {
-      if (j >= nodes.length || nodes[j].commit.sha !== commits[i].sha) {
-        const node = makeNode(commits[i])
-        if (j < nodes.length) {
-          nodes.splice(j, 0, node)
-        } else {
-          nodes.splice(nodes.length, 0, node)
-        }
-        nodeDict[node.commit.sha] = node
-      }
+  //     nodes.splice(nodes.indexOf(nodeDict[sha]), 1)
+  //     delete nodeDict[sha]
+  //   })
 
-      j += 1
-      i += 1
-    }
+  //   // add new commits
+  //   let i = 0
+  //   let j = 0
+  //   while (i < commits.length || j < nodes.length) {
+  //     if (j >= nodes.length || nodes[j].commit.sha !== commits[i].sha) {
+  //       const node = makeNode(commits[i])
+  //       if (j < nodes.length) {
+  //         nodes.splice(j, 0, node)
+  //       } else {
+  //         nodes.splice(nodes.length, 0, node)
+  //       }
+  //       nodeDict[node.commit.sha] = node
+  //     }
 
-    this.map.links = this.generateLinks(nodes, nodeDict)
-    this.rows = this.updateMapLayout(this.currentMap)
-    return this.rows
-  }
+  //     j += 1
+  //     i += 1
+  //   }
 
-  generateLinks = (nodes, nodeDict) => {
+  //   this.updateLayout()
+  //   this.map.links = this.generateLinks(nodes, nodeDict)
+  //   this.rows = this.updateRowSlices()
+  //   return this.rows
+  // }
+
+  _generateLinks = (nodes, nodeDict) => {
     const links = []
     const _infinityY = this.rowHeight * (nodes.length + 1)
     nodes.forEach((node) => {
@@ -132,11 +134,10 @@ export class GraphCalculator {
     return links
   }
 
-  updateMapLayout() {
-    const map = this.map
+  _calculateLayout = (nodes) => {
     const branchLinesCalc = new BranchLinesCalculator()
 
-    map.nodes.forEach((node, i) => {
+    nodes.forEach((node, i) => {
       node.y = START_Y + i * this.rowHeight
       branchLinesCalc.includeNode(node, i)
     })
@@ -147,10 +148,14 @@ export class GraphCalculator {
       branchLine.forEachNode((node, nodeI) => {
         const activeLines = branchLinesCalc.numberOfActiveLinesAt(i, nodeI)
         node.x = START_X + activeLines * X_SEPARATION
-        node.color.setHex(Colours[i % Colours.length])
+        node.color = Colours[i % Colours.length]
       }, this)
-      branchLine.color = new Color().setHex(Colours[i % Colours.length])
+      branchLine.color = Colours[i % Colours.length]
     }, this)
+  }
+
+  _calculateRowSlices = () => {
+    const map = this.map
 
     // construct slices for per-commit rendering
     const rows = new Array(map.nodes.length)
