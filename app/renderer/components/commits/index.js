@@ -120,7 +120,7 @@ export class Commits extends React.Component {
           showRemoteBranches={showRemoteBranches}
           selected={selectedSHA === commit.sha}
           onSelect={this.handleSelect}
-          onDoubleClick={(commit) => checkoutCommit(gitService, commit)}
+          onDoubleClick={(commit) => checkoutCommit(gitService, commit.sha)}
           height={RowHeight}
           currentBranchName={currentBranchName}
           graphItem={row}
@@ -148,7 +148,7 @@ const columns = [
 const ConnectedCommits = connect(
   ({
     commits: { commits = [] } = {},
-    graph: graphRows = [],
+    graph: { rows: graphRows = [] },
     branches,
     status,
     config: { showRemoteBranches },

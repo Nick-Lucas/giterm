@@ -37,9 +37,9 @@ export const loadMoreCommits = (gitService) => {
   }
 }
 
-export const checkoutCommit = (gitService, commit) => {
+export const checkoutCommit = (gitService, sha) => {
   return async (dispatch) => {
-    await gitService.checkout(commit.sha)
+    await gitService.checkout(sha)
     dispatch(refreshApplication(gitService))
   }
 }
