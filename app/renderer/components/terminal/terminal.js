@@ -8,6 +8,7 @@ import * as XTerm from 'xterm'
 import * as fit from 'xterm/lib/addons/fit/fit'
 import * as webLinks from 'xterm/lib/addons/webLinks/webLinks'
 import { spawn } from 'node-pty'
+import { shell } from 'electron'
 
 import { exec } from 'child_process'
 
@@ -101,10 +102,13 @@ export class Terminal extends React.Component {
 
   setupXTerm = () => {
     XTerm.Terminal.applyAddon(fit)
-    XTerm.Terminal.applyAddon(webLinks)
     const terminal = new XTerm.Terminal(terminalOpts)
     terminal.open(this.container.current)
-    terminal.webLinksInit()
+    webLinks.webLinksInit(terminal, (ev, uri) => {
+      if (ev.metaKey) {
+        shell.openExternal(uri)
+      }
+    })
     return terminal
   }
 
