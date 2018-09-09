@@ -97,6 +97,7 @@ export class Commits extends React.Component {
   renderRow = ({ index, style }) => {
     const {
       columns,
+      commits,
       graphRows,
       branches,
       showRemoteBranches,
@@ -107,7 +108,7 @@ export class Commits extends React.Component {
     const { selectedSHA } = this.state
 
     const row = graphRows[index]
-    const commit = row.node.commit
+    const commit = commits[index]
     return (
       <RightClickArea
         key={commit.sha}
