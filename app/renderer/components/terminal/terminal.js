@@ -40,6 +40,7 @@ export class Terminal extends React.Component {
     this.container = React.createRef()
     this.state = {
       alternateBuffer: false,
+      focused: false,
     }
   }
 
@@ -150,6 +151,14 @@ export class Terminal extends React.Component {
         that.ptyProcess.resize(cols, rows)
       }, 5),
     )
+
+    that.terminal.on('blur', () => that.setState({ focused: false }))
+    that.terminal.on('focus', () => that.setState({ focused: true }))
+    window.addEventListener('keydown', () => {
+      if (!that.state.focused) {
+        that.terminal.focus()
+      }
+    })
 
     // // TODO: ensure the process can't be exited and restart if need be
     // that.ptyProcess.on('exit', () => {
