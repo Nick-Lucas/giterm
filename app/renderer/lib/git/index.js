@@ -67,18 +67,14 @@ export class Git {
     return 'OK'
   }
 
-  getCurrentBranchHead = async () => {
+  getHeadSHA = async () => {
     const repo = await this.getComplex()
     if (!repo) {
-      return {}
+      return ''
     }
 
-    const ref = await repo.getCurrentBranch()
-    const commit = await repo.getBranchCommit(ref)
-    return {
-      name: ref.shorthand(),
-      commitSHA: commit.sha(),
-    }
+    const commit = await repo.getHeadCommit()
+    return commit.sha()
   }
 
   getAllBranches = async () => {

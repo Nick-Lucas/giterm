@@ -2,11 +2,12 @@ import { updateReducer } from './helpers'
 
 export const STATUS_UPDATE = 'status/update'
 
-export const statusUpdate = (status, state) => ({
+export const statusUpdate = (status, state, headSHA) => ({
   type: STATUS_UPDATE,
   payload: {
     ...status,
     state,
+    headSHA,
   },
 })
 
@@ -14,7 +15,8 @@ export function doStatusUpdate(gitService) {
   return async (dispatch) => {
     const state = await gitService.getStateText()
     const status = await gitService.getStatus()
-    const action = statusUpdate(status, state)
+    const headSHA = await gitService.getHeadSHA()
+    const action = statusUpdate(status, state, headSHA)
     dispatch(action)
   }
 }
