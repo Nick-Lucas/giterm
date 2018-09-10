@@ -81,7 +81,7 @@ export class Terminal extends React.Component {
       // Ensures that the terminal initialises with the correct style
       this.resizeTerminal()
     }, 5)
-    this.setupTerminalEvents(this.ptyProcess, this.terminal)
+    this.setupTerminalEvents()
     this.terminal.focus()
   }
 
