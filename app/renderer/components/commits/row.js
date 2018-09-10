@@ -156,5 +156,5 @@ Row.propTypes = {
   showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
   height: PropTypes.number.isRequired,
-  currentBranchName: PropTypes.string.isRequired,
+  currentBranchName: PropTypes.string,
 }
