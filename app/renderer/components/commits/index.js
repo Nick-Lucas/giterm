@@ -64,8 +64,23 @@ export class Commits extends React.Component {
     true,
   )
 
+  scrollToSha = (sha) => {
+    const index = this.props.commits.findIndex((c) => c.sha === sha)
+    if (index >= 0) {
+      this.setState({ selectedSHA: sha }, () =>
+        this.list.current.scrollToRow(index),
+      )
+    }
+  }
+
   componentWillUpdate() {
     this.list.current.forceUpdateGrid()
+  }
+
+  componentDidUpdate(prevProps) {
+    if (this.props.status.headSHA !== prevProps.status.headSHA) {
+      this.scrollToSha(this.props.status.headSHA)
+    }
   }
 
   render() {
