@@ -1,6 +1,9 @@
 alias gs="git status"
 alias status="gs"
 
+alias gf="git fetch"
+alias fetch="gf"
+
 alias ga="git add"
 alias add="ga"
 alias gaa="git add --all"
@@ -22,6 +25,8 @@ alias branches="git branch -a"
 
 alias gd="git diff HEAD"
 alias diff="gd"
+
+alias refresh="echo \"any linebreak will refresh giterm, but do whatever makes you feel good!\""
 
 help() {
   printf "giterm help\n_____________\n\n"
