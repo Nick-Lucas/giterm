@@ -141,7 +141,7 @@ export class Terminal extends React.Component {
             refreshApplication(gitService)
           }
         })
-      }, 20),
+      }, 300),
     )
 
     window.addEventListener('resize', debounce(this.resizeTerminal, 5), false)
