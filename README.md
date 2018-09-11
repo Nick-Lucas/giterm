@@ -15,7 +15,7 @@ Check of the [releases](https://github.com/Nick-Lucas/giterm/releases) tab
 ## Building locally
 
 1. checkout
-2. `yarn`/`npm` (NodeGit can take a while to build, so be patient)
+2. `yarn`/`npm install` (NodeGit can take a while to build, so be patient)
 3. `yarn run develop` or `npm run develop`. 
 
 ## Usage
