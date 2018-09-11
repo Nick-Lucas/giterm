@@ -84,7 +84,7 @@ export class Commits extends React.Component {
   }
 
   render() {
-    const { columns, graphRows } = this.props
+    const { columns, commits } = this.props
 
     return (
       <Wrapper>
@@ -97,7 +97,7 @@ export class Commits extends React.Component {
                 width={width}
                 height={height}
                 rowHeight={RowHeight}
-                rowCount={graphRows.length}
+                rowCount={commits.length}
                 overscanRowCount={2}
                 rowRenderer={this.renderRow}
                 onScroll={this.considerLoadMoreItems}
@@ -122,7 +122,11 @@ export class Commits extends React.Component {
     } = this.props
     const { selectedSHA } = this.state
 
-    const row = graphRows[index]
+    if (commits.length !== graphRows.length) {
+      return
+    }
+
+    const graphRow = graphRows[index]
     const commit = commits[index]
     return (
       <RightClickArea
@@ -139,7 +143,7 @@ export class Commits extends React.Component {
           onDoubleClick={(commit) => checkoutCommit(gitService, commit.sha)}
           height={RowHeight}
           currentBranchName={currentBranchName}
-          graphItem={row}
+          graphRow={graphRow}
         />
       </RightClickArea>
     )
