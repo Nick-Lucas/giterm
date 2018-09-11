@@ -1,5 +1,7 @@
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
+
+import { createHash } from 'crypto'
 import DateFormat from 'dateformat'
 import repoResolver from './repo-resolver'
 
@@ -116,25 +118,33 @@ export class Git {
     if (showRemote) walker.pushGlob('refs/remotes/*')
 
     const foundCommits = await walker.getCommits(number)
-    return foundCommits.map((c) => ({
-      sha: c.sha(),
-      sha7: c.sha().substring(0, 6),
-      message: c.message().split('\n')[0],
-      detail: c
-        .message()
-        .split('\n')
-        .splice(1, c.message().split('\n').length)
-        .join('\n'),
-      date: c.date(),
-      dateStr: DateFormat(c.date(), 'yyyy/mm/dd hh:MM'),
-      time: c.time(),
-      committer: c.committer(),
-      email: c.author().email(),
-      author: c.author().name(),
-      authorStr: `${c.author().name()} <${c.author().email()}>`,
-      parents: c.parents().map((p) => p.toString()),
-      isHead: headSHA === c.sha(),
-    }))
+
+    const hash = createHash('sha1')
+    const commits = new Array(foundCommits.length)
+    for (let i = 0; i < foundCommits.length; i++) {
+      const c = foundCommits[i]
+      hash.update(c.sha())
+      commits[i] = {
+        sha: c.sha(),
+        sha7: c.sha().substring(0, 6),
+        message: c.message().split('\n')[0],
+        detail: c
+          .message()
+          .split('\n')
+          .splice(1, c.message().split('\n').length)
+          .join('\n'),
+        date: c.date(),
+        dateStr: DateFormat(c.date(), 'yyyy/mm/dd hh:MM'),
+        time: c.time(),
+        committer: c.committer(),
+        email: c.author().email(),
+        author: c.author().name(),
+        authorStr: `${c.author().name()} <${c.author().email()}>`,
+        parents: c.parents().map((p) => p.toString()),
+        isHead: headSHA === c.sha(),
+      }
+    }
+    return [commits, hash.digest('hex')]
   }
 
   checkout = async (sha) => {

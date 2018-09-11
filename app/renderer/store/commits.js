@@ -11,14 +11,15 @@ export const doUpdateCommits = (gitService) => {
       commits: { numberToLoad },
     } = getState()
 
-    const commits = await gitService.loadAllCommits(
+    const [commits, digest] = await gitService.loadAllCommits(
       showRemoteBranches,
       numberToLoad,
     )
 
     dispatch({
       type: COMMITS_UPDATE,
-      payload: commits,
+      commits,
+      digest,
     })
     dispatch(doUpdateGraph())
   }
@@ -54,7 +55,8 @@ export default (state = initialState, action) => {
     case COMMITS_UPDATE:
       return {
         ...state,
-        commits: action.payload,
+        commits: action.commits,
+        digest: action.digest,
       }
     case LOAD_MORE_COMMITS:
       return {

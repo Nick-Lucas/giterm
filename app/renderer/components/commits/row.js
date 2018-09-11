@@ -63,6 +63,7 @@ export default class Row extends React.Component {
 
   render() {
     const { columns, commit } = this.props
+
     return (
       <RowWrapper
         style={this.getWrapperStyle()}
@@ -107,7 +108,7 @@ export default class Row extends React.Component {
 
   renderGraphItem() {
     const {
-      graphItem: { yOffset, node, links },
+      graphRow: { yOffset, node, links },
     } = this.props
     return (
       <svg>
@@ -155,6 +156,7 @@ Row.propTypes = {
   branches: props.branches,
   showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
+  graphRow: PropTypes.object.isRequired,
   height: PropTypes.number.isRequired,
   currentBranchName: PropTypes.string,
 }
