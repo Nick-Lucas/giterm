@@ -1,4 +1,4 @@
-![https://travis-ci.com/Nick-Lucas/giterm.svg?branch=master](https://travis-ci.com/Nick-Lucas/giterm)
+[![Build Status](https://travis-ci.com/Nick-Lucas/giterm.svg?branch=master)](https://travis-ci.com/Nick-Lucas/giterm)
 
 ## giterm
 
