@@ -1,3 +1,5 @@
+![https://travis-ci.com/Nick-Lucas/giterm.svg?branch=master](https://travis-ci.com/Nick-Lucas/giterm)
+
 ## giterm
 
 Electron/React based git tool, with a terminal at its heart, and all the best parts of a git GUI.
