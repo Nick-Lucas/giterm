@@ -27,3 +27,8 @@ jobs:
         file: "dist/Giterm-*.dmg"
         skip_cleanup: true
         draft: true
+        on:
+          branches:
+            only:
+              - master
+              - travis-build
