@@ -20,4 +20,10 @@ jobs:
       script: yarn test
     - stage: "Build"
       script: yarn pack:mac
-
+      deploy:
+        provider: releases
+        api_key: $GITHUB_API_KEY
+        file_glob: true
+        file: "dist/Giterm-*.dmg"
+        skip_cleanup: true
+        draft: true
