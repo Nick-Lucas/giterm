@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import { routerMiddleware, push } from 'react-router-redux'
-import persistState from 'redux-localstorage'
+// import persistState from 'redux-localstorage'
 import thunk from 'redux-thunk'
 
 // Reducers
