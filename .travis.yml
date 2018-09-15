@@ -15,10 +15,11 @@ before_install:
 jobs:
   include:
     - stage: "Test"
-      os: linux
       name: "Linting"
+      os: linux
       script: yarn lint
     - name: "Unit Tests"
+      os: linux
       script: yarn test
     - stage: "Build"
       script: yarn pack:mac
