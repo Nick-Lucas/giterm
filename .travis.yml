@@ -40,8 +40,7 @@ jobs:
         file_glob: true
         file: "dist/Giterm-*.dmg"
         skip_cleanup: true
-        draft: true
         name: Giterm $TRAVIS_TAG ($TRAVIS_BUILD_NUMBER)
         on:
-          branch: travis-build
+          branch: master
           tags: true
