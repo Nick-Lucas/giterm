@@ -22,6 +22,7 @@ jobs:
       os: linux
       script: yarn test
     - stage: "Build"
+      name: "Mac Build"
       script: yarn pack:mac
       deploy:
         provider: releases
