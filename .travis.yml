@@ -16,7 +16,6 @@ before_install:
 
 before_script:
   - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then export DISPLAY=:99.0; sh -e /etc/init.d/xvfb start; fi
-  - export GITERM_VERSION=$(jq -r ".version" ./package.json)
 
 jobs:
   include:
@@ -42,7 +41,7 @@ jobs:
         file: "dist/Giterm-*.dmg"
         skip_cleanup: true
         draft: true
-        name: Giterm $GITERM_VERSION $TRAVIS_BUILD_NUMBER
+        name: Giterm $TRAVIS_TAG ($TRAVIS_BUILD_NUMBER)
         on:
           branch: travis-build
           tags: true
