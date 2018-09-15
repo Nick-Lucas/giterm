@@ -1,8 +1,10 @@
 os: osx
 osx_image: xcode9.4
+
 language: node_js
 node_js:
   - "8.11.3"
+
 cache: 
   yarn: true
   directories:
@@ -17,16 +19,21 @@ before_script:
 
 jobs:
   include:
+
     - stage: "Test"
+
       name: "Linting"
       os: linux
       script: yarn lint
+
     - name: "Unit Tests"
       os: linux
       script: yarn test
+
     - stage: "Build"
+    
       name: "Mac Build"
-      script: yarn pack:mac
+      script: travis_wait 20 yarn pack:mac
       deploy:
         provider: releases
         api_key: $GITHUB_API_KEY
