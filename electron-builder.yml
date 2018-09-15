@@ -1,5 +1,5 @@
-appId: com.example.giterm
-copyright: Example co
+appId: com.nicklucas.giterm
+copyright: Nick Lucas 2018 MIT
 productName: Giterm
 
 asar: true
