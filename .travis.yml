@@ -31,7 +31,7 @@ jobs:
       script: yarn test
 
     - stage: "Build"
-    
+
       name: "Mac Build"
       script: travis_wait 20 yarn pack:mac
       deploy:
@@ -43,3 +43,4 @@ jobs:
         draft: true
         on:
           branch: travis-build
+          tags: true
