@@ -9,13 +9,19 @@ const newNode = (commit) => {
   return n
 }
 
-const newBranchLine = (allNodes, indexes = [], rootIndex = null) => {
+const newBranchLine = (
+  allNodes,
+  indexes = [],
+  rootIndex = null,
+  mergeIndex = null,
+) => {
   const nodes = indexes.map((i) => allNodes[i])
 
   const b = new BranchLine()
   b.startIndex = indexes[0]
   b.endIndex = indexes[indexes.length - 1]
   b.rootIndex = rootIndex
+  b.mergeIndex = mergeIndex
 
   b.indexes = indexes
   b.nodes = nodes
@@ -73,7 +79,7 @@ context('branchlines calculator', () => {
       const branches = calculator.branchLines
       const expected = [
         newBranchLine(data(), [0, 2, 3]),
-        newBranchLine(data(), [1], 2),
+        newBranchLine(data(), [1], 2, 0),
       ]
       equal(branches, expected)
     })
@@ -133,7 +139,7 @@ context('branchlines calculator', () => {
       const branches = calculator.branchLines
       const expected = [
         newBranchLine(data(), [0, 5, 6]),
-        newBranchLine(data(), [1, 2, 3, 4], 5),
+        newBranchLine(data(), [1, 2, 3, 4], 5, 0),
       ]
       equal(branches, expected)
     })
@@ -158,9 +164,9 @@ context('branchlines calculator', () => {
       const branches = calculator.branchLines
       const expected = [
         newBranchLine(data(), [0, 6, 10]),
-        newBranchLine(data(), [2, 3], 6),
+        newBranchLine(data(), [2, 3], 6, 0),
         newBranchLine(data(), [1, 4, 5, 7], 10),
-        newBranchLine(data(), [8, 9], 10),
+        newBranchLine(data(), [8, 9], 10, 6),
       ]
       equal(branches, expected)
     })
@@ -245,13 +251,13 @@ context('branchlines calculator', () => {
         expect(calculator.numberOfActiveLinesAt(2, 9)).to.equal(2)
       })
       it('branch 3, index 3', () => {
-        expect(calculator.numberOfActiveLinesAt(3, 3)).to.equal(2)
+        expect(calculator.numberOfActiveLinesAt(3, 3)).to.equal(3)
       })
       it('branch 3, index 2', () => {
-        expect(calculator.numberOfActiveLinesAt(3, 2)).to.equal(2)
+        expect(calculator.numberOfActiveLinesAt(3, 2)).to.equal(3)
       })
       it('branch 3, index 0', () => {
-        expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(1)
+        expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(2)
       })
     })
   })

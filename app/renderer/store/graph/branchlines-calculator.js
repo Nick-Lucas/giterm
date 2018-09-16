@@ -34,7 +34,7 @@ export default class BranchLinesCalculator {
 
     // if it's a merge then kick off a line expecting the branch parent
     if (node.commit.parents.length > 1) {
-      this.branchLines.push(new BranchLine(node.commit.parents[1]))
+      this.branchLines.push(new BranchLine(node.commit.parents[1], yIndex))
     }
   }
 
@@ -42,15 +42,16 @@ export default class BranchLinesCalculator {
     return this.retrieve()
       .slice(0, branchLineIndex)
       .filter(
-        (bl) => bl.startIndex <= nodeIndex && nodeIndex <= bl.finalIndex(),
+        (bl) => bl.firstIndex() <= nodeIndex && nodeIndex <= bl.finalIndex(),
       ).length
   }
 }
 
 export class BranchLine {
-  constructor(expectedSha) {
+  constructor(expectedSha, mergeIndex = null) {
     this.nodes = []
     this.indexes = []
+    this.mergeIndex = mergeIndex
     this.startIndex = null
     this.endIndex = null
     this.rootIndex = null
@@ -70,6 +71,13 @@ export class BranchLine {
   }
 
   length = () => this.endIndex - this.startIndex
+
+  firstIndex = () => {
+    if (this.mergeIndex !== null) {
+      return this.mergeIndex
+    }
+    return this.startIndex
+  }
 
   finalIndex = () => {
     if (this.rootIndex !== null) {
