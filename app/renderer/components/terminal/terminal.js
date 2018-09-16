@@ -93,7 +93,6 @@ export class Terminal extends React.Component {
       cwd: this.props.cwd,
       env: {
         ...process.env,
-        PS1: '\\W> ',
         GITERM_RC: BASHRC_PATH,
       },
     })
