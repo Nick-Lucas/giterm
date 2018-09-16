@@ -1,6 +1,6 @@
 {
   "name": "giterm",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "A git gui for terminal lovers",
   "main": "init.js",
   "author": {
