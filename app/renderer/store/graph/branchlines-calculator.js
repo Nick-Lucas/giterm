@@ -39,11 +39,23 @@ export default class BranchLinesCalculator {
   }
 
   numberOfActiveLinesAt = (branchLineIndex, nodeIndex) => {
+    const branchLine = this.retrieve()[branchLineIndex]
+    const mergeEdge =
+      nodeIndex === branchLine.startIndex && !!branchLine.mergeIndex
+        ? branchLine.mergeIndex
+        : null
+
     return this.retrieve()
       .slice(0, branchLineIndex)
-      .filter(
-        (bl) => bl.firstIndex() <= nodeIndex && nodeIndex <= bl.finalIndex(),
-      ).length
+      .filter((bl) => {
+        return (
+          (bl.firstIndex() <= nodeIndex && nodeIndex <= bl.finalIndex()) ||
+          // Check edges of branch for overlaps with other branch
+          (mergeEdge !== null &&
+            bl.firstIndex() <= mergeEdge &&
+            mergeEdge <= bl.finalIndex())
+        )
+      }).length
   }
 }
 
