@@ -136,7 +136,7 @@ export class Git {
           .split('\n')
           .splice(1, c.message().split('\n').length)
           .join('\n'),
-        date: date,
+        date: date.toDate(),
         dateStr: date.format('YYYY/MM/DD HH:mm'),
         time: c.time(),
         committer: c.committer(),
