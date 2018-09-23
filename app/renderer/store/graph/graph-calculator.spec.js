@@ -49,6 +49,8 @@ const getNodeDict = (nodes) =>
     return agg
   }, {})
 
+const indexes = (array, ...indexes) => indexes.map((i) => array[i])
+
 const equal = (target, expected) => {
   try {
     expect(JSON.stringify(target)).to.deep.eql(JSON.stringify(expected))
@@ -385,6 +387,85 @@ context('git graph calculator', () => {
               node: nodes[4],
               links: [links[0], links[3], links[4]],
             },
+          ]
+
+          equal(rows, expectedRows)
+        })
+      },
+    )
+
+    context(
+      'edge case with overlapping branches (https://github.com/Nick-Lucas/giterm/issues/36)',
+      () => {
+        let nodes
+        let links
+
+        beforeEach(() => {
+          data = () => [
+            newCommit('a0', ['a1']),
+            /**/ /**/ newCommit('c1', ['c2']),
+            newCommit('a1', ['a2']),
+            /**/ /**/ newCommit('c2', ['a3']),
+            newCommit('a2', ['a3', 'b1']),
+            newCommit('a3', ['a4']),
+            /**/ newCommit('b1', ['a4']),
+            newCommit('a4', []),
+          ]
+          calculate()
+
+          nodes = getNodes(
+            data(),
+            {
+              colour: Colours[0],
+              indexes: [0, 2, 4, 5, 7],
+            },
+            {
+              colour: Colours[1],
+              indexes: [1, 3],
+            },
+            {
+              colour: Colours[2],
+              indexes: [6],
+            },
+          )
+          nodes[4].secondColor = Colours[2]
+          links = getLinks(
+            nodes,
+            { pair: [0, 2], colour: Colours[0] },
+            { pair: [1, 3], colour: Colours[1] },
+            { pair: [2, 4], colour: Colours[0] },
+            { pair: [3, 5], colour: Colours[1] },
+            { pair: [4, 5], colour: Colours[0], merge: true },
+            { pair: [4, 6], colour: Colours[2], merge: true },
+            { pair: [5, 7], colour: Colours[0] },
+            { pair: [6, 7], colour: Colours[2] },
+          )
+        })
+
+        it('should construct map correctly', () => {
+          const graphMap = calculator.map
+          const dict = getNodeDict(nodes)
+          const expectedMap = new GraphMap(nodes, links, dict)
+
+          equal(graphMap, expectedMap)
+        })
+
+        it('should construct rows correctly', () => {
+          const rows = calculator.rows
+
+          const expectedRows = [
+            { yOffset: 0, node: nodes[0], links: indexes(links, 0) },
+            { yOffset: 1, node: nodes[1], links: indexes(links, 0, 1) },
+            {
+              yOffset: 2,
+              node: nodes[2],
+              links: indexes(links, 0, 1, 2),
+            },
+            { yOffset: 3, node: nodes[3], links: indexes(links, 1, 2, 3) },
+            { yOffset: 4, node: nodes[4], links: indexes(links, 2, 3, 4, 5) },
+            { yOffset: 5, node: nodes[5], links: indexes(links, 3, 4, 5, 6) },
+            { yOffset: 6, node: nodes[6], links: indexes(links, 5, 6, 7) },
+            { yOffset: 7, node: nodes[7], links: indexes(links, 6, 7) },
           ]
 
           equal(rows, expectedRows)
