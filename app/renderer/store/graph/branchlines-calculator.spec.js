@@ -260,5 +260,38 @@ context('branchlines calculator', () => {
         expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(2)
       })
     })
+
+    context('crossing branches', () => {
+      beforeEach(() => {
+        data = () => [
+          // BRANCHLINE 0
+          newNode({ sha: 'a0', parents: ['a1'] }),
+          //        BRANCHLINE 1
+          /**/ /**/ newNode({ sha: 'c1', parents: ['c2'] }),
+          newNode({ sha: 'a1', parents: ['a2'] }),
+          /**/ /**/ newNode({ sha: 'c2', parents: ['a3'] }),
+          newNode({ sha: 'a2', parents: ['a3', 'b1'] }),
+          newNode({ sha: 'a3', parents: ['a4'] }),
+          // BRANCHLINE 2
+          /**/ newNode({ sha: 'b1', parents: ['a4'] }),
+          newNode({ sha: 'a4', parents: [] }),
+        ]
+
+        calculate()
+      })
+
+      it("at branch1's first commit", () => {
+        expect(calculator.numberOfActiveLinesAt(2, 3)).to.equal(2)
+      })
+
+      it('merge of branch2', () => {
+        expect(calculator.numberOfActiveLinesAt(1, 4)).to.equal(1)
+        expect(calculator.numberOfActiveLinesAt(2, 4)).to.equal(2)
+      })
+
+      it('first commit on branch2 should detect 2 branches as its root tail overlaps', () => {
+        expect(calculator.numberOfActiveLinesAt(2, 6)).to.equal(2)
+      })
+    })
   })
 })
