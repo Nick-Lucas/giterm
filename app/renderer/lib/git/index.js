@@ -2,7 +2,7 @@ import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 
 import { createHash } from 'crypto'
-import Moment from 'moment'
+import DateFormat from 'dateformat'
 import repoResolver from './repo-resolver'
 
 export class Git {
@@ -124,9 +124,6 @@ export class Git {
     for (let i = 0; i < foundCommits.length; i++) {
       const c = foundCommits[i]
       hash.update(c.sha())
-
-      const date = Moment(c.date()).local()
-
       commits[i] = {
         sha: c.sha(),
         sha7: c.sha().substring(0, 6),
@@ -136,8 +133,8 @@ export class Git {
           .split('\n')
           .splice(1, c.message().split('\n').length)
           .join('\n'),
-        date: date,
-        dateStr: date.format('YYYY/MM/DD hh:mm'),
+        date: c.date(),
+        dateStr: DateFormat(c.date(), 'yyyy/mm/dd hh:MM'),
         time: c.time(),
         committer: c.committer(),
         email: c.author().email(),
