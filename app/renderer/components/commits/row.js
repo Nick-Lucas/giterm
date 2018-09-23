@@ -119,7 +119,7 @@ export default class Row extends React.Component {
             stroke={link.color}
             strokeWidth={3}
             fill="none"
-            r={20}
+            r={2}
           />
         ))}
         <circle
@@ -142,7 +142,7 @@ export default class Row extends React.Component {
     const y2 = link.target.y - yOffset
     return [
       { x: x1, y: y1 },
-      x1 < x2 ? { x: x2, y: y1 } : { x: x1, y: y2 },
+      x1 < x2 ? { x: x2, y: y1 + 10 } : { x: x1, y: y2 - 10 },
       { x: x2, y: y2 },
     ]
   }
