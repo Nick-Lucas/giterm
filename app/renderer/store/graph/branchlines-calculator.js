@@ -87,8 +87,9 @@ export class BranchLine {
   }
 
   forEachNode = (callback, thisArg) => {
+    const cb = callback.bind(thisArg)
     this.nodes.forEach((node, i) => {
-      callback.bind(thisArg)(node, this.indexes[i])
+      cb(node, this.indexes[i])
     })
   }
 }
