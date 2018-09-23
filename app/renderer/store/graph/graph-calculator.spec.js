@@ -402,8 +402,6 @@ context('git graph calculator', () => {
 
         beforeEach(() => {
           data = () => [
-            newCommit('a0', ['a1']),
-            /**/ /**/ newCommit('c1', ['c2']),
             newCommit('a1', ['a2']),
             /**/ /**/ newCommit('c2', ['a3']),
             newCommit('a2', ['a3', 'b1']),
@@ -417,28 +415,26 @@ context('git graph calculator', () => {
             data(),
             {
               colour: Colours[0],
-              indexes: [0, 2, 4, 5, 7],
+              indexes: [0, 2, 3, 5],
             },
             {
               colour: Colours[1],
-              indexes: [1, 3],
+              indexes: [1],
             },
             {
               colour: Colours[2],
-              indexes: [6],
+              indexes: [4],
             },
           )
-          nodes[4].secondColor = Colours[2]
+          nodes[2].secondColor = Colours[2]
           links = getLinks(
             nodes,
             { pair: [0, 2], colour: Colours[0] },
             { pair: [1, 3], colour: Colours[1] },
-            { pair: [2, 4], colour: Colours[0] },
-            { pair: [3, 5], colour: Colours[1] },
-            { pair: [4, 5], colour: Colours[0], merge: true },
-            { pair: [4, 6], colour: Colours[2], merge: true },
-            { pair: [5, 7], colour: Colours[0] },
-            { pair: [6, 7], colour: Colours[2] },
+            { pair: [2, 3], colour: Colours[0], merge: true },
+            { pair: [2, 4], colour: Colours[2], merge: true },
+            { pair: [3, 5], colour: Colours[0] },
+            { pair: [4, 5], colour: Colours[2] },
           )
         })
 
@@ -454,18 +450,16 @@ context('git graph calculator', () => {
           const rows = calculator.rows
 
           const expectedRows = [
-            { yOffset: 0, node: nodes[0], links: indexes(links, 0) },
-            { yOffset: 1, node: nodes[1], links: indexes(links, 0, 1) },
             {
-              yOffset: 2,
-              node: nodes[2],
-              links: indexes(links, 0, 1, 2),
+              yOffset: 0,
+              node: nodes[0],
+              links: indexes(links, 0),
             },
-            { yOffset: 3, node: nodes[3], links: indexes(links, 1, 2, 3) },
-            { yOffset: 4, node: nodes[4], links: indexes(links, 2, 3, 4, 5) },
-            { yOffset: 5, node: nodes[5], links: indexes(links, 3, 4, 5, 6) },
-            { yOffset: 6, node: nodes[6], links: indexes(links, 5, 6, 7) },
-            { yOffset: 7, node: nodes[7], links: indexes(links, 6, 7) },
+            { yOffset: 1, node: nodes[1], links: indexes(links, 0, 1) },
+            { yOffset: 2, node: nodes[2], links: indexes(links, 0, 1, 2, 3) },
+            { yOffset: 3, node: nodes[3], links: indexes(links, 1, 2, 3, 4) },
+            { yOffset: 4, node: nodes[4], links: indexes(links, 3, 4, 5) },
+            { yOffset: 5, node: nodes[5], links: indexes(links, 4, 5) },
           ]
 
           equal(rows, expectedRows)
