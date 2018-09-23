@@ -125,7 +125,7 @@ export class Git {
       const c = foundCommits[i]
       hash.update(c.sha())
 
-      const date = Moment(c.date()).local()
+      const date = Moment(c.date())
 
       commits[i] = {
         sha: c.sha(),
@@ -137,7 +137,7 @@ export class Git {
           .splice(1, c.message().split('\n').length)
           .join('\n'),
         date: date,
-        dateStr: date.format('YYYY/MM/DD hh:mm'),
+        dateStr: date.format('YYYY/MM/DD HH:mm'),
         time: c.time(),
         committer: c.committer(),
         email: c.author().email(),
