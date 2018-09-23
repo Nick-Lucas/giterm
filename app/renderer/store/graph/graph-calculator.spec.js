@@ -395,7 +395,7 @@ context('git graph calculator', () => {
     )
 
     context(
-      'edge case with overlapping branches (https://github.com/Nick-Lucas/giterm/issues/36)',
+      'edge case with overlapping branches v1 (https://github.com/Nick-Lucas/giterm/issues/36)',
       () => {
         let nodes
         let links
@@ -450,16 +450,81 @@ context('git graph calculator', () => {
           const rows = calculator.rows
 
           const expectedRows = [
-            {
-              yOffset: 0,
-              node: nodes[0],
-              links: indexes(links, 0),
-            },
+            { yOffset: 0, node: nodes[0], links: indexes(links, 0) },
             { yOffset: 1, node: nodes[1], links: indexes(links, 0, 1) },
             { yOffset: 2, node: nodes[2], links: indexes(links, 0, 1, 2, 3) },
             { yOffset: 3, node: nodes[3], links: indexes(links, 1, 2, 3, 4) },
             { yOffset: 4, node: nodes[4], links: indexes(links, 3, 4, 5) },
             { yOffset: 5, node: nodes[5], links: indexes(links, 4, 5) },
+          ]
+
+          equal(rows, expectedRows)
+        })
+      },
+    )
+
+    context(
+      'edge case with overlapping branches v2 (https://github.com/Nick-Lucas/giterm/issues/36)',
+      () => {
+        let nodes
+        let links
+
+        beforeEach(() => {
+          data = () => [
+            newCommit('a1', ['a2']),
+            /**/ /**/ newCommit('c1', ['a4']),
+            newCommit('a2', ['a3', 'b1']),
+            /**/ newCommit('b1', ['a3']),
+            newCommit('a3', ['a4']),
+            newCommit('a4', []),
+          ]
+          calculate()
+
+          nodes = getNodes(
+            data(),
+            {
+              colour: Colours[0],
+              indexes: [0, 2, 4, 5],
+            },
+            {
+              colour: Colours[1],
+              indexes: [1],
+            },
+            {
+              colour: Colours[2],
+              indexes: [3],
+            },
+          )
+          nodes[2].secondColor = Colours[2]
+          links = getLinks(
+            nodes,
+            { pair: [0, 2], colour: Colours[0] },
+            { pair: [1, 5], colour: Colours[1] },
+            { pair: [2, 4], colour: Colours[0], merge: true },
+            { pair: [2, 3], colour: Colours[2], merge: true },
+            { pair: [3, 4], colour: Colours[2] },
+            { pair: [4, 5], colour: Colours[0] },
+          )
+        })
+
+        it('should construct map correctly', () => {
+          const graphMap = calculator.map
+          const dict = getNodeDict(nodes)
+          const expectedMap = new GraphMap(nodes, links, dict)
+
+          equal(graphMap, expectedMap)
+        })
+
+        it('should construct rows correctly', () => {
+          const rows = calculator.rows
+
+          const expectedRows = [
+            { yOffset: 0, node: nodes[0], links: indexes(links, 0) },
+            { yOffset: 1, node: nodes[1], links: indexes(links, 0, 1) },
+            { yOffset: 2, node: nodes[2], links: indexes(links, 0, 1, 2, 3) },
+            { yOffset: 3, node: nodes[3], links: indexes(links, 1, 2, 3, 4) },
+            { yOffset: 4, node: nodes[4], links: indexes(links, 1, 2, 4, 5) },
+            { yOffset: 5, node: nodes[5], links: indexes(links, 1, 5) },
           ]
 
           equal(rows, expectedRows)
