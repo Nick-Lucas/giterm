@@ -49,11 +49,11 @@ export default class BranchLinesCalculator {
       .slice(0, branchLineIndex)
       .filter((bl) => {
         return (
-          (bl.firstIndex() <= nodeIndex && nodeIndex <= bl.finalIndex()) ||
+          (bl.firstIndex() <= nodeIndex && nodeIndex < bl.finalIndex()) ||
           // Check edges of branch for overlaps with other branch
           (mergeEdge !== null &&
             bl.firstIndex() <= mergeEdge &&
-            mergeEdge <= bl.finalIndex())
+            mergeEdge < bl.finalIndex())
         )
       }).length
   }

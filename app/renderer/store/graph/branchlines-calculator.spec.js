@@ -244,9 +244,6 @@ context('branchlines calculator', () => {
       it('branch 1, index 3', () => {
         expect(calculator.numberOfActiveLinesAt(1, 3)).to.equal(1)
       })
-      it('branch 2, index 10', () => {
-        expect(calculator.numberOfActiveLinesAt(2, 10)).to.equal(2)
-      })
       it('branch 2, index 9', () => {
         expect(calculator.numberOfActiveLinesAt(2, 9)).to.equal(2)
       })
@@ -255,6 +252,13 @@ context('branchlines calculator', () => {
       })
       it('branch 3, index 2', () => {
         expect(calculator.numberOfActiveLinesAt(3, 2)).to.equal(3)
+      })
+
+      // These two are edge case-y and I sort of expect them to be broken.
+      // They're actually unrealistic since only one branch could be alive at the start or end of the list anyway
+      // So the answer would be always be 0 when queried by THAT branch
+      it('branch 2, index 10', () => {
+        expect(calculator.numberOfActiveLinesAt(2, 10)).to.equal(0)
       })
       it('branch 3, index 0', () => {
         expect(calculator.numberOfActiveLinesAt(3, 0)).to.equal(2)
