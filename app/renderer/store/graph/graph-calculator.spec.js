@@ -25,9 +25,9 @@ const getNodes = (commits, ...columns) => {
     return n
   })
 
-  columns.forEach(({ colour, indexes }, columnIndex) => {
+  columns.forEach(({ colour, indexes, colIndex }) => {
     indexes.forEach((i) => {
-      nodes[i].x = START_X + X_SEPARATION * columnIndex
+      nodes[i].x = START_X + X_SEPARATION * colIndex
       nodes[i].color = colour
     })
   })
@@ -61,6 +61,8 @@ const equal = (target, expected) => {
 
 context('git graph calculator', () => {
   let data = () => []
+  let nodes
+  let links
 
   let calculator
   const calculate = () => {
@@ -79,22 +81,22 @@ context('git graph calculator', () => {
           newCommit('b', ['c']),
           newCommit('c', []),
         ]
-
         calculate()
-      })
 
-      it('should construct map correctly', () => {
-        const graphMap = calculator.map
-
-        const nodes = getNodes(data(), {
+        nodes = getNodes(data(), {
           colour: Colours[0],
           indexes: [0, 1, 2],
+          colIndex: 0,
         })
-        const links = getLinks(
+        links = getLinks(
           nodes,
           { pair: [0, 1], colour: Colours[0] },
           { pair: [1, 2], colour: Colours[0] },
         )
+      })
+
+      it('should construct map correctly', () => {
+        const graphMap = calculator.map
         const dict = getNodeDict(nodes)
         const expectedMap = new GraphMap(nodes, links, dict)
 
@@ -103,16 +105,6 @@ context('git graph calculator', () => {
 
       it('should construct rows correctly', () => {
         const rows = calculator.rows
-
-        const nodes = getNodes(data(), {
-          colour: Colours[0],
-          indexes: [0, 1, 2],
-        })
-        const links = getLinks(
-          nodes,
-          { pair: [0, 1], colour: Colours[0] },
-          { pair: [1, 2], colour: Colours[0] },
-        )
 
         const expectedRows = [
           { yOffset: 0, node: nodes[0], links: [links[0]] },
@@ -129,33 +121,34 @@ context('git graph calculator', () => {
         data = () => [
           newCommit('a', ['b']),
           newCommit('b', ['d']),
-          newCommit('c', ['d']),
+          /**/ newCommit('c', ['d']),
           newCommit('d', []),
         ]
-
         calculate()
-      })
 
-      it('should construct map correctly', () => {
-        const graphMap = calculator.map
-
-        const nodes = getNodes(
+        nodes = getNodes(
           data(),
           {
             colour: Colours[0],
             indexes: [0, 1, 3],
+            colIndex: 0,
           },
           {
             colour: Colours[1],
             indexes: [2],
+            colIndex: 1,
           },
         )
-        const links = getLinks(
+        links = getLinks(
           nodes,
           { pair: [0, 1], colour: Colours[0] },
           { pair: [1, 3], colour: Colours[0] },
           { pair: [2, 3], colour: Colours[1] },
         )
+      })
+
+      it('should construct map correctly', () => {
+        const graphMap = calculator.map
         const dict = getNodeDict(nodes)
         const expectedMap = new GraphMap(nodes, links, dict)
 
@@ -164,24 +157,6 @@ context('git graph calculator', () => {
 
       it('should construct rows correctly', () => {
         const rows = calculator.rows
-
-        const nodes = getNodes(
-          data(),
-          {
-            colour: Colours[0],
-            indexes: [0, 1, 3],
-          },
-          {
-            colour: Colours[1],
-            indexes: [2],
-          },
-        )
-        const links = getLinks(
-          nodes,
-          { pair: [0, 1], colour: Colours[0] },
-          { pair: [1, 3], colour: Colours[0] },
-          { pair: [2, 3], colour: Colours[1] },
-        )
 
         const expectedRows = [
           { yOffset: 0, node: nodes[0], links: [links[0]] },
@@ -201,42 +176,44 @@ context('git graph calculator', () => {
           newCommit('b', ['e']),
 
           // Branch 1
-          newCommit('c', ['e']),
+          /**/ newCommit('c', ['e']),
 
           // Branch 2
-          newCommit('d', ['e']),
+          /**/ /**/ newCommit('d', ['e']),
 
           newCommit('e', []),
         ]
-
         calculate()
-      })
 
-      it('should construct map correctly', () => {
-        const graphMap = calculator.map
-
-        const nodes = getNodes(
+        nodes = getNodes(
           data(),
           {
             colour: Colours[0],
             indexes: [0, 1, 4],
+            colIndex: 0,
           },
           {
             colour: Colours[1],
             indexes: [2],
+            colIndex: 1,
           },
           {
             colour: Colours[2],
             indexes: [3],
+            colIndex: 2,
           },
         )
-        const links = getLinks(
+        links = getLinks(
           nodes,
           { pair: [0, 1], colour: Colours[0] },
           { pair: [1, 4], colour: Colours[0] },
           { pair: [2, 4], colour: Colours[1] },
           { pair: [3, 4], colour: Colours[2] },
         )
+      })
+
+      it('should construct map correctly', () => {
+        const graphMap = calculator.map
         const dict = getNodeDict(nodes)
         const expectedMap = new GraphMap(nodes, links, dict)
 
@@ -245,29 +222,6 @@ context('git graph calculator', () => {
 
       it('should construct rows correctly', () => {
         const rows = calculator.rows
-
-        const nodes = getNodes(
-          data(),
-          {
-            colour: Colours[0],
-            indexes: [0, 1, 4],
-          },
-          {
-            colour: Colours[1],
-            indexes: [2],
-          },
-          {
-            colour: Colours[2],
-            indexes: [3],
-          },
-        )
-        const links = getLinks(
-          nodes,
-          { pair: [0, 1], colour: Colours[0] },
-          { pair: [1, 4], colour: Colours[0] },
-          { pair: [2, 4], colour: Colours[1] },
-          { pair: [3, 4], colour: Colours[2] },
-        )
 
         const expectedRows = [
           { yOffset: 0, node: nodes[0], links: [links[0]] },
@@ -300,30 +254,28 @@ context('git graph calculator', () => {
             /**/ /**/ newCommit('d', ['e']),
             newCommit('e', []),
           ]
-
           calculate()
-        })
 
-        it('should construct map correctly', () => {
-          const graphMap = calculator.map
-
-          const nodes = getNodes(
+          nodes = getNodes(
             data(),
             {
               colour: Colours[0],
               indexes: [0, 4],
+              colIndex: 0,
             },
             {
               colour: Colours[1],
               indexes: [2],
+              colIndex: 1,
             },
             {
               colour: Colours[2],
               indexes: [1, 3],
+              colIndex: 2,
             },
           )
           nodes[0].secondColor = Colours[1]
-          const links = getLinks(
+          links = getLinks(
             nodes,
             { pair: [0, 4], colour: Colours[0], merge: true },
             { pair: [0, 2], colour: Colours[1], merge: true },
@@ -331,6 +283,10 @@ context('git graph calculator', () => {
             { pair: [2, 4], colour: Colours[1] },
             { pair: [3, 4], colour: Colours[2] },
           )
+        })
+
+        it('should construct map correctly', () => {
+          const graphMap = calculator.map
           const dict = getNodeDict(nodes)
           const expectedMap = new GraphMap(nodes, links, dict)
 
@@ -339,31 +295,6 @@ context('git graph calculator', () => {
 
         it('should construct rows correctly', () => {
           const rows = calculator.rows
-
-          const nodes = getNodes(
-            data(),
-            {
-              colour: Colours[0],
-              indexes: [0, 4],
-            },
-            {
-              colour: Colours[1],
-              indexes: [2],
-            },
-            {
-              colour: Colours[2],
-              indexes: [1, 3],
-            },
-          )
-          nodes[0].secondColor = Colours[1]
-          const links = getLinks(
-            nodes,
-            { pair: [0, 4], colour: Colours[0], merge: true },
-            { pair: [0, 2], colour: Colours[1], merge: true },
-            { pair: [1, 3], colour: Colours[2] },
-            { pair: [2, 4], colour: Colours[1] },
-            { pair: [3, 4], colour: Colours[2] },
-          )
 
           const expectedRows = [
             { yOffset: 0, node: nodes[0], links: [links[0], links[1]] },
@@ -397,9 +328,6 @@ context('git graph calculator', () => {
     context(
       'edge case with overlapping branches v1 (https://github.com/Nick-Lucas/giterm/issues/36)',
       () => {
-        let nodes
-        let links
-
         beforeEach(() => {
           data = () => [
             newCommit('a1', ['a2']),
@@ -416,14 +344,17 @@ context('git graph calculator', () => {
             {
               colour: Colours[0],
               indexes: [0, 2, 3, 5],
+              colIndex: 0,
             },
             {
               colour: Colours[1],
               indexes: [1],
+              colIndex: 1,
             },
             {
               colour: Colours[2],
               indexes: [4],
+              colIndex: 2,
             },
           )
           nodes[2].secondColor = Colours[2]
@@ -466,9 +397,6 @@ context('git graph calculator', () => {
     context(
       'edge case with overlapping branches v2 (https://github.com/Nick-Lucas/giterm/issues/36)',
       () => {
-        let nodes
-        let links
-
         beforeEach(() => {
           data = () => [
             newCommit('a1', ['a2']),
@@ -485,14 +413,17 @@ context('git graph calculator', () => {
             {
               colour: Colours[0],
               indexes: [0, 2, 4, 5],
+              colIndex: 0,
             },
             {
               colour: Colours[1],
               indexes: [1],
+              colIndex: 1,
             },
             {
               colour: Colours[2],
               indexes: [3],
+              colIndex: 2,
             },
           )
           nodes[2].secondColor = Colours[2]
@@ -525,6 +456,74 @@ context('git graph calculator', () => {
             { yOffset: 3, node: nodes[3], links: indexes(links, 1, 2, 3, 4) },
             { yOffset: 4, node: nodes[4], links: indexes(links, 1, 2, 4, 5) },
             { yOffset: 5, node: nodes[5], links: indexes(links, 1, 5) },
+          ]
+
+          equal(rows, expectedRows)
+        })
+      },
+    )
+
+    context(
+      'edge case with touching branches (https://github.com/Nick-Lucas/giterm/issues/42)',
+      () => {
+        beforeEach(() => {
+          data = () => [
+            newCommit('a1', ['a2', 'c1']),
+            /**/ newCommit('c1', ['a2']),
+            newCommit('a2', ['a3', 'b1']),
+            /**/ newCommit('b1', ['a3']),
+            newCommit('a3', []),
+          ]
+          calculate()
+
+          nodes = getNodes(
+            data(),
+            {
+              colour: Colours[0],
+              indexes: [0, 2, 4],
+              colIndex: 0,
+            },
+            {
+              colour: Colours[1],
+              indexes: [1],
+              colIndex: 1,
+            },
+            {
+              colour: Colours[2],
+              indexes: [3],
+              colIndex: 1,
+            },
+          )
+          nodes[0].secondColor = Colours[1]
+          nodes[2].secondColor = Colours[2]
+          links = getLinks(
+            nodes,
+            { pair: [0, 2], colour: Colours[0], merge: true },
+            { pair: [0, 1], colour: Colours[1], merge: true },
+            { pair: [1, 2], colour: Colours[1] },
+            { pair: [2, 4], colour: Colours[0], merge: true },
+            { pair: [2, 3], colour: Colours[2], merge: true },
+            { pair: [3, 4], colour: Colours[2] },
+          )
+        })
+
+        it('should construct map correctly', () => {
+          const graphMap = calculator.map
+          const dict = getNodeDict(nodes)
+          const expectedMap = new GraphMap(nodes, links, dict)
+
+          equal(graphMap, expectedMap)
+        })
+
+        it('should construct rows correctly', () => {
+          const rows = calculator.rows
+
+          const expectedRows = [
+            { yOffset: 0, node: nodes[0], links: indexes(links, 0, 1) },
+            { yOffset: 1, node: nodes[1], links: indexes(links, 0, 1, 2) },
+            { yOffset: 2, node: nodes[2], links: indexes(links, 0, 2, 3, 4) },
+            { yOffset: 3, node: nodes[3], links: indexes(links, 3, 4, 5) },
+            { yOffset: 4, node: nodes[4], links: indexes(links, 3, 5) },
           ]
 
           equal(rows, expectedRows)
