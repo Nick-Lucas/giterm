@@ -3,7 +3,7 @@ osx_image: xcode9.4
 
 language: node_js
 node_js:
-  - "8.11.3"
+  - "10.15.3"
 
 cache: 
   yarn: true
@@ -33,7 +33,7 @@ jobs:
     - stage: "Build"
 
       name: "Mac Build"
-      script: travis_wait 20 yarn pack:mac
+      script: travis_wait 25 yarn pack:mac
       deploy:
         provider: releases
         api_key: $GITHUB_API_KEY
@@ -44,3 +44,7 @@ jobs:
         on:
           branch: master
           tags: true
+
+    - name: "Linux Build"
+      os: linux
+      script: travis_wait 25 yarn pack:linux
