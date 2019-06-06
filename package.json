@@ -38,7 +38,7 @@
     "feather-icons": "^4.7.3",
     "history": "^4.6.3",
     "moment": "^2.22.2",
-    "node-pty": "^0.7.6",
+    "node-pty": "^0.8.1",
     "nodegit": "^0.24.3",
     "prop-types": "^15.5.10",
     "react": "^16.2.0",
@@ -57,7 +57,7 @@
     "simple-git": "^1.96.0",
     "styled-components": "^4.3.0",
     "tslib": "^1.9.3",
-    "xterm": "^3.5.1"
+    "xterm": "^3.14.2"
   },
   "devDependencies": {
     "babel-cli": "^6.22.2",
