@@ -87,7 +87,7 @@ export class Commits extends React.Component {
           <AutoSizer>
             {({ width, height }) => (
               <VirtualList
-                innerRef={this.list}
+                ref={this.list}
                 width={width}
                 height={height}
                 rowHeight={RowHeight}

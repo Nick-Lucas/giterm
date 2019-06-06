@@ -178,7 +178,7 @@ export class Terminal extends React.Component {
     })
 
   render() {
-    return <TerminalContainer innerRef={this.container} />
+    return <TerminalContainer ref={this.container} />
   }
 }
 
