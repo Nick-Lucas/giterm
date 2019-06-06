@@ -4,14 +4,14 @@ import { doUpdateGraph } from './graph'
 export const COMMITS_UPDATE = 'commits/update'
 export const LOAD_MORE_COMMITS = 'commits/load_more'
 
-export const doUpdateCommits = (gitService) => {
-  return async (dispatch, getState) => {
+export const doUpdateCommits = () => {
+  return async (dispatch, getState, { git }) => {
     const {
       config: { showRemoteBranches },
       commits: { numberToLoad },
     } = getState()
 
-    const [commits, digest] = await gitService.loadAllCommits(
+    const [commits, digest] = await git.loadAllCommits(
       showRemoteBranches,
       numberToLoad,
     )
@@ -25,23 +25,23 @@ export const doUpdateCommits = (gitService) => {
   }
 }
 
-export const loadMoreCommits = (gitService) => {
-  return (dispatch, getState) => {
+export const loadMoreCommits = () => {
+  return (dispatch, getState, { git }) => {
     const { commits } = getState()
     if (!commits || commits.commits === null) {
       return
     }
     if (commits.numberToLoad <= commits.commits.length) {
       dispatch({ type: LOAD_MORE_COMMITS })
-      dispatch(doUpdateCommits(gitService))
+      dispatch(doUpdateCommits(git))
     }
   }
 }
 
-export const checkoutCommit = (gitService, sha) => {
-  return async (dispatch) => {
-    await gitService.checkout(sha)
-    dispatch(refreshApplication(gitService))
+export const checkoutCommit = (sha) => {
+  return async (dispatch, _, { git }) => {
+    await git.checkout(sha)
+    dispatch(refreshApplication())
   }
 }
 

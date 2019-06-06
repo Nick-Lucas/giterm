@@ -12,8 +12,6 @@ import Header from './header'
 import Row from './row'
 import { checkoutCommit, loadMoreCommits } from '../../store/commits'
 
-import { bindServices } from '../../lib/di'
-
 const Wrapper = styled.div`
   display: flex;
   flex: 1;
@@ -58,11 +56,7 @@ export class Commits extends React.Component {
     }
   }
 
-  loadMoreItems = debounce(
-    () => this.props.loadMoreCommits(this.props.gitService),
-    1000,
-    true,
-  )
+  loadMoreItems = debounce(() => this.props.loadMoreCommits(), 1000, true)
 
   scrollToSha = (sha) => {
     const index = this.props.commits.findIndex((c) => c.sha === sha)
@@ -117,7 +111,6 @@ export class Commits extends React.Component {
       branches,
       showRemoteBranches,
       checkoutCommit,
-      gitService,
       status: { current: currentBranchName },
     } = this.props
     const { selectedSHA } = this.state
@@ -140,7 +133,7 @@ export class Commits extends React.Component {
           showRemoteBranches={showRemoteBranches}
           selected={selectedSHA === commit.sha}
           onSelect={this.handleSelect}
-          onDoubleClick={(commit) => checkoutCommit(gitService, commit.sha)}
+          onDoubleClick={(commit) => checkoutCommit(commit.sha)}
           height={RowHeight}
           currentBranchName={currentBranchName}
           graphRow={graphRow}
@@ -165,7 +158,7 @@ const columns = [
   { name: 'Date', key: 'dateStr', width: '150px' },
 ]
 
-const ConnectedCommits = connect(
+export default connect(
   ({
     commits: { commits = [] } = {},
     graph: { rows: graphRows = [] },
@@ -188,7 +181,3 @@ const ConnectedCommits = connect(
     }
   },
 )(Commits)
-
-export default bindServices(({ git }) => ({ gitService: git }))(
-  ConnectedCommits,
-)

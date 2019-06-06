@@ -2,9 +2,9 @@ import { updateReducer } from './helpers'
 
 export const BRANCHES_UPDATE = 'branches/update'
 
-export const doUpdateBranches = (gitService) => {
-  return async (dispatch) => {
-    const branches = await gitService.getAllBranches()
+export const doUpdateBranches = () => {
+  return async (dispatch, _, { git }) => {
+    const branches = await git.getAllBranches()
     dispatch({
       type: BRANCHES_UPDATE,
       payload: branches,

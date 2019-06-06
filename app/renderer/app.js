@@ -8,9 +8,6 @@ import { ConnectedRouter } from 'react-router-redux'
 import { createMemoryHistory } from 'history'
 import configureStore from './store'
 
-import { ServicesProvider } from './lib/di'
-import getServices from './services'
-
 import Home from './containers/home'
 import { updateCwd, updateShowRemoteBranches } from './store/config'
 import { flipUserTerminalFullscreen } from './store/terminal'
@@ -28,9 +25,6 @@ const initialState = {}
 const routerHistory = createMemoryHistory()
 const store = configureStore(initialState, routerHistory)
 syncHistoryWithStore(store, routerHistory)
-
-// Service Init
-const services = getServices(store)
 const cwd = process.cwd()
 store.dispatch(updateCwd(cwd === '/' ? remote.app.getPath('home') : cwd))
 
@@ -45,10 +39,7 @@ window.addEventListener(
     }
     if (ev.ctrlKey && ev.key === 'r') {
       store.dispatch(
-        updateShowRemoteBranches(
-          !store.getState().config.showRemoteBranches,
-          services.git,
-        ),
+        updateShowRemoteBranches(!store.getState().config.showRemoteBranches),
       )
       ev.stopImmediatePropagation()
       return
@@ -63,13 +54,11 @@ const rootElement = document.querySelector(
 )
 ReactDOM.render(
   <Provider store={store}>
-    <ServicesProvider services={services}>
-      <ConnectedRouter history={routerHistory}>
-        <Switch>
-          <Route exact path="/" component={Home} />
-        </Switch>
-      </ConnectedRouter>
-    </ServicesProvider>
+    <ConnectedRouter history={routerHistory}>
+      <Switch>
+        <Route exact path="/" component={Home} />
+      </Switch>
+    </ConnectedRouter>
   </Provider>,
   rootElement,
 )

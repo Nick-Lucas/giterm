@@ -5,7 +5,6 @@ import styled, { css } from 'styled-components'
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
 import { refreshApplication } from '../store/coreapp'
-import { bindServices } from '../lib/di'
 import StatusBar from '../components/status-bar'
 
 const FullscreenWrapper = styled.div`
@@ -59,8 +58,8 @@ const Divider = styled.hr`
 
 export class Home extends PureComponent {
   componentDidMount() {
-    const { refreshApplication, gitService } = this.props
-    refreshApplication(gitService)
+    const { refreshApplication } = this.props
+    refreshApplication()
   }
 
   render() {
@@ -83,9 +82,7 @@ export class Home extends PureComponent {
   }
 }
 
-const ConnectedHome = connect(
+export default connect(
   ({ terminal: { fullscreen } }) => ({ terminalFullscreen: fullscreen }),
   { refreshApplication },
 )(Home)
-
-export default bindServices(({ git }) => ({ gitService: git }))(ConnectedHome)

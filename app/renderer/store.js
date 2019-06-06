@@ -2,6 +2,7 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import { routerMiddleware, push } from 'react-router-redux'
 // import persistState from 'redux-localstorage'
 import thunk from 'redux-thunk'
+import { Git } from './lib/git'
 
 // Reducers
 import commits from './store/commits'
@@ -20,12 +21,15 @@ const reducers = {
 }
 
 export default function configureStore(initialState, routerHistory) {
+  const rootReducer = combineReducers(reducers)
+
+  // Routing
   const router = routerMiddleware(routerHistory)
   const actionCreators = {
     push,
   }
-  const middlewares = [thunk, router]
 
+  // Dev tools integration
   const composeEnhancers = (() => {
     const compose_ = window && window.__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
     if (process.env.NODE_ENV === 'development' && compose_) {
@@ -34,11 +38,17 @@ export default function configureStore(initialState, routerHistory) {
     return compose
   })()
 
+  // Thunks middleware
+  const git = new Git()
+  const thunkMiddleware = thunk.withExtraArgument({
+    git,
+  })
+
+  // Middleware composition
   const enhancer = composeEnhancers(
-    applyMiddleware(...middlewares),
+    applyMiddleware(git.reduxMiddleware, thunkMiddleware, router),
     // persistState(),
   )
-  const rootReducer = combineReducers(reducers)
 
   return createStore(rootReducer, initialState, enhancer)
 }

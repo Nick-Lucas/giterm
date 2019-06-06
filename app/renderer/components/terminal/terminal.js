@@ -13,7 +13,6 @@ import { shell } from 'electron'
 import { exec } from 'child_process'
 
 import { refreshApplication } from '../../store/coreapp'
-import { bindServices } from '../../lib/di'
 import { updateCwd } from '../../store/config'
 import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
@@ -133,11 +132,11 @@ export class Terminal extends React.Component {
       'linefeed',
       debounce(() => {
         that.getCWD(that.ptyProcess.pid).then((cwd) => {
-          const { updateCwd, refreshApplication, gitService } = that.props
+          const { updateCwd, refreshApplication } = that.props
           const { alternateBuffer } = that.state
           if (!alternateBuffer) {
             updateCwd(cwd)
-            refreshApplication(gitService)
+            refreshApplication()
           }
         })
       }, 300),
@@ -187,7 +186,7 @@ Terminal.propTypes = {
   onAlternateBufferChange: PropTypes.func.isRequired,
 }
 
-const ConnectedTerminal = connect(
+export default connect(
   ({ status: { branchName }, config: { cwd }, terminal: { fullscreen } }) => ({
     branchName,
     cwd,
@@ -198,7 +197,3 @@ const ConnectedTerminal = connect(
     updateCwd,
   },
 )(Terminal)
-
-export default bindServices(({ git }) => ({ gitService: git }))(
-  ConnectedTerminal,
-)

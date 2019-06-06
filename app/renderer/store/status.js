@@ -11,11 +11,11 @@ export const statusUpdate = (status, state, headSHA) => ({
   },
 })
 
-export function doStatusUpdate(gitService) {
-  return async (dispatch) => {
-    const state = await gitService.getStateText()
-    const status = await gitService.getStatus()
-    const headSHA = await gitService.getHeadSHA()
+export function doStatusUpdate() {
+  return async (dispatch, _, { git }) => {
+    const state = await git.getStateText()
+    const status = await git.getStatus()
+    const headSHA = await git.getHeadSHA()
     const action = statusUpdate(status, state, headSHA)
     dispatch(action)
   }

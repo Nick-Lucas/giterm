@@ -4,7 +4,6 @@ import styled, { css } from 'styled-components'
 
 import { ArrowUp, ArrowDown } from 'react-feather'
 import { updateShowRemoteBranches } from '../../store/config'
-import { bindServices } from '../../lib/di'
 
 const Wrapper = styled.div`
   display: flex;
@@ -48,8 +47,8 @@ const ToggleInput = styled.input`
 
 export class StatusBar extends React.Component {
   toggleShowRemoteBranches = () => {
-    const { showRemoteBranches, gitService } = this.props
-    this.props.updateShowRemoteBranches(!showRemoteBranches, gitService)
+    const { showRemoteBranches } = this.props
+    this.props.updateShowRemoteBranches(!showRemoteBranches)
   }
 
   render() {
@@ -94,14 +93,10 @@ export class StatusBar extends React.Component {
 
 StatusBar.propTypes = {}
 
-const ConnectedStatusBar = connect(
+export default connect(
   ({ status, config: { showRemoteBranches } }) => ({
     status,
     showRemoteBranches,
   }),
   { updateShowRemoteBranches },
 )(StatusBar)
-
-export default bindServices(({ git }) => ({ gitService: git }))(
-  ConnectedStatusBar,
-)
