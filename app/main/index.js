@@ -46,6 +46,9 @@ app.on('ready', async () => {
     minWidth: 640,
     minHeight: 480,
     show: false,
+    webPreferences: {
+      nodeIntegration: true,
+    },
   })
 
   mainWindow.loadFile(
