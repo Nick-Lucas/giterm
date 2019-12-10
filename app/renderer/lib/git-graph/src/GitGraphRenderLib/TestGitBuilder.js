@@ -1,22 +1,19 @@
-
 export class TestGitBuilder {
   constructor() {
-    this._commits = [
-      this._createCommit({id: 'root'})
-    ]
+    this._commits = [this._createCommit({ id: 'root' })]
     this._index = {
-      root: 0
+      root: 0,
     }
     this._headIndex = 0
   }
 
-  _createCommit({ id=null, isHead=false, parents=[] }) {
+  _createCommit({ id = null, parents = [] }) {
     const sha = generateSha()
     // const sha7 = sha.slice(0, 7)
     return {
       _id: id,
       sha,
-      parents
+      parents,
       // sha7,
       // message: '',
       // isHead: false
@@ -31,9 +28,9 @@ export class TestGitBuilder {
     }
   }
 
-  _getChildIndex = (childId=null) => {
+  _getChildIndex = (childId = null) => {
     if (!childId) {
-      return this._commits.length-1
+      return this._commits.length - 1
     }
 
     const index = this._index[childId]
@@ -41,10 +38,10 @@ export class TestGitBuilder {
       return index
     }
 
-    throw new Error("ID " + childId + " has not been added yet")
+    throw new Error('ID ' + childId + ' has not been added yet')
   }
 
-  addCommit = ({ id=null, parentId=null, orphan=false }={}) => {
+  addCommit = ({ id = null, parentId = null, orphan = false } = {}) => {
     const getParentShas = () => {
       if (orphan) {
         return []
@@ -66,13 +63,16 @@ export class TestGitBuilder {
     return commit
   }
 
-  addMerge = ({ id=null, parentId1=null, parentId2=null }={}) => {
+  addMerge = ({ id = null, parentId1 = null, parentId2 = null } = {}) => {
     const parentIndex1 = this._getChildIndex(parentId1)
     const parentIndex2 = this._getChildIndex(parentId2)
     const parent1 = this._commits[parentIndex1]
     const parent2 = this._commits[parentIndex2]
 
-    const commit = this._createCommit({ id, parents: [parent1.sha, parent2.sha] })
+    const commit = this._createCommit({
+      id,
+      parents: [parent1.sha, parent2.sha],
+    })
     const index = this._commits.push(commit) - 1
 
     if (id) {
@@ -91,9 +91,9 @@ export class TestGitBuilder {
 function generateSha() {
   const length = 40
   const chars = '0123456789abcdefghijklmnopqrstuvwxyz'
-  let result = '';
+  let result = ''
   for (var i = length; i > 0; --i) {
     result += chars[Math.floor(Math.random() * chars.length)]
   }
-  return result;
+  return result
 }

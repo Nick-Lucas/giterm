@@ -13,7 +13,7 @@
       "modules": true
     }
   },
-  "plugins": [ "react", "prettier" ],
+  "plugins": [ "react", "prettier", "jest" ],
   "rules": {
     "prefer-const": "warn",
     "no-console": "off",
@@ -37,6 +37,7 @@
   "env": {
     "es6": true,
     "node": true,
-    "mocha": true
+    "mocha": true,
+    "jest/globals": true
   }
 }

@@ -1,5 +1,5 @@
-import { TestGitBuilder } from "./TestGitBuilder"
-import { commitsToGraph, _link } from "./commitsToGraph"
+import { TestGitBuilder } from './TestGitBuilder'
+import { commitsToGraph, _link } from './commitsToGraph'
 
 // Very useful site for finding appropriate characters: http://shapecatcher.com/
 
@@ -9,22 +9,16 @@ describe('commitsToGraph', () => {
     git = new TestGitBuilder()
   })
 
-  function makeColours(primaryColour, secondaryColour=null) {
+  function makeColours(primaryColour, secondaryColour = null) {
     return {
       primaryColour,
-      secondaryColour
+      secondaryColour,
     }
   }
-  
+
   function makeLinks(currentRow, ...pairs) {
-    return pairs.map(
-      ([from,to,colour]) => _link(
-        currentRow-1,
-        from,
-        currentRow,
-        to,
-        colour
-      )
+    return pairs.map(([from, to, colour]) =>
+      _link(currentRow - 1, from, currentRow, to, colour),
     )
   }
 
@@ -41,21 +35,9 @@ describe('commitsToGraph', () => {
 
       const { nodes, links } = commitsToGraph(git.getCommits())
 
-      expectToEqualShape(nodes, [
-        ['.'],
-        ['.'],
-        ['.'],
-      ])
-      expectNodeColours(nodes, [
-        makeColours(0), 
-        makeColours(0), 
-        makeColours(0)
-      ])
-      expectLinks(links, [
-        [],
-        makeLinks(1, [0, 0, 0]),
-        makeLinks(2, [0, 0, 0]),
-      ])
+      expectToEqualShape(nodes, [['.'], ['.'], ['.']])
+      expectNodeColours(nodes, [makeColours(0), makeColours(0), makeColours(0)])
+      expectLinks(links, [[], makeLinks(1, [0, 0, 0]), makeLinks(2, [0, 0, 0])])
     })
 
     it(`should work on an open branch
@@ -70,16 +52,8 @@ describe('commitsToGraph', () => {
 
       const { nodes, links } = commitsToGraph(git.getCommits())
 
-      expectToEqualShape(nodes, [
-        ['.'],
-        [' ', '.'],
-        ['.', ' '],
-      ])
-      expectNodeColours(nodes, [
-        makeColours(0), 
-        makeColours(1), 
-        makeColours(0)
-      ])
+      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.', ' ']])
+      expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
       expectLinks(links, [
         [],
         makeLinks(1, [0, 0, 0]),
@@ -99,15 +73,11 @@ describe('commitsToGraph', () => {
 
       const { nodes, links } = commitsToGraph(git.getCommits())
 
-      expectToEqualShape(nodes, [
-        ['.'],
-        [' ', '.'],
-        ['.', ' '],
-      ])
+      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.', ' ']])
       expectNodeColours(nodes, [
         makeColours(0, 1),
         makeColours(1),
-        makeColours(0)
+        makeColours(0),
       ])
       expectLinks(links, [
         [],
@@ -123,27 +93,15 @@ describe('commitsToGraph', () => {
           |
         --------------------------------------------
     `, () => {
-      git.addCommit({id: "branch_b", orphan: true})
-      git.addCommit({id: 'branch_a', parentId: 'root'})
+      git.addCommit({ id: 'branch_b', orphan: true })
+      git.addCommit({ id: 'branch_a', parentId: 'root' })
 
       const { nodes, links } = commitsToGraph(git.getCommits())
 
-      expectToEqualShape(nodes, [
-        ['.'],
-        [' ', '.'],
-        ['.'],
-      ])
-      expectNodeColours(nodes, [
-        makeColours(0), 
-        makeColours(1), 
-        makeColours(0)
-      ])
-      expectLinks(links, [
-        [],
-        makeLinks(1, [0, 0, 0]),
-        makeLinks(2, [0, 0, 0]),
-      ])
-    })  
+      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.']])
+      expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
+      expectLinks(links, [[], makeLinks(1, [0, 0, 0]), makeLinks(2, [0, 0, 0])])
+    })
   })
 
   describe('Repeated merging with active branch', () => {
@@ -171,8 +129,8 @@ describe('commitsToGraph', () => {
         ['.', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0), 
-        makeColours(1, 0), 
+        makeColours(0),
+        makeColours(1, 0),
         makeColours(0),
         makeColours(1),
         makeColours(0),
@@ -210,8 +168,8 @@ describe('commitsToGraph', () => {
         ['.', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(1), 
+        makeColours(0, 1),
+        makeColours(1),
         makeColours(0, 1),
         makeColours(1),
         makeColours(0),
@@ -251,8 +209,8 @@ describe('commitsToGraph', () => {
         ['.', ' ', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(0, 2), 
+        makeColours(0, 1),
+        makeColours(0, 2),
         makeColours(1),
         makeColours(2),
         makeColours(0),
@@ -299,8 +257,8 @@ describe('commitsToGraph', () => {
         ['.', ' ', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(0, 2), 
+        makeColours(0, 1),
+        makeColours(0, 2),
         makeColours(1),
         makeColours(2),
         makeColours(0, 3),
@@ -335,40 +293,28 @@ describe('commitsToGraph', () => {
       const commits = [
         {
           sha: 'root2',
-          parents: [
-            'root1',
-            'a2'
-          ]
+          parents: ['root1', 'a2'],
         },
         {
           sha: 'a2',
-          parents: [
-            'a1'
-          ]
+          parents: ['a1'],
         },
         {
           sha: 'root1',
-          parents: [
-            'root',
-            'a1'
-          ]
+          parents: ['root', 'a1'],
         },
         {
           sha: 'b1',
-          parents: [
-            'root'
-          ]
+          parents: ['root'],
         },
         {
           sha: 'a1',
-          parents: [
-            'root'
-          ]
+          parents: ['root'],
         },
         {
           sha: 'root',
-          parents: []
-        }
+          parents: [],
+        },
       ]
 
       const { nodes, links } = commitsToGraph(commits)
@@ -382,8 +328,8 @@ describe('commitsToGraph', () => {
         ['.', ' ', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(1), 
+        makeColours(0, 1),
+        makeColours(1),
         makeColours(0, 1),
         makeColours(2),
         makeColours(1),
@@ -412,45 +358,33 @@ describe('commitsToGraph', () => {
         {
           sha: 'a2',
           sha7: 'a2',
-          parents: [
-            'a1',
-            'root1'
-          ]
+          parents: ['a1', 'root1'],
         },
         {
           sha: 'root1',
           sha7: 'root1',
-          parents: [
-            'root'
-          ]
+          parents: ['root'],
         },
         {
           sha: 'a1',
           sha7: 'a1',
-          parents: [
-            'root'
-          ]
+          parents: ['root'],
         },
         {
           sha: 'root',
           sha7: 'root',
-          parents: []
-        }
+          parents: [],
+        },
       ]
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
-        ['.'],
-        [' ', '.'],
-        ['.', ' '],
-        ['.', ' '],
-      ])
+      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.', ' '], ['.', ' ']])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(1), 
+        makeColours(0, 1),
+        makeColours(1),
         makeColours(0),
-        makeColours(0)
+        makeColours(0),
       ])
       expectLinks(links, [
         [],
@@ -492,8 +426,8 @@ describe('commitsToGraph', () => {
         ['.', ' ', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(0, 2), 
+        makeColours(0, 1),
+        makeColours(0, 2),
         makeColours(1),
         makeColours(2),
         makeColours(0),
@@ -546,8 +480,8 @@ describe('commitsToGraph', () => {
         ['.', ' ', ' '],
       ])
       expectNodeColours(nodes, [
-        makeColours(0, 1), 
-        makeColours(0, 2), 
+        makeColours(0, 1),
+        makeColours(0, 2),
         makeColours(1),
         makeColours(2),
         makeColours(0, 3),
@@ -579,7 +513,7 @@ function format(obj) {
  */
 function expectToEqualShape(nodes, expectedShape) {
   function toName(char) {
-    switch(char) {
+    switch (char) {
       case '.':
         return 'node'
       default:
@@ -589,9 +523,15 @@ function expectToEqualShape(nodes, expectedShape) {
   try {
     expect(nodes.length).toBe(expectedShape.length)
   } catch (e) {
-    let error = "Shape not equal. Different length: \n\n"
-    error += 'Graph: ' + JSON.stringify(nodes.map(row => row.map(node => node.type))) + '\n'
-    error += 'Expected shape: ' + JSON.stringify(expectedShape.map(row => row.map(toName))) + '\n\n'
+    let error = 'Shape not equal. Different length: \n\n'
+    error +=
+      'Graph: ' +
+      JSON.stringify(nodes.map((row) => row.map((node) => node.type))) +
+      '\n'
+    error +=
+      'Expected shape: ' +
+      JSON.stringify(expectedShape.map((row) => row.map(toName))) +
+      '\n\n'
     throw new Error(error)
   }
 
@@ -602,11 +542,24 @@ function expectToEqualShape(nodes, expectedShape) {
     try {
       expect(row.length).toBe(rowShape.length)
     } catch (e) {
-      let error = "Shape not equal. Row " + i + " had different number of columns: \n\n"
-      error += 'Graph Row: ' + JSON.stringify(row.map(node => node.type)) + '\n'
-      error += 'Expected shape: ' + JSON.stringify(rowShape.map(toName)) + '\n\n'
-      error += 'Graph: ' + JSON.stringify(nodes.map(row => row.map(node => node.type)), null, 2) + '\n'
-      error += 'Expected shape: ' + JSON.stringify(expectedShape.map(row => row.map(toName)), null, 2) + '\n\n'
+      let error =
+        'Shape not equal. Row ' + i + ' had different number of columns: \n\n'
+      error +=
+        'Graph Row: ' + JSON.stringify(row.map((node) => node.type)) + '\n'
+      error +=
+        'Expected shape: ' + JSON.stringify(rowShape.map(toName)) + '\n\n'
+      error +=
+        'Graph: ' +
+        JSON.stringify(
+          nodes.map((row) => row.map((node) => node.type)),
+          null,
+          2,
+        ) +
+        '\n'
+      error +=
+        'Expected shape: ' +
+        JSON.stringify(expectedShape.map((row) => row.map(toName)), null, 2) +
+        '\n\n'
       throw new Error(error)
     }
 
@@ -615,11 +568,24 @@ function expectToEqualShape(nodes, expectedShape) {
         expect(row[i].type).toBe(toName(rowShape[i]))
       }
     } catch (e) {
-      let error = "Shape not equal. Row " + i + " had different types of columns: \n\n"
-      error += 'Graph Row: ' + JSON.stringify(row.map(node => node.type)) + '\n'
-      error += 'Expected shape: ' + JSON.stringify(rowShape.map(toName)) + '\n\n'
-      error += 'Graph: ' + JSON.stringify(nodes.map(row => row.map(node => node.type)), null, 2) + '\n'
-      error += 'Expected shape: ' + JSON.stringify(expectedShape.map(row => row.map(toName)), null, 2) + '\n\n'
+      let error =
+        'Shape not equal. Row ' + i + ' had different types of columns: \n\n'
+      error +=
+        'Graph Row: ' + JSON.stringify(row.map((node) => node.type)) + '\n'
+      error +=
+        'Expected shape: ' + JSON.stringify(rowShape.map(toName)) + '\n\n'
+      error +=
+        'Graph: ' +
+        JSON.stringify(
+          nodes.map((row) => row.map((node) => node.type)),
+          null,
+          2,
+        ) +
+        '\n'
+      error +=
+        'Expected shape: ' +
+        JSON.stringify(expectedShape.map((row) => row.map(toName)), null, 2) +
+        '\n\n'
       throw new Error(error)
     }
   }
@@ -627,13 +593,11 @@ function expectToEqualShape(nodes, expectedShape) {
 
 function expectNodeColours(nodes, expectedColours) {
   const nodeColours = nodes
-    .map(row => row.find(node => node.type === 'node'))
-    .map(node => 
-      ({ 
-        primaryColour: node.primaryColour, 
-        secondaryColour: node.secondaryColour 
-      })
-    )
+    .map((row) => row.find((node) => node.type === 'node'))
+    .map((node) => ({
+      primaryColour: node.primaryColour,
+      secondaryColour: node.secondaryColour,
+    }))
 
   for (const i in expectedColours) {
     const node = nodeColours[i]
@@ -653,20 +617,24 @@ function expectNodeColours(nodes, expectedColours) {
 }
 
 function expectLinks(links, expected) {
-  function prettyLink({ y1, x1, y2, x2, colour }) {
+  function prettyLink({ x1, x2, colour }) {
     return {
       from_x: x1,
       to_x__: x2,
-      colour
+      colour,
     }
   }
 
   try {
     expect(links.length).toBe(expected.length)
   } catch (e) {
-    let error = `Expected ${expected.length} rows of links but got ${links.length}: \n\n`
-    error += 'Received: ' + format(links.map(row => row.map(prettyLink))) + '\n'
-    error += 'Expected: ' + format(expected.map(row => row.map(prettyLink))) + '\n\n'
+    let error = `Expected ${expected.length} rows of links but got ${
+      links.length
+    }: \n\n`
+    error +=
+      'Received: ' + format(links.map((row) => row.map(prettyLink))) + '\n'
+    error +=
+      'Expected: ' + format(expected.map((row) => row.map(prettyLink))) + '\n\n'
     throw new Error(error)
   }
 
@@ -680,8 +648,11 @@ function expectLinks(links, expected) {
       let error = `Row index ${i} did not match: \n\n`
       error += 'Received: ' + format(linksRow.map(prettyLink)) + '\n'
       error += 'Expected: ' + format(expectedRow.map(prettyLink)) + '\n\n'
-      error += 'Full: ' + format(links.map(row => row.map(prettyLink))) + '\n'
-      error += 'Full Expected: ' + format(expected.map(row => row.map(prettyLink))) + '\n\n'
+      error += 'Full: ' + format(links.map((row) => row.map(prettyLink))) + '\n'
+      error +=
+        'Full Expected: ' +
+        format(expected.map((row) => row.map(prettyLink))) +
+        '\n\n'
       throw new Error(error)
     }
   }

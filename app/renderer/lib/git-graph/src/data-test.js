@@ -1,4 +1,4 @@
-import { TestGitBuilder } from "./GitGraphRenderLib/TestGitBuilder";
+import { TestGitBuilder } from './GitGraphRenderLib/TestGitBuilder'
 
 const git = new TestGitBuilder()
 
@@ -11,7 +11,7 @@ git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'a2' })
 git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
 
 export const data = {
-  commits: git.getCommits()
+  commits: git.getCommits(),
   // commits: [
   //   {
   //     sha: 'f1',
