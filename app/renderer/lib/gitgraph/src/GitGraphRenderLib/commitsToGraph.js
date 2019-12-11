@@ -1,6 +1,4 @@
-const uniqWith = require('lodash/uniqWith')
-const isEqual = require('lodash/isEqual')
-const sortBy = require('lodash/sortBy')
+import _ from 'lodash'
 
 /** Commit
   {
@@ -75,7 +73,7 @@ class ChildDirectory {
   }
 
   lookup = (parentSha) => {
-    return sortBy(this._lookup[parentSha] || [], (child) => [
+    return _.sortBy(this._lookup[parentSha] || [], (child) => [
       child.parentIndex,
       child.column,
     ])
@@ -256,7 +254,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   // TODO: optimise this by making each links row a Set with
   //        understanding of its data, to avoid a second iteration over the whole lot
   for (const i in links) {
-    links[i] = uniqWith(links[i], isEqual)
+    links[i] = _.uniqWith(links[i], _.isEqual)
   }
 
   return {

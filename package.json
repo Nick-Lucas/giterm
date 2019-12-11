@@ -37,6 +37,7 @@
     "debounce": "^1.1.0",
     "feather-icons": "^4.7.3",
     "history": "^4.6.3",
+    "lodash": "^4.17.15",
     "moment": "^2.22.2",
     "node-pty": "^0.8.1",
     "nodegit": "^0.24.3",
