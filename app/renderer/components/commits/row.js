@@ -5,6 +5,19 @@ import * as props from './props'
 import Tag from './tag'
 import { PathLine } from '../graph/pathline'
 
+const Colours = [
+  '#058ED9',
+  '#880044',
+  '#875053',
+  '#129490',
+  '#E5A823',
+  '#0055A2',
+  '#96C5F7',
+]
+
+export const RowHeight = 25
+const GraphColumnWidth = 20
+
 const RowWrapper = styled.div`
   display: flex;
   flex-direction: row;
@@ -107,39 +120,58 @@ export default class Row extends React.Component {
   }
 
   renderGraphItem() {
-    const {
-      graphRow: { yOffset, node, links },
-    } = this.props
+    const { nodeRow, linksBefore, linksAfter } = this.props
+
+    const nodeIndex = nodeRow.findIndex((node) => node.type === 'node')
+    const node = nodeRow[nodeIndex]
+
     return (
       <svg>
-        {links.map((link) => (
+        {linksBefore.map((link) => (
           <PathLine
-            key={link.sourceSha + '__' + link.targetSha}
-            points={this.getPathLinePoints(link, yOffset)}
-            stroke={link.color}
+            key={JSON.stringify(link)}
+            points={this.getPathLinePoints(link)}
+            stroke={Colours[link.colour % Colours.length]}
+            strokeWidth={3}
+            fill="none"
+            r={2}
+          />
+        ))}
+        {linksAfter.map((link) => (
+          <PathLine
+            key={JSON.stringify(link)}
+            points={this.getPathLinePoints(link)}
+            stroke={Colours[link.colour % Colours.length]}
             strokeWidth={3}
             fill="none"
             r={2}
           />
         ))}
         <circle
-          key={node.commit.sha}
-          cx={node.x}
-          cy={node.y - yOffset}
+          key={node.sha}
+          cx={10 + nodeIndex * GraphColumnWidth}
+          cy={RowHeight / 2}
           r={5}
-          fill={node.secondColor ? node.secondColor : node.color}
+          fill={
+            Colours[
+              (node.secondaryColour
+                ? node.secondaryColour
+                : node.primaryColour) % Colours.length
+            ]
+          }
           strokeWidth={3}
-          stroke={node.color}
+          stroke={Colours[node.primaryColour % Colours.length]}
         />
       </svg>
     )
   }
 
-  getPathLinePoints(link, yOffset) {
-    const x1 = link.source.x
-    const y1 = link.source.y - yOffset
-    const x2 = link.target.x
-    const y2 = link.target.y - yOffset
+  getPathLinePoints(link) {
+    const x1 = link.x1 * GraphColumnWidth + 10
+    const y1 = link.y1 - RowHeight / 2
+    const x2 = link.x2 * GraphColumnWidth + 10
+    const y2 = link.y2 - RowHeight / 2
+
     return [
       { x: x1, y: y1 },
       x1 < x2 ? { x: x2, y: y1 + 10 } : { x: x1, y: y2 - 10 },
@@ -156,7 +188,9 @@ Row.propTypes = {
   branches: props.branches,
   showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
-  graphRow: PropTypes.object.isRequired,
+  nodeRow: PropTypes.array.isRequired,
+  linksBefore: PropTypes.array.isRequired,
+  linksAfter: PropTypes.array.isRequired,
   height: PropTypes.number.isRequired,
   currentBranchName: PropTypes.string,
 }

@@ -9,7 +9,7 @@ import debounce from 'debounce'
 
 import * as props from './props'
 import Header from './header'
-import Row from './row'
+import Row, { RowHeight } from './row'
 import { checkoutCommit, loadMoreCommits } from '../../store/commits'
 
 const Wrapper = styled.div`
@@ -25,8 +25,6 @@ const TableWrapper = styled.div`
 const VirtualList = styled(List)`
   outline: none;
 `
-
-export const RowHeight = 25
 
 export class Commits extends React.Component {
   constructor(props) {
@@ -107,7 +105,8 @@ export class Commits extends React.Component {
     const {
       columns,
       commits,
-      graphRows,
+      nodes,
+      links,
       branches,
       showRemoteBranches,
       checkoutCommit,
@@ -115,11 +114,13 @@ export class Commits extends React.Component {
     } = this.props
     const { selectedSHA } = this.state
 
-    if (commits.length !== graphRows.length) {
+    if (commits.length !== nodes.length) {
       return
     }
 
-    const graphRow = graphRows[index]
+    const nodeRow = nodes[index]
+    const linksBefore = links[index - 1] || []
+    const linksAfter = links[index]
     const commit = commits[index]
     return (
       <RightClickArea
@@ -136,7 +137,9 @@ export class Commits extends React.Component {
           onDoubleClick={(commit) => checkoutCommit(commit.sha)}
           height={RowHeight}
           currentBranchName={currentBranchName}
-          graphRow={graphRow}
+          nodeRow={nodeRow}
+          linksBefore={linksBefore}
+          linksAfter={linksAfter}
         />
       </RightClickArea>
     )
@@ -161,13 +164,14 @@ const columns = [
 export default connect(
   ({
     commits: { commits = [] } = {},
-    graph: { rows: graphRows = [] },
+    graph: { nodes, links },
     branches,
     status,
     config: { showRemoteBranches },
   }) => ({
     commits,
-    graphRows,
+    nodes,
+    links,
     branches,
     showRemoteBranches,
     columns,
