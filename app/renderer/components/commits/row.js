@@ -174,13 +174,15 @@ export default class Row extends React.Component {
     const y2 = RowHeight / 2 + indexOffset * RowHeight
 
     return [
-      { x: x1, y: y1 },
-      { x: x1, y: y1 + 3 },
+      ...(link.nodeAtStart
+        ? [{ x: x1, y: y1 }, { x: x1, y: y1 + 3 }]
+        : [{ x: x1, y: y1 }]),
       x1 < x2
         ? { x: x2, y: y1 + RowHeight / 2 }
         : { x: x1, y: y2 - RowHeight / 2 },
-      { x: x2, y: y2 - 3 },
-      { x: x2, y: y2 },
+      ...(link.nodeAtEnd
+        ? [{ x: x2, y: y2 - 3 }, { x: x2, y: y2 }]
+        : [{ x: x2, y: y2 }]),
     ]
   }
 }

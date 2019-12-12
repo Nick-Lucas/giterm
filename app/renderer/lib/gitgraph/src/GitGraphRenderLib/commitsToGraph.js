@@ -39,13 +39,22 @@ function commitToNode(commit, primaryColour, secondaryColour = null) {
   }
 }
 
-export function _link(y1, x1, y2, x2, colour) {
+export function _link(
+  y1,
+  x1,
+  y2,
+  x2,
+  colour,
+  { nodeAtStart = true, nodeAtEnd = true } = {},
+) {
   return {
     x1,
     y1,
     x2,
     y2,
     colour,
+    nodeAtStart,
+    nodeAtEnd,
   }
 }
 
@@ -131,8 +140,11 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
     // generate initial links
     const rowNumber = nodes.length - 1
-    const rowLinks = next.map((node, i) =>
-      _link(rowNumber - 1, i, rowNumber, i, node.primaryColour),
+    const rowLinks = last.map((node, i) =>
+      _link(rowNumber - 1, i, rowNumber, i, node.primaryColour, {
+        nodeAtStart: node.type === 'node',
+        nodeAtEnd: false,
+      }),
     )
     links.push(rowLinks)
 
@@ -159,10 +171,23 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     // A merge or branch point might be more than 1 commit away,
     //  so we have to write links from the merge to the current row
     function writeLinks(fromY, fromX, toY, toX, colour) {
-      links[fromY + 1].push(_link(fromY, fromX, fromY + 1, toX, colour))
+      const nodeAtEnd = fromY + 1 >= toY
+
+      links[fromY + 1].push(
+        _link(fromY, fromX, fromY + 1, toX, colour, {
+          nodeAtStart: true,
+          nodeAtEnd,
+        }),
+      )
 
       for (let row = fromY + 1; row < toY; row++) {
-        links[row + 1].push(_link(row, toX, row + 1, toX, colour))
+        const nodeAtEnd = row + 1 >= toY
+        links[row + 1].push(
+          _link(row, toX, row + 1, toX, colour, {
+            nodeAtStart: false,
+            nodeAtEnd,
+          }),
+        )
       }
     }
 
@@ -180,6 +205,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     function trackKnownParent(column) {
       next[column] = commitToNode(commit, next[column].primaryColour)
       children.register(commit.sha, commit.parents, rowNumber, column)
+      rowLinks[column].nodeAtEnd = true
     }
 
     function trackOtherChildLinks(
@@ -200,6 +226,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       } else {
         next[childColumn].deleted = true
         rowLinks[childColumn].x2 = destinationColumn
+        rowLinks[childColumn].nodeAtEnd = true
       }
     }
 
