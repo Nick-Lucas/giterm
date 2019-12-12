@@ -119,8 +119,8 @@ export class Commits extends React.Component {
     }
 
     const nodeRow = nodes[index]
-    const linksBefore = links[index - 1] || []
-    const linksAfter = links[index]
+    const linksBefore = links[index] || []
+    const linksAfter = links[index + 1] || []
     const commit = commits[index]
     return (
       <RightClickArea

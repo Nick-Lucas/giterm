@@ -16,7 +16,8 @@ const Colours = [
 ]
 
 export const RowHeight = 25
-const GraphColumnWidth = 20
+const GraphColumnWidth = 15
+const GraphIndent = 10
 
 const RowWrapper = styled.div`
   display: flex;
@@ -130,7 +131,7 @@ export default class Row extends React.Component {
         {linksBefore.map((link) => (
           <PathLine
             key={JSON.stringify(link)}
-            points={this.getPathLinePoints(link)}
+            points={this.getPathLinePoints(link, 0)}
             stroke={Colours[link.colour % Colours.length]}
             strokeWidth={3}
             fill="none"
@@ -140,7 +141,7 @@ export default class Row extends React.Component {
         {linksAfter.map((link) => (
           <PathLine
             key={JSON.stringify(link)}
-            points={this.getPathLinePoints(link)}
+            points={this.getPathLinePoints(link, 1)}
             stroke={Colours[link.colour % Colours.length]}
             strokeWidth={3}
             fill="none"
@@ -149,7 +150,7 @@ export default class Row extends React.Component {
         ))}
         <circle
           key={node.sha}
-          cx={10 + nodeIndex * GraphColumnWidth}
+          cx={GraphIndent + nodeIndex * GraphColumnWidth}
           cy={RowHeight / 2}
           r={5}
           fill={
@@ -166,15 +167,17 @@ export default class Row extends React.Component {
     )
   }
 
-  getPathLinePoints(link) {
-    const x1 = link.x1 * GraphColumnWidth + 10
-    const y1 = link.y1 - RowHeight / 2
-    const x2 = link.x2 * GraphColumnWidth + 10
-    const y2 = link.y2 - RowHeight / 2
+  getPathLinePoints(link, indexOffset = 0) {
+    const x1 = link.x1 * GraphColumnWidth + GraphIndent
+    const y1 = -RowHeight / 2 + indexOffset * RowHeight
+    const x2 = link.x2 * GraphColumnWidth + GraphIndent
+    const y2 = RowHeight / 2 + indexOffset * RowHeight
 
     return [
       { x: x1, y: y1 },
-      x1 < x2 ? { x: x2, y: y1 + 10 } : { x: x1, y: y2 - 10 },
+      x1 < x2
+        ? { x: x2, y: y1 + RowHeight / 2 }
+        : { x: x1, y: y2 - RowHeight / 2 },
       { x: x2, y: y2 },
     ]
   }
