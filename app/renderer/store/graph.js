@@ -1,6 +1,5 @@
 import { updateReducer } from './helpers'
 import { commitsToGraph } from '../lib/gitgraph'
-import _ from 'lodash'
 
 export const GRAPH_UPDATE = 'graph/update'
 export const GRAPH_UPDATE_SKIPPED = 'graph/update_skipped'
@@ -8,6 +7,7 @@ export const GRAPH_UPDATE_SKIPPED = 'graph/update_skipped'
 export const doUpdateGraph = () => {
   return async (dispatch, getState) => {
     const {
+      config: { cwd },
       commits: { commits, digest },
       graph,
     } = getState()
@@ -17,11 +17,12 @@ export const doUpdateGraph = () => {
       return
     }
 
-    const remainingCommits = _.slice(commits, graph.length)
-    // _.sortBy(commits, (c) => c)
+    const remainingCommits =
+      cwd === graph.cwd ? commits.slice(graph.length) : commits
+
     const { nodes, links, rehydrationPackage } = commitsToGraph(
       remainingCommits,
-      graph.rehydrationPackage,
+      cwd === graph.cwd ? graph.rehydrationPackage : undefined,
     )
 
     dispatch({
@@ -29,6 +30,7 @@ export const doUpdateGraph = () => {
       payload: {
         holistics: {
           digest,
+          cwd,
         },
         length: commits.length,
         nodes,
