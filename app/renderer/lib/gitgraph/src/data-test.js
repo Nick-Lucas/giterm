@@ -11,7 +11,33 @@ git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'a2' })
 git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
 
 export const data = {
-  commits: git.getCommits(),
+  // commits: git.getCommits(),
+  commits: [
+    {
+      sha: 'root2',
+      parents: ['root1', 'a2'],
+    },
+    {
+      sha: 'a2',
+      parents: ['a1'],
+    },
+    {
+      sha: 'root1',
+      parents: ['root', 'a1'],
+    },
+    {
+      sha: 'b1',
+      parents: ['root'],
+    },
+    {
+      sha: 'a1',
+      parents: ['root'],
+    },
+    {
+      sha: 'root',
+      parents: [],
+    },
+  ],
   // commits: [
   //   {
   //     sha: 'f1',

@@ -103,7 +103,11 @@ describe('commitsToGraph', () => {
 
       expectToEqualShape(nodes, [['.'], [' ', '.'], ['.']])
       expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
-      expectLinks(links, [[], makeLinks(1, [0, 0, 0, 'start']), makeLinks(2, [0, 0, 0, 'end'])])
+      expectLinks(links, [
+        [],
+        makeLinks(1, [0, 0, 0, 'start']),
+        makeLinks(2, [0, 0, 0, 'end']),
+      ])
     })
   })
 
@@ -342,9 +346,8 @@ describe('commitsToGraph', () => {
         [],
         makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
         makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start']),
-        // TODO: investigate failure here
-        makeLinks(3, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 1, 1]),
-        makeLinks(4, [0, 0, 0, 'none'], [1, 1, 1], [2, 2, 2, 'start']),
+        makeLinks(3, [0, 0, 0, 'start'], [1, 1, 1, 'none'], [0, 1, 1, 'start']),
+        makeLinks(4, [0, 0, 0, 'none'], [1, 1, 1, 'end'], [2, 2, 2, 'start']),
         makeLinks(5, [0, 0, 0, 'end'], [1, 0, 1], [2, 0, 2, 'end']),
       ])
     })
