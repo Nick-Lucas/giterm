@@ -423,7 +423,10 @@ describe('commitsToGraph', () => {
       expect(commits1.length + commits2.length).toBe(git.getCommits().length)
 
       const { rehydrationPackage } = commitsToGraph(commits1)
-      const { nodes, links } = commitsToGraph(commits2, rehydrationPackage)
+      const { nodes, links } = commitsToGraph(
+        commits2,
+        JSON.parse(JSON.stringify(rehydrationPackage)),
+      )
 
       expectToEqualShape(nodes, [
         ['.'],
@@ -474,7 +477,10 @@ describe('commitsToGraph', () => {
       expect(commits1.length + commits2.length).toBe(git.getCommits().length)
 
       const { rehydrationPackage } = commitsToGraph(commits1)
-      const { nodes, links } = commitsToGraph(commits2, rehydrationPackage)
+      const { nodes, links } = commitsToGraph(
+        commits2,
+        JSON.parse(JSON.stringify(rehydrationPackage)),
+      )
 
       expectToEqualShape(nodes, [
         ['.'],

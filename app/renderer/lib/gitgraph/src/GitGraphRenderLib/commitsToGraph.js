@@ -125,13 +125,17 @@ class ColourTracker {
   next = () => ++this._colourIndex
 }
 
+function rehydrate({ nodes = [], links = [], children = {}, colours = {} }) {
+  return {
+    nodes,
+    links,
+    children: Object.assign(new ChildDirectory(), children),
+    colours: Object.assign(new ColourTracker(), colours),
+  }
+}
+
 export function commitsToGraph(commits = [], rehydrationPackage = {}) {
-  const {
-    children = new ChildDirectory(),
-    colours = new ColourTracker(),
-    nodes = [],
-    links = [],
-  } = rehydrationPackage
+  const { nodes, links, children, colours } = rehydrate(rehydrationPackage)
 
   function prepareNext() {
     const last = nodes[nodes.length - 1] || []

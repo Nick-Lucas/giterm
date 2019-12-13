@@ -10,9 +10,9 @@
     "styled-components": "^4.3.2"
   },
   "scripts": {
-    "start": "react-scripts start --no-cache",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
+    "start": "SKIP_PREFLIGHT_CHECK=true react-scripts start --no-cache",
+    "build": "SKIP_PREFLIGHT_CHECK=true react-scripts build",
+    "test": "SKIP_PREFLIGHT_CHECK=true react-scripts test",
     "eject": "react-scripts eject"
   },
   "browserslist": {
