@@ -13,7 +13,7 @@
   "scripts": {
     "postinstall": "electron-builder install-app-deps",
     "develop": "npm run private:compile -- --source-maps true && run-p -r private:watch private:serve",
-    "test": "jest --watchAll \\.*\\.test.js\\",
+    "test": "jest --watch \\.*\\.test.js\\",
     "lint": "eslint --no-ignore scripts app *.js",
     "lint:fix": "eslint --no-ignore scripts app *.js --fix",
     "check-format": "npm run private:format -- --list-different",
