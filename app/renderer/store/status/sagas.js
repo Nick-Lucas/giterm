@@ -1,6 +1,7 @@
 import { takeEvery, getContext, call, put } from 'redux-saga/effects'
 import { statusUpdated } from './actions'
 import { REFRESH_APPLICATION } from '../core/actions'
+import { TERMINAL_CHANGED } from '../terminal/actions'
 
 function* updateStatus() {
   const git = yield getContext('git')
@@ -13,5 +14,5 @@ function* updateStatus() {
 }
 
 export function* watch() {
-  yield takeEvery([REFRESH_APPLICATION], updateStatus)
+  yield takeEvery([REFRESH_APPLICATION, TERMINAL_CHANGED], updateStatus)
 }
