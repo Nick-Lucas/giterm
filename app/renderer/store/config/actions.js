@@ -1,6 +1,6 @@
-export const UPDATE_CWD = 'config/update_cwd'
-export const updateCwd = (cwd) => ({
-  type: UPDATE_CWD,
+export const CWD_UPDATED = 'config/cwd_updated'
+export const cwdUpdated = (cwd) => ({
+  type: CWD_UPDATED,
   cwd: cwd.trim(),
 })
 

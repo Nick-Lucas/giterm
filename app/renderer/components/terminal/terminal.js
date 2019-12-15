@@ -12,7 +12,7 @@ import { spawn } from 'node-pty'
 import { shell } from 'electron'
 import { exec } from 'child_process'
 
-import { updateCwd } from '../../store/config/actions'
+import { terminalChanged } from '../../store/terminal/actions'
 import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
@@ -135,10 +135,10 @@ export class Terminal extends React.Component {
     that.terminal.onLineFeed(
       debounce(() => {
         that.getCWD(that.ptyProcess.pid).then((cwd) => {
-          const { updateCwd } = that.props
+          const { terminalChanged } = that.props
           const { alternateBuffer } = that.state
           if (!alternateBuffer) {
-            updateCwd(cwd)
+            terminalChanged(cwd)
           }
         })
       }, 300),
@@ -194,6 +194,6 @@ export default connect(
     fullscreen,
   }),
   {
-    updateCwd,
+    terminalChanged,
   },
 )(Terminal)

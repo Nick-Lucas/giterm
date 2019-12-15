@@ -4,11 +4,11 @@ import SimpleGit from 'simple-git'
 import { createHash } from 'crypto'
 import Moment from 'moment'
 import repoResolver from './repo-resolver'
-import { UPDATE_CWD } from '../../store/config/actions'
+import { CWD_UPDATED } from '../../store/config/actions'
 
 export class Git {
   reduxMiddleware = () => (next) => (action) => {
-    if (action.type === UPDATE_CWD) {
+    if (action.type === CWD_UPDATED) {
       this.updateCwd(action.cwd)
     }
 
