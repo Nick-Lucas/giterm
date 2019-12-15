@@ -91,7 +91,7 @@ export class Git {
       return []
     }
 
-    const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
+    const refs = await repo.getReferences()
     return Promise.all(
       refs
         .filter((ref) => ref.isBranch() || ref.isRemote())

@@ -5,11 +5,11 @@ import styled from 'styled-components'
 import debounce from 'debounce'
 
 import * as XTerm from 'xterm'
-import * as fit from 'xterm/lib/addons/fit/fit'
-import * as webLinks from 'xterm/lib/addons/webLinks/webLinks'
+import { FitAddon } from 'xterm-addon-fit'
+import { WebLinksAddon } from 'xterm-addon-web-links'
 import { spawn } from 'node-pty'
-import { shell } from 'electron'
 
+import { shell } from 'electron'
 import { exec } from 'child_process'
 
 import { refreshApplication } from '../../store/coreapp'
@@ -60,7 +60,7 @@ export class Terminal extends React.Component {
   resizeTerminal = () => {
     if (this.terminal) {
       this.terminal.resize(10, 10)
-      this.terminal.fit()
+      this.fit.fit()
     }
   }
 
@@ -100,24 +100,29 @@ export class Terminal extends React.Component {
   }
 
   setupXTerm = () => {
-    XTerm.Terminal.applyAddon(fit)
     const terminal = new XTerm.Terminal(terminalOpts)
-    terminal.open(this.container.current)
-    webLinks.webLinksInit(terminal, (ev, uri) => {
+
+    this.fit = new FitAddon()
+    const weblinks = new WebLinksAddon((ev, uri) => {
       if (ev.metaKey) {
         shell.openExternal(uri)
       }
     })
+
+    terminal.loadAddon(this.fit)
+    terminal.loadAddon(weblinks)
+    terminal.open(this.container.current)
+
     return terminal
   }
 
   setupTerminalEvents = () => {
     const that = this
 
-    that.terminal.on('data', (data) => {
+    that.terminal.onData((data) => {
       that.ptyProcess.write(data)
     })
-    that.ptyProcess.on('data', function(data) {
+    that.ptyProcess.onData(function(data) {
       that.terminal.write(data)
 
       if (isStartAlternateBuffer(data)) {
@@ -128,8 +133,7 @@ export class Terminal extends React.Component {
       }
     })
 
-    that.terminal.on(
-      'linefeed',
+    that.terminal.onLineFeed(
       debounce(() => {
         that.getCWD(that.ptyProcess.pid).then((cwd) => {
           const { updateCwd, refreshApplication } = that.props
@@ -143,15 +147,14 @@ export class Terminal extends React.Component {
     )
 
     window.addEventListener('resize', debounce(this.resizeTerminal, 5), false)
-    that.terminal.on(
-      'resize',
+    that.terminal.onResize(
       debounce(({ cols, rows }) => {
         that.ptyProcess.resize(cols, rows)
       }, 5),
     )
 
-    that.terminal.on('blur', () => that.setState({ focused: false }))
-    that.terminal.on('focus', () => that.setState({ focused: true }))
+    that.terminal.textarea.onblur = () => that.setState({ focused: false })
+    that.terminal.onfocus = () => that.setState({ focused: true })
     window.addEventListener('keydown', () => {
       if (!that.state.focused) {
         that.terminal.focus()
