@@ -12,17 +12,24 @@ export const doUpdateGraph = () => {
       graph,
     } = getState()
 
-    if (digest === graph.holistics.digest) {
+    const projectUnchanged = cwd === graph.holistics.cwd
+    const commitsUnchanged = digest === graph.holistics.digest
+
+    if (commitsUnchanged) {
       dispatch({ type: GRAPH_UPDATE_SKIPPED })
       return
     }
 
-    const remainingCommits =
-      cwd === graph.cwd ? commits.slice(graph.length) : commits
+    const remainingCommits = projectUnchanged
+      ? commits.slice(graph.holistics.length)
+      : commits
+    const currentRehydrationPackage = projectUnchanged
+      ? graph.rehydrationPackage
+      : undefined
 
     const { nodes, links, rehydrationPackage } = commitsToGraph(
       remainingCommits,
-      cwd === graph.cwd ? graph.rehydrationPackage : undefined,
+      currentRehydrationPackage,
     )
 
     dispatch({
@@ -31,8 +38,8 @@ export const doUpdateGraph = () => {
         holistics: {
           digest,
           cwd,
+          length: commits.length,
         },
-        length: commits.length,
         nodes,
         links,
         rehydrationPackage,
@@ -42,8 +49,7 @@ export const doUpdateGraph = () => {
 }
 
 const initialState = {
-  holistics: { digest: undefined },
-  length: 0,
+  holistics: { digest: undefined, cwd: null, length: 0 },
   nodes: [],
   links: [],
   rehydrationPackage: undefined,
