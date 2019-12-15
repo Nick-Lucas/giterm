@@ -2,6 +2,7 @@ import { takeEvery, getContext, call, put, select } from 'redux-saga/effects'
 import { commitsUpdated, LOAD_MORE_COMMITS, CHECKOUT_COMMIT } from './actions'
 import { REFRESH_APPLICATION, refresh } from '../core/actions'
 import { SHOW_REMOTE_BRANCHES } from '../config/actions'
+import { TERMINAL_CHANGED } from '../terminal/actions'
 
 function* reloadCommits() {
   const git = yield getContext('git')
@@ -26,7 +27,12 @@ function* checkoutCommit(action) {
 
 export function* watch() {
   yield takeEvery(
-    [REFRESH_APPLICATION, LOAD_MORE_COMMITS, SHOW_REMOTE_BRANCHES],
+    [
+      REFRESH_APPLICATION,
+      LOAD_MORE_COMMITS,
+      SHOW_REMOTE_BRANCHES,
+      TERMINAL_CHANGED,
+    ],
     reloadCommits,
   )
   yield takeEvery([CHECKOUT_COMMIT], checkoutCommit)
