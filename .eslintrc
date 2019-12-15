@@ -4,7 +4,9 @@
     "plugin:prettier/recommended",
     "plugin:react/recommended",
     "prettier/react",
-    "prettier/standard"
+    "prettier/standard",
+    "plugin:import/errors",
+    "plugin:import/warnings"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -13,7 +15,7 @@
       "modules": true
     }
   },
-  "plugins": [ "react", "prettier", "jest" ],
+  "plugins": [ "react", "prettier", "jest", "import" ],
   "rules": {
     "prefer-const": "warn",
     "no-console": "off",

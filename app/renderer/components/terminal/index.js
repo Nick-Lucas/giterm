@@ -6,9 +6,9 @@ import Terminal from './terminal'
 
 import { Minimize2, Maximize2 } from 'react-feather'
 import {
-  setAutoTerminalFullscreen,
+  autoTerminalFullscreen,
   flipUserTerminalFullscreen,
-} from '../../store/terminal'
+} from '../../store/terminal/actions'
 
 const Wrapper = styled.div`
   display: flex;
@@ -44,7 +44,7 @@ export class TerminalPanel extends React.Component {
   }
 
   render() {
-    const { fullscreen, setAutoTerminalFullscreen } = this.props
+    const { fullscreen, autoTerminalFullscreen } = this.props
     return (
       <Wrapper>
         <MenuPanel>
@@ -55,7 +55,7 @@ export class TerminalPanel extends React.Component {
           </MenuItem>
         </MenuPanel>
         <TerminalWrapper>
-          <Terminal onAlternateBufferChange={setAutoTerminalFullscreen} />
+          <Terminal onAlternateBufferChange={autoTerminalFullscreen} />
         </TerminalWrapper>
       </Wrapper>
     )
@@ -68,5 +68,5 @@ export default connect(
   ({ terminal: { fullscreen } }) => ({
     fullscreen,
   }),
-  { setAutoTerminalFullscreen, flipUserTerminalFullscreen },
+  { autoTerminalFullscreen, flipUserTerminalFullscreen },
 )(TerminalPanel)

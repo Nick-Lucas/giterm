@@ -10,7 +10,7 @@ import debounce from 'debounce'
 import * as props from './props'
 import Header from './header'
 import Row, { RowHeight } from './row'
-import { checkoutCommit, loadMoreCommits } from '../../store/commits'
+import { checkoutCommit, loadMore } from '../../store/commits/actions'
 
 const Wrapper = styled.div`
   display: flex;
@@ -65,7 +65,8 @@ export class Commits extends React.Component {
     }
   }
 
-  componentWillUpdate() {
+  // TODO: migrate this
+  UNSAFE_componentWillUpdate() {
     this.list.current.forceUpdateGrid()
   }
 
@@ -181,7 +182,7 @@ export default connect(
   (dispatch) => {
     return {
       checkoutCommit: (...args) => dispatch(checkoutCommit(...args)),
-      loadMoreCommits: (...args) => dispatch(loadMoreCommits(...args)),
+      loadMoreCommits: (...args) => dispatch(loadMore(...args)),
     }
   },
 )(Commits)

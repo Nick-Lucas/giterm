@@ -1,7 +1,5 @@
-import reducer, {
-  flipUserTerminalFullscreen,
-  setAutoTerminalFullscreen,
-} from './terminal'
+import { flipUserTerminalFullscreen, autoTerminalFullscreen } from './actions'
+import { reducer } from './reducer'
 
 const makeState = (
   fullscreen = false,
@@ -37,20 +35,20 @@ describe('terminal store', () => {
 
     it('should set auto property', () => {
       setupStore()
-      state = reducer(state, setAutoTerminalFullscreen(true))
+      state = reducer(state, autoTerminalFullscreen(true))
       expect(state).toEqual(makeState(true, false, true))
     })
 
     it('should override auto property and exit fs on user action', () => {
       setupStore()
-      state = reducer(state, setAutoTerminalFullscreen(true))
+      state = reducer(state, autoTerminalFullscreen(true))
       state = reducer(state, flipUserTerminalFullscreen())
       expect(state).toEqual(makeState(false, false, false))
     })
 
     it('should override user property and exit fs on user action', () => {
       setupStore()
-      state = reducer(state, setAutoTerminalFullscreen(true))
+      state = reducer(state, autoTerminalFullscreen(true))
       state = reducer(state, flipUserTerminalFullscreen())
       expect(state).toEqual(makeState(false, false, false))
     })

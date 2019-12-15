@@ -1,29 +1,14 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
-
+import createSagaMiddleware from 'redux-saga'
 // import persistState from 'redux-localstorage'
-import thunk from 'redux-thunk'
+
 import { Git } from './lib/git'
 
 // Reducers
-import commits from './store/commits'
-import graph from './store/graph'
-import status from './store/status'
-import branches from './store/branches'
-import config from './store/config'
-import terminal from './store/terminal'
-import { routerReducer } from 'react-router-redux'
+import * as reducers from './store/reducers'
+import * as sagas from './store/sagas'
 
 export default function configureStore(initialState) {
-  const reducers = {
-    config,
-    commits,
-    graph,
-    status,
-    branches,
-    terminal,
-    routing: routerReducer,
-  }
-
   const rootReducer = combineReducers(reducers)
 
   // Dev tools integration
@@ -35,17 +20,26 @@ export default function configureStore(initialState) {
     return compose
   })()
 
-  // Thunks middleware
+  // Services
   const git = new Git()
-  const thunkMiddleware = thunk.withExtraArgument({
-    git,
+
+  // Side effect middlewares
+  const sagaMiddleware = createSagaMiddleware({
+    context: {
+      git,
+    },
   })
 
-  // Middleware composition
+  // Store composition
   const enhancer = composeEnhancers(
-    applyMiddleware(git.reduxMiddleware, thunkMiddleware),
+    applyMiddleware(git.reduxMiddleware, sagaMiddleware),
     // persistState(),
   )
+  const store = createStore(rootReducer, initialState, enhancer)
 
-  return createStore(rootReducer, initialState, enhancer)
+  for (const saga of Object.values(sagas)) {
+    sagaMiddleware.run(saga)
+  }
+
+  return store
 }

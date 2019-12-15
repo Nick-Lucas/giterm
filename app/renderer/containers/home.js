@@ -4,8 +4,8 @@ import styled, { css } from 'styled-components'
 
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
-import { refreshApplication } from '../store/coreapp'
-import StatusBar from '../components/status-bar'
+import { refresh } from '../store/core/actions'
+import { StatusBar } from '../components/StatusBar'
 
 const FullscreenWrapper = styled.div`
   display: flex;
@@ -58,8 +58,8 @@ const Divider = styled.hr`
 
 export class Home extends PureComponent {
   componentDidMount() {
-    const { refreshApplication } = this.props
-    refreshApplication()
+    const { refresh } = this.props
+    refresh()
   }
 
   render() {
@@ -84,5 +84,5 @@ export class Home extends PureComponent {
 
 export default connect(
   ({ terminal: { fullscreen } }) => ({ terminalFullscreen: fullscreen }),
-  { refreshApplication },
+  { refresh },
 )(Home)

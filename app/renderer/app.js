@@ -9,8 +9,8 @@ import { createMemoryHistory } from 'history'
 import configureStore from './store'
 
 import Home from './containers/home'
-import { updateCwd, updateShowRemoteBranches } from './store/config'
-import { flipUserTerminalFullscreen } from './store/terminal'
+import { updateCwd, showRemoteBranches } from './store/config/actions'
+import { flipUserTerminalFullscreen } from './store/terminal/actions'
 import { remote } from 'electron'
 
 // Store Init
@@ -33,7 +33,7 @@ window.addEventListener(
     }
     if (ev.ctrlKey && ev.key === 'r') {
       store.dispatch(
-        updateShowRemoteBranches(!store.getState().config.showRemoteBranches),
+        showRemoteBranches(!store.getState().config.showRemoteBranches),
       )
       ev.stopImmediatePropagation()
       return

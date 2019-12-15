@@ -1,0 +1,5 @@
+export { watch as branches } from './branches/sagas'
+export { watch as commits } from './commits/sagas'
+export { watch as status } from './status/sagas'
+export { watch as config } from './config/sagas'
+export { watch as graph } from './graph/sagas'
