@@ -1,4 +1,4 @@
-import { UPDATE_CWD, SHOW_REMOTE_BRANCHES } from './actions'
+import { CWD_UPDATED, SHOW_REMOTE_BRANCHES } from './actions'
 
 const initialState = {
   cwd: '',
@@ -9,7 +9,7 @@ const initialState = {
 
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case UPDATE_CWD: {
+    case CWD_UPDATED: {
       const { cwd } = action
 
       return {

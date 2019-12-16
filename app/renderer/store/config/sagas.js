@@ -13,5 +13,5 @@ function* checkCwd(action) {
 }
 
 export function* watch() {
-  takeEvery([TERMINAL_CHANGED], checkCwd)
+  yield takeEvery([TERMINAL_CHANGED], checkCwd)
 }
