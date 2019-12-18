@@ -2,11 +2,11 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 // import persistState from 'redux-localstorage'
 
-import { Git } from './lib/git'
+import { Git } from '../lib/git'
 
 // Reducers
-import * as reducers from './store/reducers'
-import * as sagas from './store/sagas'
+import * as reducers from './reducers'
+import * as sagas from './sagas'
 
 export default function configureStore(initialState) {
   const rootReducer = combineReducers(reducers)
