@@ -1,6 +1,6 @@
-export const COMMITS_UPDATE = 'commits/update'
+export const COMMITS_UPDATED = 'commits/updated'
 export const commitsUpdated = (commits, digest) => ({
-  type: COMMITS_UPDATE,
+  type: COMMITS_UPDATED,
   commits,
   digest,
 })

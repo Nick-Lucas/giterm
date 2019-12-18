@@ -1,4 +1,4 @@
-import { takeEvery, put, select } from 'redux-saga/effects'
+import { takeLatest, put, select } from 'redux-saga/effects'
 
 import { cwdUpdated } from './actions'
 import { TERMINAL_CHANGED } from '../terminal/actions'
@@ -13,5 +13,5 @@ function* checkCwd(action) {
 }
 
 export function* watch() {
-  yield takeEvery([TERMINAL_CHANGED], checkCwd)
+  yield takeLatest([TERMINAL_CHANGED], checkCwd)
 }

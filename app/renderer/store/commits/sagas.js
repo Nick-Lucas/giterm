@@ -1,11 +1,14 @@
-import { takeEvery, getContext, call, put, select } from 'redux-saga/effects'
+import { takeLatest, call, put, select } from 'redux-saga/effects'
 import { commitsUpdated, LOAD_MORE_COMMITS, CHECKOUT_COMMIT } from './actions'
-import { REFRESH_APPLICATION, refresh } from '../core/actions'
-import { SHOW_REMOTE_BRANCHES } from '../config/actions'
+
+import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from '../config/actions'
 import { TERMINAL_CHANGED } from '../terminal/actions'
+import { Git } from '../../lib/git'
+import { CORE_INIT } from '../core/actions'
 
 function* reloadCommits() {
-  const git = yield getContext('git')
+  const cwd = yield select((state) => state.config.cwd)
+  const git = new Git(cwd)
 
   const { showRemoteBranches } = yield select((state) => state.config)
   const { numberToLoad } = yield select((state) => state.commits)
@@ -18,22 +21,23 @@ function* reloadCommits() {
 }
 
 function* checkoutCommit(action) {
-  const git = yield getContext('git')
+  const cwd = yield select((state) => state.config.cwd)
+  const git = new Git(cwd)
 
   const { sha } = action
   yield call(() => git.checkout(sha))
-  yield put(refresh())
 }
 
 export function* watch() {
-  yield takeEvery(
+  yield takeLatest(
     [
-      REFRESH_APPLICATION,
+      CORE_INIT,
+      TERMINAL_CHANGED,
+      CWD_UPDATED,
       LOAD_MORE_COMMITS,
       SHOW_REMOTE_BRANCHES,
-      TERMINAL_CHANGED,
     ],
     reloadCommits,
   )
-  yield takeEvery([CHECKOUT_COMMIT], checkoutCommit)
+  yield takeLatest([CHECKOUT_COMMIT], checkoutCommit)
 }

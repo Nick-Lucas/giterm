@@ -8,7 +8,7 @@ import { syncHistoryWithStore } from 'react-router-redux'
 import { createMemoryHistory } from 'history'
 import configureStore from './store'
 
-import Home from './containers/home'
+import { Home } from './containers/home'
 import { showRemoteBranches } from './store/config/actions'
 import { flipUserTerminalFullscreen } from './store/terminal/actions'
 

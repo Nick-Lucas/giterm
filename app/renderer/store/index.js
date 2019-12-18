@@ -2,8 +2,6 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 // import persistState from 'redux-localstorage'
 
-import { Git } from '../lib/git'
-
 // Reducers
 import * as reducers from './reducers'
 import * as sagas from './sagas'
@@ -20,19 +18,12 @@ export default function configureStore(initialState) {
     return compose
   })()
 
-  // Services
-  const git = new Git()
-
   // Side effect middlewares
-  const sagaMiddleware = createSagaMiddleware({
-    context: {
-      git,
-    },
-  })
+  const sagaMiddleware = createSagaMiddleware()
 
   // Store composition
   const enhancer = composeEnhancers(
-    applyMiddleware(git.reduxMiddleware, sagaMiddleware),
+    applyMiddleware(sagaMiddleware),
     // persistState(),
   )
   const store = createStore(rootReducer, initialState, enhancer)

@@ -1,11 +1,40 @@
-import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import styled, { css } from 'styled-components'
 
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
-import { refresh } from '../store/core/actions'
 import { StatusBar } from '../components/StatusBar'
+import { init } from '../store/core/actions'
+
+export function Home() {
+  const terminalFullscreen = useSelector((state) => state.terminal.fullscreen)
+
+  const dispatch = useDispatch()
+  useEffect(() => {
+    dispatch(init())
+  }, [])
+
+  return (
+    <>
+      <StatusBar />
+
+      <Divider />
+
+      <FullscreenWrapper>
+        <CommitsWrapper hide={terminalFullscreen}>
+          <Commits />
+        </CommitsWrapper>
+
+        <Divider hide={terminalFullscreen} />
+
+        <TerminalWrapper fullscreen={terminalFullscreen}>
+          <Terminal />
+        </TerminalWrapper>
+      </FullscreenWrapper>
+    </>
+  )
+}
 
 const FullscreenWrapper = styled.div`
   display: flex;
@@ -55,34 +84,3 @@ const Divider = styled.hr`
       display: none;
     `};
 `
-
-export class Home extends PureComponent {
-  componentDidMount() {
-    const { refresh } = this.props
-    refresh()
-  }
-
-  render() {
-    const { terminalFullscreen } = this.props
-    return (
-      <React.Fragment>
-        <StatusBar />
-        <Divider />
-        <FullscreenWrapper>
-          <CommitsWrapper hide={terminalFullscreen}>
-            <Commits />
-          </CommitsWrapper>
-          <Divider hide={terminalFullscreen} />
-          <TerminalWrapper fullscreen={terminalFullscreen}>
-            <Terminal />
-          </TerminalWrapper>
-        </FullscreenWrapper>
-      </React.Fragment>
-    )
-  }
-}
-
-export default connect(
-  ({ terminal: { fullscreen } }) => ({ terminalFullscreen: fullscreen }),
-  { refresh },
-)(Home)

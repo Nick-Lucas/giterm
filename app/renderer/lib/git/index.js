@@ -4,22 +4,11 @@ import SimpleGit from 'simple-git'
 import { createHash } from 'crypto'
 import Moment from 'moment'
 import repoResolver from './repo-resolver'
-import { CWD_UPDATED } from '../../store/config/actions'
 import { INITIAL_CWD } from '../cwd'
 
 export class Git {
-  cwd = INITIAL_CWD
-
-  reduxMiddleware = () => (next) => (action) => {
-    if (action.type === CWD_UPDATED) {
-      this.updateCwd(action.cwd)
-    }
-
-    return next(action)
-  }
-
-  updateCwd = (newCwd) => {
-    this.cwd = repoResolver(newCwd)
+  constructor(cwd = INITIAL_CWD) {
+    this.cwd = repoResolver(cwd)
     this._simple = null
     this._complex = null
   }

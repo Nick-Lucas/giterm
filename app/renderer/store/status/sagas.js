@@ -1,10 +1,13 @@
-import { takeEvery, getContext, call, put } from 'redux-saga/effects'
+import { takeLatest, select, call, put } from 'redux-saga/effects'
 import { statusUpdated } from './actions'
-import { REFRESH_APPLICATION } from '../core/actions'
 import { TERMINAL_CHANGED } from '../terminal/actions'
+import { CWD_UPDATED } from '../config/actions'
+import { Git } from '../../lib/git'
+import { CORE_INIT } from '../core/actions'
 
 function* updateStatus() {
-  const git = yield getContext('git')
+  const cwd = yield select((state) => state.config.cwd)
+  const git = new Git(cwd)
 
   const state = yield call(() => git.getStateText())
   const status = yield call(() => git.getStatus())
@@ -14,5 +17,5 @@ function* updateStatus() {
 }
 
 export function* watch() {
-  yield takeEvery([REFRESH_APPLICATION, TERMINAL_CHANGED], updateStatus)
+  yield takeLatest([CORE_INIT, CWD_UPDATED, TERMINAL_CHANGED], updateStatus)
 }

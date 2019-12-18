@@ -1,4 +1,4 @@
-import { COMMITS_UPDATE, LOAD_MORE_COMMITS } from './actions'
+import { COMMITS_UPDATED, LOAD_MORE_COMMITS } from './actions'
 
 const initialState = {
   numberToLoad: 500,
@@ -7,7 +7,7 @@ const initialState = {
 
 export const reducer = (state = initialState, action) => {
   switch (action.type) {
-    case COMMITS_UPDATE:
+    case COMMITS_UPDATED:
       return {
         ...state,
         commits: action.commits,
