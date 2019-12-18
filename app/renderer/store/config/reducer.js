@@ -1,7 +1,8 @@
 import { CWD_UPDATED, SHOW_REMOTE_BRANCHES } from './actions'
+import { INITIAL_CWD } from '../../lib/cwd'
 
 const initialState = {
-  cwd: '',
+  cwd: INITIAL_CWD,
 
   // Show data from remotes
   showRemoteBranches: true,

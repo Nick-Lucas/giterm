@@ -1,7 +1,7 @@
 export const TERMINAL_CHANGED = 'terminal/changed'
 export const terminalChanged = (cwd) => ({
   type: TERMINAL_CHANGED,
-  cwd,
+  cwd: cwd.trim(),
 })
 
 export const AUTO_TERMINAL_FULLSCREEN = 'terminal/auto_terminal_fullscreen'

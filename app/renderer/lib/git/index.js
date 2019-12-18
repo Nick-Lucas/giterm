@@ -5,8 +5,11 @@ import { createHash } from 'crypto'
 import Moment from 'moment'
 import repoResolver from './repo-resolver'
 import { CWD_UPDATED } from '../../store/config/actions'
+import { INITIAL_CWD } from '../cwd'
 
 export class Git {
+  cwd = INITIAL_CWD
+
   reduxMiddleware = () => (next) => (action) => {
     if (action.type === CWD_UPDATED) {
       this.updateCwd(action.cwd)

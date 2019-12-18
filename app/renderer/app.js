@@ -9,19 +9,14 @@ import { createMemoryHistory } from 'history'
 import configureStore from './store'
 
 import Home from './containers/home'
-import { cwdUpdated, showRemoteBranches } from './store/config/actions'
+import { showRemoteBranches } from './store/config/actions'
 import { flipUserTerminalFullscreen } from './store/terminal/actions'
-import { remote } from 'electron'
 
 // Store Init
 const initialState = {}
 const routerHistory = createMemoryHistory()
 const store = configureStore(initialState)
 const history = syncHistoryWithStore(routerHistory, store)
-
-// TODO: move this into the store logic itself
-const cwd = process.cwd()
-store.dispatch(cwdUpdated(cwd === '/' ? remote.app.getPath('home') : cwd))
 
 // Shortcuts
 window.addEventListener(

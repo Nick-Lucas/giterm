@@ -13,6 +13,7 @@ import { shell } from 'electron'
 import { exec } from 'child_process'
 
 import { terminalChanged } from '../../store/terminal/actions'
+import { INITIAL_CWD } from '../../lib/cwd'
 import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
@@ -88,7 +89,7 @@ export class Terminal extends React.Component {
     const shell = '/bin/bash' //process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
     const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
-      cwd: this.props.cwd,
+      cwd: this.props.cwd || INITIAL_CWD,
       env: {
         ...process.env,
         GITERM_RC: BASHRC_PATH,
@@ -132,17 +133,20 @@ export class Terminal extends React.Component {
       }
     })
 
-    that.terminal.onLineFeed(
-      debounce(() => {
-        that.getCWD(that.ptyProcess.pid).then((cwd) => {
-          const { terminalChanged } = that.props
-          const { alternateBuffer } = that.state
-          if (!alternateBuffer) {
-            terminalChanged(cwd)
-          }
-        })
-      }, 300),
-    )
+    const handleNewLine = debounce(() => {
+      that.getCWD(that.ptyProcess.pid).then((cwd) => {
+        const { terminalChanged } = that.props
+        const { alternateBuffer } = that.state
+        if (!alternateBuffer) {
+          terminalChanged(cwd)
+        }
+      })
+    }, 300)
+    that.terminal.onKey((e) => {
+      if (e.domEvent.code === 'Enter') {
+        handleNewLine()
+      }
+    })
 
     window.addEventListener('resize', debounce(this.resizeTerminal, 5), false)
     that.terminal.onResize(
