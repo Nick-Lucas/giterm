@@ -133,6 +133,8 @@ export class Terminal extends React.Component {
       }
     })
 
+    // TODO: this doesn't work well for long-running git processes, as the 'ready' prompt won't trigger a refresh
+    // TODO: find a more stable way to trigger terminalChanged after processes exit, perhaps ptyProcess.process ?
     const handleNewLine = debounce(() => {
       that.getCWD(that.ptyProcess.pid).then((cwd) => {
         const { terminalChanged } = that.props
