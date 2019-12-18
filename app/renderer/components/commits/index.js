@@ -12,19 +12,13 @@ import Header from './header'
 import Row, { RowHeight } from './row'
 import { checkoutCommit, loadMore } from '../../store/commits/actions'
 
-const Wrapper = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-`
-
-const TableWrapper = styled.div`
-  flex: 1;
-`
-
-const VirtualList = styled(List)`
-  outline: none;
-`
+const COLUMNS = [
+  { name: '', key: 'graph', width: '100px' },
+  { name: 'SHA', key: 'sha7', width: '50px' },
+  { name: 'Message', key: 'message', width: '500px', showTags: true },
+  { name: 'Author', key: 'authorStr', width: '150px' },
+  { name: 'Date', key: 'dateStr', width: '150px' },
+]
 
 export class Commits extends React.Component {
   constructor(props) {
@@ -47,6 +41,11 @@ export class Commits extends React.Component {
   ]
 
   considerLoadMoreItems = ({ clientHeight, scrollHeight, scrollTop }) => {
+    const { commits } = this.props
+    if (commits.length === 0) {
+      return
+    }
+
     const scrollBottom = scrollTop + clientHeight
     const remainingRows = Math.trunc((scrollHeight - scrollBottom) / RowHeight)
     if (remainingRows < 20) {
@@ -154,13 +153,19 @@ Commits.propTypes = {
   showRemoteBranches: PropTypes.bool.isRequired,
 }
 
-const columns = [
-  { name: '', key: 'graph', width: '100px' },
-  { name: 'SHA', key: 'sha7', width: '50px' },
-  { name: 'Message', key: 'message', width: '500px', showTags: true },
-  { name: 'Author', key: 'authorStr', width: '150px' },
-  { name: 'Date', key: 'dateStr', width: '150px' },
-]
+const Wrapper = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+`
+
+const TableWrapper = styled.div`
+  flex: 1;
+`
+
+const VirtualList = styled(List)`
+  outline: none;
+`
 
 export default connect(
   ({
@@ -175,7 +180,7 @@ export default connect(
     links,
     branches,
     showRemoteBranches,
-    columns,
+    columns: COLUMNS,
     status,
   }),
   // TODO: not sure why but the condensed form isn't working here...
