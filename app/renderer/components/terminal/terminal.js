@@ -83,33 +83,6 @@ export function Terminal({ onAlternateBufferChange }) {
     [terminal],
   )
 
-  // TODO: check if lsof is on system and have alternatives in mind per platform
-  const getCWD = useCallback(
-    async (pid) =>
-      new Promise((resolve) => {
-        exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
-          if (e) {
-            throw e
-          }
-          resolve(stdout)
-        })
-      }),
-    [],
-  )
-
-  const updateAlternateBuffer = useMemo(
-    () =>
-      debounce((active) => {
-        // ensure xterm has a few moments to trigger its
-        // own re-render before we trigger a resize
-        setTimeout(() => {
-          setAlternateBuffer(active)
-          onAlternateBufferChange(active)
-        }, 5)
-      }, 5),
-    [onAlternateBufferChange],
-  )
-
   const handleResizeTerminal = useCallback(
     () => {
       terminal.resize(10, 10)
@@ -125,57 +98,6 @@ export function Terminal({ onAlternateBufferChange }) {
       }
     },
     [fullscreen, handleResizeTerminal, terminal.element],
-  )
-
-  // Integrate terminal and pty processes
-  useEffect(
-    () => {
-      const onDataTerminalDisposable = terminal.onData((data) => {
-        ptyProcess.write(data)
-      })
-      const onDataPTYDisposable = ptyProcess.onData(function(data) {
-        terminal.write(data)
-
-        if (isStartAlternateBuffer(data)) {
-          updateAlternateBuffer(true)
-        }
-        if (isEndAlternateBuffer(data)) {
-          updateAlternateBuffer(false)
-        }
-      })
-
-      return () => {
-        onDataTerminalDisposable.dispose()
-        onDataPTYDisposable.dispose()
-      }
-    },
-    [ptyProcess, terminal, updateAlternateBuffer],
-  )
-
-  // Trigger app state refreshes based on terminal changes
-  useEffect(
-    () => {
-      // TODO: this doesn't work well for long-running git processes, as the 'ready' prompt won't trigger a refresh
-      // TODO: find a more stable way to trigger terminalChanged after processes exit, perhaps ptyProcess.process ?
-      const handleNewLine = debounce(() => {
-        getCWD(ptyProcess.pid).then((cwd) => {
-          if (!alternateBuffer) {
-            dispatch(terminalChanged(cwd))
-          }
-        })
-      }, 300)
-
-      const onKeyDisposable = terminal.onKey((e) => {
-        if (e.domEvent.code === 'Enter') {
-          handleNewLine()
-        }
-      })
-
-      return () => {
-        onKeyDisposable.dispose()
-      }
-    },
-    [alternateBuffer, dispatch, getCWD, ptyProcess.pid, terminal],
   )
 
   // Resize terminal based on window size changes
@@ -197,6 +119,78 @@ export function Terminal({ onAlternateBufferChange }) {
       }
     },
     [handleResizeTerminal, ptyProcess, terminal],
+  )
+
+  // Integrate terminal and pty processes
+  useEffect(
+    () => {
+      const updateAlternateBuffer = () =>
+        debounce((active) => {
+          // ensure xterm has a few moments to trigger its
+          // own re-render before we trigger a resize
+          setTimeout(() => {
+            setAlternateBuffer(active)
+            onAlternateBufferChange(active)
+          }, 5)
+        }, 5)
+
+      const onDataTerminalDisposable = terminal.onData((data) => {
+        ptyProcess.write(data)
+      })
+      const onDataPTYDisposable = ptyProcess.onData(function(data) {
+        terminal.write(data)
+
+        if (isStartAlternateBuffer(data)) {
+          updateAlternateBuffer(true)
+        }
+        if (isEndAlternateBuffer(data)) {
+          updateAlternateBuffer(false)
+        }
+      })
+
+      return () => {
+        onDataTerminalDisposable.dispose()
+        onDataPTYDisposable.dispose()
+      }
+    },
+    [onAlternateBufferChange, ptyProcess, terminal],
+  )
+
+  // Trigger app state refreshes based on terminal changes
+  useEffect(
+    () => {
+      // TODO: check if lsof is on system and have alternatives in mind per platform
+      const getCWD = async (pid) =>
+        new Promise((resolve) => {
+          exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
+            if (e) {
+              throw e
+            }
+            resolve(stdout)
+          })
+        })
+
+      // TODO: this doesn't work well for long-running git processes, as the 'ready' prompt won't trigger a refresh
+      // TODO: find a more stable way to trigger terminalChanged after processes exit, perhaps ptyProcess.process ?
+      const handleNewLine = debounce(() => {
+        getCWD(ptyProcess.pid).then((cwd) => {
+          if (!alternateBuffer) {
+            dispatch(terminalChanged(cwd))
+          }
+        })
+      }, 300)
+
+      const onKeyDisposable = terminal.onKey((e) => {
+        if (e.domEvent.code === 'Enter') {
+          handleNewLine()
+        }
+      })
+
+      return () => {
+        onKeyDisposable.dispose()
+      }
+    },
+    [alternateBuffer, dispatch, ptyProcess.pid, terminal],
   )
 
   // Ensure typing always gives focus to the terminal
