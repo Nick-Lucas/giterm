@@ -11,9 +11,12 @@ export function Home() {
   const terminalFullscreen = useSelector((state) => state.terminal.fullscreen)
 
   const dispatch = useDispatch()
-  useEffect(() => {
-    dispatch(init())
-  }, [])
+  useEffect(
+    () => {
+      dispatch(init())
+    },
+    [dispatch],
+  )
 
   return (
     <>

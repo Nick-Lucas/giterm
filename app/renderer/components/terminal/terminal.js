@@ -1,6 +1,13 @@
-import React from 'react'
+import React, {
+  useState,
+  useMemo,
+  useEffect,
+  useLayoutEffect,
+  useRef,
+  useCallback,
+} from 'react'
 import PropTypes from 'prop-types'
-import { connect } from 'react-redux'
+import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 import debounce from 'debounce'
 
@@ -17,12 +24,6 @@ import { INITIAL_CWD } from '../../lib/cwd'
 import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
-const TerminalContainer = styled.div`
-  display: flex;
-  flex: 1;
-  margin: 5px;
-`
-
 const terminalOpts = {
   allowTransparency: true,
   fontFamily: 'Inconsolata, monospace',
@@ -33,63 +34,24 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
-export class Terminal extends React.Component {
-  constructor(props) {
-    super(props)
-    this.container = React.createRef()
-    this.state = {
-      alternateBuffer: false,
-      focused: false,
-    }
-  }
+export function Terminal({ onAlternateBufferChange }) {
+  const dispatch = useDispatch()
+  const container = useRef()
 
-  componentDidMount() {
-    this.setupTerminal()
-  }
+  const cwd = useSelector((state) => state.config.cwd) || INITIAL_CWD
+  const cwdStaticRef = useRef(cwd)
 
-  componentDidUpdate(prevProps) {
-    if (this.terminal) {
-      const { fullscreen: wasFS } = prevProps
-      const { fullscreen: isFS } = this.props
-      if (wasFS !== isFS) {
-        this.resizeTerminal()
-      }
-    }
-  }
+  const { fullscreen } = useSelector((state) => state.terminal)
 
-  resizeTerminal = () => {
-    if (this.terminal) {
-      this.terminal.resize(10, 10)
-      this.fit.fit()
-    }
-  }
+  const [alternateBuffer, setAlternateBuffer] = useState(false)
+  const [focused, setFocused] = useState(false)
 
-  updateAlternateBuffer = debounce((active) => {
-    // ensure xterm has a few moments to trigger its
-    // own re-render before we trigger a resize
-    setTimeout(() => {
-      this.setState({ alternateBuffer: active })
-      this.props.onAlternateBufferChange(active)
-    }, 5)
-  }, 5)
-
-  setupTerminal = () => {
-    this.ptyProcess = this.setupPTY()
-    this.terminal = this.setupXTerm()
-    setTimeout(() => {
-      // Ensures that the terminal initialises with the correct style
-      this.resizeTerminal()
-    }, 5)
-    this.setupTerminalEvents()
-    this.terminal.focus()
-  }
-
-  setupPTY = () => {
+  const ptyProcess = useMemo(() => {
     // TODO: integrate user preferences into this. Allow for (or bundle?) git-bash on windows
     const shell = '/bin/bash' //process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
     const ptyProcess = spawn(shell, ['--noprofile', '--rcfile', BASHRC_PATH], {
       name: 'xterm-color',
-      cwd: this.props.cwd || INITIAL_CWD,
+      cwd: cwdStaticRef.current,
       env: {
         ...process.env,
         GITERM_RC: BASHRC_PATH,
@@ -97,109 +59,182 @@ export class Terminal extends React.Component {
     })
 
     return ptyProcess
-  }
+  }, [])
 
-  setupXTerm = () => {
+  const [terminal, fit] = useMemo(() => {
     const terminal = new XTerm.Terminal(terminalOpts)
+    const fit = new FitAddon()
 
-    this.fit = new FitAddon()
     const weblinks = new WebLinksAddon((ev, uri) => {
       if (ev.metaKey) {
         shell.openExternal(uri)
       }
     })
 
-    terminal.loadAddon(this.fit)
+    terminal.loadAddon(fit)
     terminal.loadAddon(weblinks)
-    terminal.open(this.container.current)
 
-    return terminal
-  }
-
-  setupTerminalEvents = () => {
-    const that = this
-
-    that.terminal.onData((data) => {
-      that.ptyProcess.write(data)
-    })
-    that.ptyProcess.onData(function(data) {
-      that.terminal.write(data)
-
-      if (isStartAlternateBuffer(data)) {
-        that.updateAlternateBuffer(true)
-      }
-      if (isEndAlternateBuffer(data)) {
-        that.updateAlternateBuffer(false)
-      }
-    })
-
-    // TODO: this doesn't work well for long-running git processes, as the 'ready' prompt won't trigger a refresh
-    // TODO: find a more stable way to trigger terminalChanged after processes exit, perhaps ptyProcess.process ?
-    const handleNewLine = debounce(() => {
-      that.getCWD(that.ptyProcess.pid).then((cwd) => {
-        const { terminalChanged } = that.props
-        const { alternateBuffer } = that.state
-        if (!alternateBuffer) {
-          terminalChanged(cwd)
-        }
-      })
-    }, 300)
-    that.terminal.onKey((e) => {
-      if (e.domEvent.code === 'Enter') {
-        handleNewLine()
-      }
-    })
-
-    window.addEventListener('resize', debounce(this.resizeTerminal, 5), false)
-    that.terminal.onResize(
-      debounce(({ cols, rows }) => {
-        that.ptyProcess.resize(cols, rows)
-      }, 5),
-    )
-
-    that.terminal.textarea.onblur = () => that.setState({ focused: false })
-    that.terminal.onfocus = () => that.setState({ focused: true })
-    window.addEventListener('keydown', () => {
-      if (!that.state.focused) {
-        that.terminal.focus()
-      }
-    })
-
-    // // TODO: ensure the process can't be exited and restart if need be
-    // that.ptyProcess.on('exit', () => {
-    //   console.log('recreating')
-    //   that.setupXTerm()
-    //   that.setupTerminalEvents()
-    // })
-  }
+    return [terminal, fit]
+  }, [])
+  useEffect(
+    () => {
+      terminal.open(container.current)
+    },
+    [terminal],
+  )
 
   // TODO: check if lsof is on system and have alternatives in mind per platform
-  getCWD = async (pid) =>
-    new Promise((resolve) => {
-      exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
-        if (e) {
-          throw e
-        }
-        resolve(stdout)
-      })
-    })
+  const getCWD = useCallback(
+    async (pid) =>
+      new Promise((resolve) => {
+        exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
+          if (e) {
+            throw e
+          }
+          resolve(stdout)
+        })
+      }),
+    [],
+  )
 
-  render() {
-    return <TerminalContainer ref={this.container} />
-  }
+  const updateAlternateBuffer = useMemo(
+    () =>
+      debounce((active) => {
+        // ensure xterm has a few moments to trigger its
+        // own re-render before we trigger a resize
+        setTimeout(() => {
+          setAlternateBuffer(active)
+          onAlternateBufferChange(active)
+        }, 5)
+      }, 5),
+    [onAlternateBufferChange],
+  )
+
+  const handleResizeTerminal = useCallback(
+    () => {
+      terminal.resize(10, 10)
+      fit.fit()
+      terminal.focus()
+    },
+    [fit, terminal],
+  )
+  useLayoutEffect(
+    () => {
+      if ((fullscreen || !fullscreen) && terminal.element) {
+        handleResizeTerminal()
+      }
+    },
+    [fullscreen, handleResizeTerminal, terminal.element],
+  )
+
+  // Integrate terminal and pty processes
+  useEffect(
+    () => {
+      const onDataTerminalDisposable = terminal.onData((data) => {
+        ptyProcess.write(data)
+      })
+      const onDataPTYDisposable = ptyProcess.onData(function(data) {
+        terminal.write(data)
+
+        if (isStartAlternateBuffer(data)) {
+          updateAlternateBuffer(true)
+        }
+        if (isEndAlternateBuffer(data)) {
+          updateAlternateBuffer(false)
+        }
+      })
+
+      return () => {
+        onDataTerminalDisposable.dispose()
+        onDataPTYDisposable.dispose()
+      }
+    },
+    [ptyProcess, terminal, updateAlternateBuffer],
+  )
+
+  // Trigger app state refreshes based on terminal changes
+  useEffect(
+    () => {
+      // TODO: this doesn't work well for long-running git processes, as the 'ready' prompt won't trigger a refresh
+      // TODO: find a more stable way to trigger terminalChanged after processes exit, perhaps ptyProcess.process ?
+      const handleNewLine = debounce(() => {
+        getCWD(ptyProcess.pid).then((cwd) => {
+          if (!alternateBuffer) {
+            dispatch(terminalChanged(cwd))
+          }
+        })
+      }, 300)
+
+      const onKeyDisposable = terminal.onKey((e) => {
+        if (e.domEvent.code === 'Enter') {
+          handleNewLine()
+        }
+      })
+
+      return () => {
+        onKeyDisposable.dispose()
+      }
+    },
+    [alternateBuffer, dispatch, getCWD, ptyProcess.pid, terminal],
+  )
+
+  // Resize terminal based on window size changes
+  useEffect(
+    () => {
+      const handleResize = debounce(handleResizeTerminal, 5)
+
+      window.addEventListener('resize', handleResize, false)
+
+      const onResizeDisposable = terminal.onResize(
+        debounce(({ cols, rows }) => {
+          ptyProcess.resize(cols, rows)
+        }, 5),
+      )
+
+      return () => {
+        window.removeEventListener('resize', handleResize)
+        onResizeDisposable.dispose()
+      }
+    },
+    [handleResizeTerminal, ptyProcess, terminal],
+  )
+
+  // Ensure typing always gives focus to the terminal
+  useEffect(
+    () => {
+      const handleNotFocused = () => {
+        if (!focused) {
+          terminal.focus()
+        }
+      }
+
+      terminal.textarea.onblur = () => setFocused(false)
+      terminal.onfocus = () => setFocused(true)
+      window.addEventListener('keydown', handleNotFocused)
+
+      return () => {
+        window.removeEventListener('keydown', handleNotFocused)
+      }
+    },
+    [focused, terminal],
+  )
+
+  // // TODO: ensure the process can't be exited and restart if need be
+  // that.ptyProcess.on('exit', () => {
+  //   console.log('recreating')
+  //   that.setupXTerm()
+  //   that.setupTerminalEvents()
+  // })
+
+  return <TerminalContainer ref={container} />
 }
 
 Terminal.propTypes = {
   onAlternateBufferChange: PropTypes.func.isRequired,
 }
 
-export default connect(
-  ({ status: { branchName }, config: { cwd }, terminal: { fullscreen } }) => ({
-    branchName,
-    cwd,
-    fullscreen,
-  }),
-  {
-    terminalChanged,
-  },
-)(Terminal)
+const TerminalContainer = styled.div`
+  display: flex;
+  flex: 1;
+  margin: 5px;
+`

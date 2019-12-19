@@ -15,7 +15,7 @@
       "modules": true
     }
   },
-  "plugins": [ "react", "prettier", "jest", "import" ],
+  "plugins": [ "react", "prettier", "jest", "import", "react-hooks" ],
   "rules": {
     "prefer-const": "warn",
     "no-console": "off",
@@ -28,7 +28,10 @@
     "prettier/prettier": "error",
     "no-redeclare": "error",
     "no-undef": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": "error",
+
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error" 
   },
   "settings": {
     "react": {

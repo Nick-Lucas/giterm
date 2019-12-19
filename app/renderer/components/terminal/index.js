@@ -2,7 +2,7 @@ import React from 'react'
 import { connect } from 'react-redux'
 import styled from 'styled-components'
 
-import Terminal from './terminal'
+import { Terminal } from './terminal'
 
 import { Minimize2, Maximize2 } from 'react-feather'
 import {
@@ -54,6 +54,7 @@ export class TerminalPanel extends React.Component {
             {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
           </MenuItem>
         </MenuPanel>
+
         <TerminalWrapper>
           <Terminal onAlternateBufferChange={autoTerminalFullscreen} />
         </TerminalWrapper>
