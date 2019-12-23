@@ -125,6 +125,9 @@ export default class Row extends React.Component {
 
     const nodeIndex = nodeRow.findIndex((node) => node.type === 'node')
     const node = nodeRow[nodeIndex]
+    if (!node) {
+      return null
+    }
 
     return (
       <svg>

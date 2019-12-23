@@ -8,7 +8,7 @@ function* recalculateGraph() {
   const { commits, digest } = yield select((state) => state.commits)
   const graph = yield select((state) => state.graph)
 
-  const projectUnchanged = cwd === graph.holistics.cwd
+  const projectChanged = cwd !== graph.holistics.cwd
   const commitsUnchanged = digest === graph.holistics.digest
 
   if (commitsUnchanged) {
@@ -16,12 +16,12 @@ function* recalculateGraph() {
     return
   }
 
-  const remainingCommits = projectUnchanged
-    ? commits.slice(graph.holistics.length)
-    : commits
-  const currentRehydrationPackage = projectUnchanged
-    ? graph.rehydrationPackage
-    : undefined
+  const remainingCommits = projectChanged
+    ? commits
+    : commits.slice(graph.holistics.length)
+  const currentRehydrationPackage = projectChanged
+    ? undefined
+    : graph.rehydrationPackage
 
   const { nodes, links, rehydrationPackage } = commitsToGraph(
     remainingCommits,

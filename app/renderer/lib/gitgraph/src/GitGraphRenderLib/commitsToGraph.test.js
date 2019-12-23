@@ -1,3 +1,5 @@
+/* eslint-disable prettier/prettier */
+
 import { TestGitBuilder } from './TestGitBuilder'
 import { commitsToGraph, _link } from './commitsToGraph'
 
@@ -400,6 +402,60 @@ describe('commitsToGraph', () => {
         makeLinks(3, [0, 0, 0], [1, 0, 1, 'end']),
       ])
     })
+
+    it(`should draw a graph where a branch pulls in the root node twice
+          (was observed to cause a condition where the second node's merge line overlapped its own branch's lines)
+        --------------------------------------------
+          .৲
+          ⊢.
+          |.
+          ./
+        --------------------------------------------
+    `, () => {
+      const commits = [
+        {
+          sha: 'root1',
+          parents: ['root', 'a2'],
+          isHead: false,
+        },
+        {
+          sha: 'a2',
+          parents: ['a1', 'root'],
+          isHead: false,
+        },
+        {
+          sha: 'a1',
+          parents: ['root'],
+          isHead: false,
+        },
+        {
+          sha: 'root',
+          parents: [],
+          isHead: false,
+        },
+      ]
+
+      const { nodes, links } = commitsToGraph(commits)
+
+      expectToEqualShape(nodes, [
+        ['.'], 
+        [' ', '.'], 
+        [' ', '.'], 
+        ['.', ' ']
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0, 1),
+        makeColours(1, 0),
+        makeColours(1),
+        makeColours(0),
+      ])
+      expectLinks(links, [
+        [],
+        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks(2, [0, 0, 0, 'none'], [1, 0, 0, 'start'], [1, 1, 1]),
+        makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
+      ])
+    })
   })
 
   describe('Rehydration', () => {
@@ -619,7 +675,7 @@ function expectNodeColours(nodes, expectedColours) {
     try {
       expect(node).toEqual(expected)
     } catch (e) {
-      let error = `Row index ${i} node colours are wrong\n\n`
+      let error = `Node colours at row index ${i} node colours are wrong\n\n`
       error += `Received: ${JSON.stringify(node, null, 2)}\n`
       error += `Expected: ${JSON.stringify(expected, null, 2)}\n\n`
       error += `Full: ${JSON.stringify(nodeColours, null, 2)}\n`
@@ -658,9 +714,9 @@ function expectLinks(links, expected) {
     const expectedRow = expected[i]
 
     try {
-      expect(linksRow).toEqual(expectedRow)
+      expect(new Set(linksRow)).toEqual(new Set(expectedRow))
     } catch (e) {
-      let error = `Row index ${i} did not match: \n\n`
+      let error = `Links at Row index ${i} did not match: \n\n`
       error += 'Received: ' + format(linksRow.map(prettyLink)) + '\n'
       error += 'Expected: ' + format(expectedRow.map(prettyLink)) + '\n\n'
       error += 'Full: ' + format(links.map((row) => row.map(prettyLink))) + '\n'

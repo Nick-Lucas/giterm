@@ -66,10 +66,14 @@ class ChildDirectory {
 
     // object of all children and their parents still being searched for
     this._tracked = {}
+
+    // Track the number of parents for any commit ever found
+    this._parentCount = {}
   }
 
   register = (sha, parentShas, row, column) => {
     this._tracked[sha] = parentShas
+    this._parentCount[sha] = parentShas.length
 
     for (let parentIndex = 0; parentIndex < parentShas.length; parentIndex++) {
       const parentSha = parentShas[parentIndex]
@@ -88,8 +92,8 @@ class ChildDirectory {
     ])
   }
 
-  lookupRemainingParents = (childSha) => {
-    return this._tracked[childSha] || []
+  numberOfParentsFor = (childSha) => {
+    return this._parentCount[childSha] || 0
   }
 
   spliceColumn = (column) => {
@@ -223,8 +227,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
         throw new Error('Invariant: column < next.length evaluated to false')
       }
 
-      const childHasAnotherParent =
-        children.lookupRemainingParents(childSha).length > 1
+      const childHasAnotherParent = children.numberOfParentsFor(childSha) > 1
       if (childHasAnotherParent) {
         writeLinks(childRow, childColumn, rowNumber, destinationColumn, colour)
       } else {
