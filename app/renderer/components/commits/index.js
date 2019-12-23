@@ -13,7 +13,7 @@ import Row, { RowHeight } from './row'
 import { checkoutCommit, loadMore } from '../../store/commits/actions'
 
 const COLUMNS = [
-  { name: '', key: 'graph', width: '100px' },
+  { name: '', key: 'graph', width: '150px' },
   { name: 'SHA', key: 'sha7', width: '50px' },
   { name: 'Message', key: 'message', width: '500px', showTags: true },
   { name: 'Author', key: 'authorStr', width: '150px' },
