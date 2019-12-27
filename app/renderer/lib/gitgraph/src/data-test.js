@@ -12,103 +12,69 @@ git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
 
 export const data = {
   // commits: git.getCommits(),
+
+  // TODO: fix bug
   commits: [
     {
       sha: 'root2',
-      parents: ['root1', 'a2'],
+      parents: ['root1'],
+      isHead: false,
     },
     {
       sha: 'a2',
-      parents: ['a1'],
+      parents: ['root', 'a1_root'],
+      isHead: false,
     },
     {
       sha: 'root1',
-      parents: ['root', 'a1'],
-    },
-    {
-      sha: 'b1',
       parents: ['root'],
+      isHead: false,
     },
     {
-      sha: 'a1',
-      parents: ['root'],
-    },
-    {
+      // TODO: this is what's messing it up now, because it gets marked as an
+      //         orphan and removed, causing A2 to be tracked as column:0
       sha: 'root',
       parents: [],
+      isHead: false,
+    },
+    {
+      sha: 'a1_root',
+      parents: [],
+      isHead: false,
     },
   ],
+
+  // TODO: check that this also behaves once fixed
   // commits: [
   //   {
-  //     sha: 'f1',
-  //     sha7: 'f1',
-  //     parents: [
-  //       'e1'
-  //     ]
+  //     sha: 'root2',
+  //     parents: ['root1'],
+  //     isHead: false,
   //   },
   //   {
-  //     sha: 'e2',
-  //     sha7: 'e2',
-  //     parents: [
-  //       'e1'
-  //     ]
+  //     sha: 'a3',
+  //     parents: ['root', 'a2'],
+  //     isHead: false,
   //   },
-  //   {
-  //     sha: 'root1',
-  //     sha7: 'root1',
-  //     parents: [
-  //       'root',
-  //       'a1'
-  //     ]
-  //   },
-  //   {
-  //     sha: 'e1',
-  //     sha7: 'e1',
-  //     parents: [
-  //       'a1',
-  //       'root'
-  //     ]
-  //   },
-  //   {
-  //     sha: 'a1',
-  //     sha7: 'a1',
-  //     parents: [
-  //       'root'
-  //     ]
-  //   },
-  //   {
-  //     sha: 'root',
-  //     sha7: 'root',
-  //     parents: []
-  //   },
-  // ],
-  // commits: [
   //   {
   //     sha: 'a2',
-  //     sha7: 'a2',
-  //     parents: [
-  //       'a1',
-  //       'root1'
-  //     ]
+  //     parents: ['a1_root'],
+  //     isHead: false,
   //   },
   //   {
   //     sha: 'root1',
-  //     sha7: 'root1',
-  //     parents: [
-  //       'root'
-  //     ]
-  //   },
-  //   {
-  //     sha: 'a1',
-  //     sha7: 'a1',
-  //     parents: [
-  //       'root'
-  //     ]
+  //     parents: ['root'],
+  //     isHead: false,
   //   },
   //   {
   //     sha: 'root',
-  //     sha7: 'root',
-  //     parents: []
+  //     parents: [],
+  //     isHead: false,
   //   },
-  // ]
+  //   {
+  //     sha: 'a1_root',
+  //     parents: [],
+  //     isHead: false,
+  //   },
+  // ],
 }

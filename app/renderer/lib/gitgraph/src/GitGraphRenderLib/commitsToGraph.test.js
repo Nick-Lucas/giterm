@@ -403,7 +403,7 @@ describe('commitsToGraph', () => {
       ])
     })
 
-    it(`should draw a graph where a branch pulls in the root node twice
+    it(`should draw a graph where a parent has 3 children, 2 of which are part of the same branch
           (was observed to cause a condition where the second node's merge line overlapped its own branch's lines)
         --------------------------------------------
           .৲
@@ -454,6 +454,69 @@ describe('commitsToGraph', () => {
         makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
         makeLinks(2, [0, 0, 0, 'none'], [1, 0, 0, 'start'], [1, 1, 1]),
         makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
+      ])
+    })
+
+    it(`should draw a graph where a parent has 3 children, 2 of which are part of the same branch, but a separate commit has been made between this parent and the latest child
+          (was observed to cause a condition where the second node's merge line overlapped its own branch's lines)
+        --------------------------------------------
+          .৲
+          |.
+          .|
+          ⊢|
+          ./
+        --------------------------------------------
+    `, () => {
+      const commits = [
+        {
+          sha: 'root2',
+          parents: ['root1'],
+          isHead: false,
+        },
+        {
+          sha: 'a2',
+          parents: ['root', 'a1_root'],
+          isHead: false,
+        },
+        {
+          sha: 'root1',
+          parents: ['root'],
+          isHead: false,
+        },
+        {
+          sha: 'root',
+          parents: [],
+          isHead: false,
+        },
+        {
+          sha: 'a1_root',
+          parents: [],
+          isHead: false,
+        },
+      ]
+
+      const { nodes, links } = commitsToGraph(commits)
+
+      expectToEqualShape(nodes, [
+        ['.'], 
+        [' ', '.'], 
+        ['.', ' '], 
+        ['.', ' '],
+        [' ', '.']
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0),
+        makeColours(1, 2),
+        makeColours(0),
+        makeColours(0),
+        makeColours(2),
+      ])
+      expectLinks(links, [
+        [],
+        makeLinks(1, [0, 0, 0, 'start']),
+        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 2, 1, 'start']),
+        makeLinks(3, [0, 0, 0], [1, 0, 1, 'end'], [1, 2, 1, 'none']),
+        makeLinks(4, [2, 1, 1, 'end']),
       ])
     })
   })

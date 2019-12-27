@@ -41,7 +41,8 @@ export default function App() {
                 flexDirection: 'row',
               }}>
               <Label>
-                {commits[i].sha7} {commits[i].bug ? 'BUG' : ''}
+                {commits[i].sha7 || commits[i].sha.slice(0, 7)}{' '}
+                {commits[i].bug ? 'BUG' : ''}
               </Label>
 
               <GraphContainer>

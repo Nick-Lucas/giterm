@@ -158,7 +158,9 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
     // Remove deleted nodes which no longer need tracking and update columns
     for (let i = next.length - 1; i >= 0; i--) {
-      if (next[i].deleted || next[i].orphan) {
+      const { deleted, orphan } = next[i]
+
+      if (deleted || orphan) {
         next.splice(i, 1)
 
         rowLinks.splice(i, 1)
@@ -258,7 +260,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
         } else {
           // Found child branched off from parent
           if (nodeColumn == null) {
-            throw "Invariant: nodeColumn was null, time to use a queue to ensure it's always populated first"
+            throw "Invariant: nodeColumn was null, ensure it's always populated first"
           }
 
           const childNode = nodes[coords.row][coords.column]
