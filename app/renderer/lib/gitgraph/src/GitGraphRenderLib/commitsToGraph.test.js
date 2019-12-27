@@ -546,6 +546,62 @@ describe('commitsToGraph', () => {
   })
 
   describe('Rehydration', () => {
+    it('should assign and rehydrate a column to a known parent which hasn\'t been found yet', () => {
+      git.addCommit({ id: 'a1', parentId: 'root' })
+      git.addCommit({ id: 'root2', parentId: 'root' })
+      git.addMerge({ parentId1: 'root2', parentId2: 'a1' })
+
+      const commits = git.getCommits()
+      const commits1 = commits.slice(0, 2)
+      const commits2 = commits.slice(2)
+      expect(commits1.length + commits2.length).toBe(commits.length)
+
+      function test1() {
+        const { nodes, links, rehydrationPackage } = commitsToGraph(commits1)
+
+        expectToEqualShape(nodes, [
+          ['.'], 
+          ['.', ' ']
+        ])
+        expectNodeColours(nodes, [
+          makeColours(0, 1), 
+          makeColours(0)
+        ])
+        expectLinks(links, [
+          [],
+          makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
+        ])
+
+        return rehydrationPackage
+      }
+
+      function test2(rehydrationPackage) {
+        const { nodes, links } = commitsToGraph(commits2, rehydrationPackage)
+
+        expectToEqualShape(nodes, [
+          ['.'], 
+          ['.', ' '],
+          [' ', '.'],
+          ['.', ' '],
+        ])
+        expectNodeColours(nodes, [
+          makeColours(0, 1), 
+          makeColours(0),
+          makeColours(1),
+          makeColours(0),
+        ])
+        expectLinks(links, [
+          [],
+          makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
+          makeLinks(1, [0, 0, 0, 'start'], [1, 1, 1, 'end']),
+          makeLinks(1, [0, 0, 0, 'end'], [1, 0, 1]),
+        ])
+      }
+
+      const rehydrationPackage = test1()
+      test2(rehydrationPackage)
+    })
+
     it(`should rehydrate and continue where it left off on test case:
           'should work on two branches merged in proximity'
         --------------------------------------------
