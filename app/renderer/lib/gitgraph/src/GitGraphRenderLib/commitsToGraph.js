@@ -29,13 +29,15 @@ function cloneNodeAsBlank(node, parentSha) {
   }
 }
 
-function commitToNode(commit, primaryColour, secondaryColour = null) {
+function commitToNode(rowIndex, commit, primaryColour, secondaryColour = null) {
   return {
     type: 'node',
     sha: commit.sha,
     parents: commit.parents,
+    allParents: commit.parents,
     deleted: false,
     orphan: commit.parents.length === 0,
+    rowIndex,
     primaryColour,
     secondaryColour,
   }
@@ -50,9 +52,9 @@ export function _link(
   { nodeAtStart = true, nodeAtEnd = true } = {},
 ) {
   return {
-    x1: x1,
+    x1,
     y1,
-    x2: x2,
+    x2,
     y2,
     colour,
     nodeAtStart,
@@ -101,7 +103,17 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       for (const parentIndexStr in node.parents) {
         const parentIndex = parseInt(parentIndexStr)
         const parentSha = node.parents[parentIndex]
-        const columnIndex = next.push(cloneNodeAsBlank(node, parentSha)) - 1
+
+        // Are we already looking for this parent?
+        let columnIndex = next.findIndex(
+          (node) => node.parents[0] === parentSha,
+        )
+        if (
+          columnIndex === -1 ||
+          next[columnIndex].allParents.indexOf(parentSha) != 0
+        ) {
+          columnIndex = next.push(cloneNodeAsBlank(node, parentSha)) - 1
+        }
 
         let colour = node.primaryColour
         if (node.type === 'node') {
@@ -130,18 +142,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   for (const commit of commits) {
     const { next, rowIndex, rowLinks } = prepareNext()
 
-    function trackNewBranch() {
-      const colour = colours.next()
-      next.push(commitToNode(commit, colour))
-    }
-
-    function trackKnownParent(column) {
-      next[column] = commitToNode(commit, rowLinks[column].colour)
-
-      rowLinks[column].nodeAtEnd = true
-    }
-
-    const matches = []
+    let matches = []
     for (const columnIndexStr in next) {
       const columnIndex = parseInt(columnIndexStr)
       const node = next[columnIndex]
@@ -150,21 +151,47 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       }
     }
 
+    matches = _.sortBy(matches, ([columnIndex, node]) => [
+      node.allParents.indexOf(commit.sha),
+      columnIndex,
+    ])
+
     if (matches.length === 0) {
-      trackNewBranch()
+      // New un-merged branch found
+      const colour = colours.next()
+      next.push(commitToNode(rowIndex, commit, colour))
     } else {
       let nodeColumn = null
       for (const matchIndex in matches) {
         const firstMatch = matchIndex == 0
         const [columnIndex, node] = matches[matchIndex]
+        const childParentIndex = node.allParents.indexOf(commit.sha)
 
         if (firstMatch) {
-          trackKnownParent(columnIndex)
+          next[columnIndex] = commitToNode(
+            rowIndex,
+            commit,
+            rowLinks[columnIndex].colour,
+          )
           nodeColumn = columnIndex
         } else {
-          rowLinks[columnIndex].nodeAtEnd = true
           rowLinks[columnIndex].x2 = nodeColumn
           node.deleted = true
+
+          if (childParentIndex == 0) {
+            rowLinks[columnIndex].colour = node.primaryColour
+          } else {
+            rowLinks[columnIndex].colour = rowLinks[nodeColumn].colour
+            nodes[node.rowIndex][columnIndex].secondaryColour =
+              rowLinks[nodeColumn].colour
+          }
+        }
+      }
+
+      // Update links which point to this node
+      for (const link of rowLinks) {
+        if (link.x2 == nodeColumn) {
+          link.nodeAtEnd = true
         }
       }
     }
