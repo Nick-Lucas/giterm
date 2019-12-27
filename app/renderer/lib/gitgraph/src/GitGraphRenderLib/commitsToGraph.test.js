@@ -111,6 +111,30 @@ describe('commitsToGraph', () => {
         makeLinks(2, [0, 0, 0, 'end']),
       ])
     })
+
+    it(`should prepare links for a merge commit even though the merged parent isn't visible yet
+        --------------------------------------------
+          .৲
+          .|
+        --------------------------------------------
+    `, () => {
+      git.addMerge({ id: 'branch_a', parentId1: 'root', parentId2: 'unseen', explicitParent2IsMissing: true })
+
+      const { nodes, links } = commitsToGraph(git.getCommits())
+
+      expectToEqualShape(nodes, [
+        ['.'], 
+        ['.', ' ']
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0, 1), 
+        makeColours(0)
+      ])
+      expectLinks(links, [
+        [],
+        makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
+      ])
+    })
   })
 
   describe('Repeated merging with active branch', () => {

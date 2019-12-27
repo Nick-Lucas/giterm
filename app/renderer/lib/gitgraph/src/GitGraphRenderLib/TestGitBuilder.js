@@ -28,7 +28,7 @@ export class TestGitBuilder {
     }
   }
 
-  _getChildIndex = (childId = null) => {
+  _getChildIndex = (childId = null, allowMissing = false) => {
     if (!childId) {
       return this._commits.length - 1
     }
@@ -36,6 +36,10 @@ export class TestGitBuilder {
     const index = this._index[childId]
     if (index >= 0) {
       return index
+    }
+
+    if (allowMissing) {
+      return -1
     }
 
     throw new Error('ID ' + childId + ' has not been added yet')
@@ -63,15 +67,25 @@ export class TestGitBuilder {
     return commit
   }
 
-  addMerge = ({ id = null, parentId1 = null, parentId2 = null } = {}) => {
+  addMerge = ({
+    id = null,
+    parentId1 = null,
+    parentId2 = null,
+    explicitParent2IsMissing = false,
+  } = {}) => {
     const parentIndex1 = this._getChildIndex(parentId1)
-    const parentIndex2 = this._getChildIndex(parentId2)
-    const parent1 = this._commits[parentIndex1]
-    const parent2 = this._commits[parentIndex2]
+    const parentIndex2 = this._getChildIndex(
+      parentId2,
+      explicitParent2IsMissing,
+    )
+    const parent1Sha = this._commits[parentIndex1].sha
+    const parent2Sha = explicitParent2IsMissing
+      ? parentId2
+      : this._commits[parentIndex2].sha
 
     const commit = this._createCommit({
       id,
-      parents: [parent1.sha, parent2.sha],
+      parents: [parent1Sha, parent2Sha],
     })
     const index = this._commits.push(commit) - 1
 
