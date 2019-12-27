@@ -2,8 +2,8 @@ import React from 'react'
 import './App.css'
 import styled from 'styled-components'
 import { data } from './data'
-import { data as data_test } from './data-test'
 import { commitsToGraph } from './GitGraphRenderLib/commitsToGraph'
+import { scenarios } from './GitGraphRenderLib/commitsToGraph.testscenarios'
 
 const colours = [
   '#058ED9',
@@ -16,12 +16,39 @@ const colours = [
 ]
 
 export default function App() {
-  const git = window.location.pathname.includes('test') ? data_test : data
+  const path = window.location.pathname
 
-  const { nodes, links, commits } = commitsToGraph(git.commits)
+  let commits = data.commits
+  if (path !== '/') {
+    const dataPath = path.slice(1)
+    commits = scenarios[dataPath]
+    if (!commits) {
+      return (
+        <div>
+          Invalid scenario: `{dataPath}`. Must be in
+          ./GitGraphRenderLib/commitsToGraph.testscenarios
+        </div>
+      )
+    }
+    if (typeof commits === 'function') {
+      commits = commits()
+    }
+  }
+
+  const { nodes, links } = commitsToGraph(commits)
 
   return (
     <div className="App">
+      <div className="sidebar">
+        <div>Scenarios:</div>
+        {Object.keys(scenarios).map((scenarioName) => (
+          <div key={scenarioName}>
+            <a href={'/' + scenarioName}>{scenarioName}</a>
+          </div>
+        ))}
+      </div>
+      <br />
+
       <div
         style={{
           width: '100%',
@@ -41,7 +68,7 @@ export default function App() {
                 flexDirection: 'row',
               }}>
               <Label>
-                {commits[i].sha7 || commits[i].sha.slice(0, 7)}{' '}
+                {commits[i].sha7 || commits[i].sha}{' '}
                 {commits[i].bug ? 'BUG' : ''}
               </Label>
 
@@ -112,7 +139,6 @@ const Label = styled.div`
 
 const GraphContainer = styled.svg`
   height: 20px;
-  width: 90%;
   margin-left: 10px;
 
   display: flex;

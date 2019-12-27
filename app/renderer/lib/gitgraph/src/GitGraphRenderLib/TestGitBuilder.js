@@ -8,23 +8,12 @@ export class TestGitBuilder {
   }
 
   _createCommit({ id = null, parents = [] }) {
-    const sha = generateSha()
-    // const sha7 = sha.slice(0, 7)
+    const sha = id || generateSha()
+
     return {
       _id: id,
       sha,
       parents,
-      // sha7,
-      // message: '',
-      // isHead: false
-      // detail: '',
-      // date: '2019-09-02T15:06:26.000Z',
-      // dateStr: '2019/09/02 16:06',
-      // time: 1567436786,
-      // committer: {},
-      // email: '',
-      // author: '',
-      // authorStr: '',
     }
   }
 

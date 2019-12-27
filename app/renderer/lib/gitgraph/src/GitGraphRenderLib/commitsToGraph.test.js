@@ -1,16 +1,13 @@
 /* eslint-disable prettier/prettier */
 
-import { TestGitBuilder } from './TestGitBuilder'
 import { commitsToGraph, _link } from './commitsToGraph'
+import { scenarios } from "./commitsToGraph.testscenarios";
 
 // Very useful site for finding appropriate characters: http://shapecatcher.com/
 
 describe('commitsToGraph', () => {
-  let git = new TestGitBuilder()
-  beforeEach(() => {
-    git = new TestGitBuilder()
-  })
-
+  let scenarioPath = ''
+  
   function makeColours(primaryColour, secondaryColour = null) {
     return {
       primaryColour,
@@ -35,12 +32,12 @@ describe('commitsToGraph', () => {
           |
         --------------------------------------------
     `, () => {
-      git.addCommit()
-      git.addCommit()
+      scenarioPath = 'standard.a'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [['.'], ['.'], ['.']])
+      expectNodePositions(nodes, [['.'], ['.'], ['.']])
       expectNodeColours(nodes, [makeColours(0), makeColours(0), makeColours(0)])
       expectLinks(links, [[], makeLinks(1, [0, 0, 0]), makeLinks(2, [0, 0, 0])])
     })
@@ -52,12 +49,12 @@ describe('commitsToGraph', () => {
           |/
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'branch_a', parentId: 'root' })
-      git.addCommit({ id: 'branch_b', parentId: 'root' })
+      scenarioPath = 'standard.b'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.', ' ']])
+      expectNodePositions(nodes, [['.'], [' ', '.'], ['.', ' ']])
       expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
       expectLinks(links, [
         [],
@@ -73,12 +70,12 @@ describe('commitsToGraph', () => {
           |/
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'branch_a', parentId: 'root' })
-      git.addMerge({ parentId1: 'root', parentId2: 'branch_a' })
+      scenarioPath = 'standard.c'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.', ' ']])
+      expectNodePositions(nodes, [['.'], [' ', '.'], ['.', ' ']])
       expectNodeColours(nodes, [
         makeColours(0, 1),
         makeColours(1),
@@ -98,12 +95,12 @@ describe('commitsToGraph', () => {
           |
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'branch_b', orphan: true })
-      git.addCommit({ id: 'branch_a', parentId: 'root' })
+      scenarioPath = 'standard.d'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.']])
+      expectNodePositions(nodes, [['.'], [' ', '.'], ['.']])
       expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
       expectLinks(links, [
         [],
@@ -118,11 +115,12 @@ describe('commitsToGraph', () => {
           .|
         --------------------------------------------
     `, () => {
-      git.addMerge({ id: 'branch_a', parentId1: 'root', parentId2: 'unseen', explicitParent2IsMissing: true })
+      scenarioPath = 'standard.e'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'], 
         ['.', ' ']
       ])
@@ -147,14 +145,12 @@ describe('commitsToGraph', () => {
           ./
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'branch_b_1', parentId: 'root' })
-      git.addCommit({ id: 'root_2', parentId: 'root' })
-      git.addMerge({ parentId1: 'branch_b_1', parentId2: 'root_2' })
-      git.addCommit({ id: 'root_3', parentId: 'root_2' })
+      scenarioPath = 'repeated-merging.a'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'],
         [' ', '.'],
         ['.', ' '],
@@ -186,14 +182,12 @@ describe('commitsToGraph', () => {
           ./
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'branch_b_1', parentId: 'root' })
-      git.addMerge({ id: 'root_2', parentId1: 'root', parentId2: 'branch_b_1' })
-      git.addCommit({ id: 'branch_b_2', parentId: 'branch_b_1' })
-      git.addMerge({ parentId1: 'root_2', parentId2: 'branch_b_2' })
+      scenarioPath = 'repeated-merging.b'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'],
         [' ', '.'],
         ['.', ' '],
@@ -227,14 +221,12 @@ describe('commitsToGraph', () => {
           .//
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'a1', parentId: 'root' })
-      git.addCommit({ id: 'b1', parentId: 'root' })
-      git.addMerge({ id: 'm1', parentId1: 'root', parentId2: 'a1' })
-      git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'b1' })
+      scenarioPath = 'multi-branch.a'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
-
-      expectToEqualShape(nodes, [
+      const { nodes, links } = commitsToGraph(commits)
+      
+      expectNodePositions(nodes, [
         ['.'],
         ['.'],
         [' ', '.'],
@@ -269,17 +261,12 @@ describe('commitsToGraph', () => {
           .//
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'a1', parentId: 'root' })
-      git.addCommit({ id: 'b1', parentId: 'root' })
-      git.addMerge({ id: 'm1', parentId1: 'root', parentId2: 'b1' })
-      git.addCommit({ id: 'a2', parentId: 'a1' })
-      git.addCommit({ id: 'c1', parentId: 'm1' })
-      git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'a2' })
-      git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
+      scenarioPath = 'multi-branch.b'
+      const commits = scenarios[scenarioPath]
 
-      const { nodes, links } = commitsToGraph(git.getCommits())
+      const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'],
         ['.'],
         [' ', '.'],
@@ -323,36 +310,12 @@ describe('commitsToGraph', () => {
           .//
         --------------------------------------------
     `, () => {
-      const commits = [
-        {
-          sha: 'root2',
-          parents: ['root1', 'a2'],
-        },
-        {
-          sha: 'a2',
-          parents: ['a1'],
-        },
-        {
-          sha: 'root1',
-          parents: ['root', 'a1'],
-        },
-        {
-          sha: 'b1',
-          parents: ['root'],
-        },
-        {
-          sha: 'a1',
-          parents: ['root'],
-        },
-        {
-          sha: 'root',
-          parents: [],
-        },
-      ]
+      scenarioPath = 'data-driven.a'
+      const commits = scenarios[scenarioPath]
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'],
         [' ', '.'],
         ['.', ' '],
@@ -387,32 +350,12 @@ describe('commitsToGraph', () => {
           ./
         --------------------------------------------
     `, () => {
-      const commits = [
-        {
-          sha: 'a2',
-          sha7: 'a2',
-          parents: ['a1', 'root1'],
-        },
-        {
-          sha: 'root1',
-          sha7: 'root1',
-          parents: ['root'],
-        },
-        {
-          sha: 'a1',
-          sha7: 'a1',
-          parents: ['root'],
-        },
-        {
-          sha: 'root',
-          sha7: 'root',
-          parents: [],
-        },
-      ]
+      scenarioPath = 'data-driven.b'
+      const commits = scenarios[scenarioPath]
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [['.'], [' ', '.'], ['.', ' '], ['.', ' ']])
+      expectNodePositions(nodes, [['.'], [' ', '.'], ['.', ' '], ['.', ' ']])
       expectNodeColours(nodes, [
         makeColours(0, 1),
         makeColours(1),
@@ -436,32 +379,12 @@ describe('commitsToGraph', () => {
           ./
         --------------------------------------------
     `, () => {
-      const commits = [
-        {
-          sha: 'root1',
-          parents: ['root', 'a2'],
-          isHead: false,
-        },
-        {
-          sha: 'a2',
-          parents: ['a1', 'root'],
-          isHead: false,
-        },
-        {
-          sha: 'a1',
-          parents: ['root'],
-          isHead: false,
-        },
-        {
-          sha: 'root',
-          parents: [],
-          isHead: false,
-        },
-      ]
+      scenarioPath = 'data-driven.c'
+      const commits = scenarios[scenarioPath]
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'], 
         [' ', '.'], 
         [' ', '.'], 
@@ -491,37 +414,12 @@ describe('commitsToGraph', () => {
           ./
         --------------------------------------------
     `, () => {
-      const commits = [
-        {
-          sha: 'root2',
-          parents: ['root1'],
-          isHead: false,
-        },
-        {
-          sha: 'a2',
-          parents: ['root', 'a1_root'],
-          isHead: false,
-        },
-        {
-          sha: 'root1',
-          parents: ['root'],
-          isHead: false,
-        },
-        {
-          sha: 'root',
-          parents: [],
-          isHead: false,
-        },
-        {
-          sha: 'a1_root',
-          parents: [],
-          isHead: false,
-        },
-      ]
+      scenarioPath = 'data-driven.d'
+      const commits = scenarios[scenarioPath]
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'], 
         [' ', '.'], 
         ['.', ' '], 
@@ -547,11 +445,9 @@ describe('commitsToGraph', () => {
 
   describe('Rehydration', () => {
     it('should assign and rehydrate a column to a known parent which hasn\'t been found yet', () => {
-      git.addCommit({ id: 'a1', parentId: 'root' })
-      git.addCommit({ id: 'root2', parentId: 'root' })
-      git.addMerge({ parentId1: 'root2', parentId2: 'a1' })
+      scenarioPath = 'rehydration.a'
+      const commits = scenarios[scenarioPath]
 
-      const commits = git.getCommits()
       const commits1 = commits.slice(0, 2)
       const commits2 = commits.slice(2)
       expect(commits1.length + commits2.length).toBe(commits.length)
@@ -559,7 +455,7 @@ describe('commitsToGraph', () => {
       function test1() {
         const { nodes, links, rehydrationPackage } = commitsToGraph(commits1)
 
-        expectToEqualShape(nodes, [
+        expectNodePositions(nodes, [
           ['.'], 
           ['.', ' ']
         ])
@@ -578,7 +474,7 @@ describe('commitsToGraph', () => {
       function test2(rehydrationPackage) {
         const { nodes, links } = commitsToGraph(commits2, rehydrationPackage)
 
-        expectToEqualShape(nodes, [
+        expectNodePositions(nodes, [
           ['.'], 
           ['.', ' '],
           [' ', '.'],
@@ -612,14 +508,12 @@ describe('commitsToGraph', () => {
           .//
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'a1', parentId: 'root' })
-      git.addCommit({ id: 'b1', parentId: 'root' })
-      git.addMerge({ id: 'm1', parentId1: 'root', parentId2: 'a1' })
-      git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'b1' })
+      scenarioPath = 'rehydration.b'
+      const commits = scenarios[scenarioPath]
 
-      const commits1 = git.getCommits().slice(0, 2)
-      const commits2 = git.getCommits().slice(2)
-      expect(commits1.length + commits2.length).toBe(git.getCommits().length)
+      const commits1 = commits.slice(0, 2)
+      const commits2 = commits.slice(2)
+      expect(commits1.length + commits2.length).toBe(commits.length)
 
       const { rehydrationPackage } = commitsToGraph(commits1)
       const { nodes, links } = commitsToGraph(
@@ -627,7 +521,7 @@ describe('commitsToGraph', () => {
         JSON.parse(JSON.stringify(rehydrationPackage)),
       )
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'],
         ['.'],
         [' ', '.'],
@@ -663,17 +557,12 @@ describe('commitsToGraph', () => {
           .//
         --------------------------------------------
     `, () => {
-      git.addCommit({ id: 'a1', parentId: 'root' })
-      git.addCommit({ id: 'b1', parentId: 'root' })
-      git.addMerge({ id: 'm1', parentId1: 'root', parentId2: 'b1' })
-      git.addCommit({ id: 'a2', parentId: 'a1' })
-      git.addCommit({ id: 'c1', parentId: 'm1' })
-      git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'a2' })
-      git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
+      scenarioPath = 'rehydration.c'
+      const commits = scenarios[scenarioPath]
 
-      const commits1 = git.getCommits().slice(0, 4)
-      const commits2 = git.getCommits().slice(4)
-      expect(commits1.length + commits2.length).toBe(git.getCommits().length)
+      const commits1 = commits.slice(0, 4)
+      const commits2 = commits.slice(4)
+      expect(commits1.length + commits2.length).toBe(commits.length)
 
       const { rehydrationPackage } = commitsToGraph(commits1)
       const { nodes, links } = commitsToGraph(
@@ -681,7 +570,7 @@ describe('commitsToGraph', () => {
         JSON.parse(JSON.stringify(rehydrationPackage)),
       )
 
-      expectToEqualShape(nodes, [
+      expectNodePositions(nodes, [
         ['.'],
         ['.'],
         [' ', '.'],
@@ -713,161 +602,148 @@ describe('commitsToGraph', () => {
       ])
     })
   })
+
+  // Test helpers!
+  // **************
+  function failTest(error) {
+    throw new Error("Test failed: http://localhost:3000/" + scenarioPath + '\n\n' + error)
+  }
+
+  function format(obj) {
+    return JSON.stringify(obj, null, 2)
+  }
+  
+  /**
+   * Checks that the layout of nodes/links in their columns are correct
+   * The shape is an array of rows, where each column is either: 0 -> node, 1 -> link
+   */
+  function expectNodePositions(nodes, expectedShape) {
+    function toName(char) {
+      switch (char) {
+        case '.':
+          return 'node'
+        default:
+          return 'blank'
+      }
+    }
+    try {
+      expect(nodes.length).toBe(expectedShape.length)
+    } catch (e) {
+      let error = 'Shape not equal. Different length: \n\n'
+      error +=
+        'Graph: ' +
+        JSON.stringify(nodes.map((row) => row.map((node) => node.type))) +
+        '\n'
+      error +=
+        'Expected shape: ' +
+        JSON.stringify(expectedShape.map((row) => row.map(toName))) +
+        '\n\n'
+      
+      failTest(error)
+    }
+  
+    for (let i = 0; i < nodes.length; i++) {
+      expect(nodes[i].filter(node => node.type === 'node').length).toBe(1)
+      const nodePosition = nodes[i].findIndex(node => node.type === 'node')
+      const expectedNodePosition = expectedShape[i].findIndex(node => node === '.')
+  
+      try {
+        expect(nodePosition).toBe(expectedNodePosition)
+      } catch (e) {
+        let error =
+          'Node position not equal. Row ' + i + ' should have a node in position' + expectedNodePosition + ': \n\n'
+        error +=
+          'Graph Row: ' + JSON.stringify(nodes[i].map((node) => node.type)) + '\n'
+        error +=
+          'Expected shape: ' + JSON.stringify(expectedShape[i].map(toName)) + '\n\n'
+        error +=
+          'Graph: ' +
+          JSON.stringify(
+            nodes.map((row) => row.map((node) => node.type)),
+            null,
+            2,
+          ) +
+          '\n'
+        error +=
+          'Expected shape: ' +
+          JSON.stringify(expectedShape.map((row) => row.map(toName)), null, 2) +
+          '\n\n'
+        
+        failTest(error)
+      }
+    }
+  }
+  
+  function expectNodeColours(nodes, expectedColours) {
+    const nodeColours = nodes
+      .map((row) => row.find((node) => node.type === 'node'))
+      .map((node) => ({
+        primaryColour: node.primaryColour,
+        secondaryColour: node.secondaryColour,
+      }))
+  
+    for (const i in expectedColours) {
+      const node = nodeColours[i]
+      const expected = expectedColours[i]
+  
+      try {
+        expect(node).toEqual(expected)
+      } catch (e) {
+        let error = `Node colours at row index ${i} node colours are wrong\n\n`
+        error += `Received: ${JSON.stringify(node, null, 2)}\n`
+        error += `Expected: ${JSON.stringify(expected, null, 2)}\n\n`
+        error += `Full: ${JSON.stringify(nodeColours, null, 2)}\n`
+        error += `Expected: ${JSON.stringify(expectedColours, null, 2)}`
+        
+        failTest(error)
+      }
+    }
+  }
+  
+  function expectLinks(links, expected) {
+    function prettyLink({ x1, x2, colour, nodeAtStart, nodeAtEnd }) {
+      return {
+        from_x: x1,
+        to_x__: x2,
+        colour,
+        nodeAtStart,
+        nodeAtEnd,
+      }
+    }
+  
+    try {
+      expect(links.length).toBe(expected.length)
+    } catch (e) {
+      let error = `Expected ${expected.length} rows of links but got ${
+        links.length
+      }: \n\n`
+      error +=
+        'Received: ' + format(links.map((row) => row.map(prettyLink))) + '\n'
+      error +=
+        'Expected: ' + format(expected.map((row) => row.map(prettyLink))) + '\n\n'
+      
+      failTest(error)
+    }
+  
+    for (const i in links) {
+      const linksRow = links[i]
+      const expectedRow = expected[i]
+  
+      try {
+        expect(new Set(linksRow.map(prettyLink))).toEqual(new Set(expectedRow.map(prettyLink)))
+      } catch (e) {
+        let error = `Links at Row index ${i} did not match: \n\n`
+        error += 'Received: ' + format(linksRow.map(prettyLink)) + '\n'
+        error += 'Expected: ' + format(expectedRow.map(prettyLink)) + '\n\n'
+        error += 'Full: ' + format(links.map((row) => row.map(prettyLink))) + '\n'
+        error +=
+          'Full Expected: ' +
+          format(expected.map((row) => row.map(prettyLink))) +
+          '\n\n'
+        
+        failTest(error)
+      }
+    }
+  }
 })
 
-function format(obj) {
-  return JSON.stringify(obj, null, 2)
-}
-
-/**
- * Checks that the layout of nodes/links in their columns are correct
- * The shape is an array of rows, where each column is either: 0 -> node, 1 -> link
- */
-function expectToEqualShape(nodes, expectedShape) {
-  function toName(char) {
-    switch (char) {
-      case '.':
-        return 'node'
-      default:
-        return 'blank'
-    }
-  }
-  try {
-    expect(nodes.length).toBe(expectedShape.length)
-  } catch (e) {
-    let error = 'Shape not equal. Different length: \n\n'
-    error +=
-      'Graph: ' +
-      JSON.stringify(nodes.map((row) => row.map((node) => node.type))) +
-      '\n'
-    error +=
-      'Expected shape: ' +
-      JSON.stringify(expectedShape.map((row) => row.map(toName))) +
-      '\n\n'
-    throw new Error(error)
-  }
-
-  for (let i = 0; i < nodes.length; i++) {
-    const row = nodes[i]
-    const rowShape = expectedShape[i]
-
-    try {
-      expect(row.length).toBe(rowShape.length)
-    } catch (e) {
-      let error =
-        'Shape not equal. Row ' + i + ' had different number of columns: \n\n'
-      error +=
-        'Graph Row: ' + JSON.stringify(row.map((node) => node.type)) + '\n'
-      error +=
-        'Expected shape: ' + JSON.stringify(rowShape.map(toName)) + '\n\n'
-      error +=
-        'Graph: ' +
-        JSON.stringify(
-          nodes.map((row) => row.map((node) => node.type)),
-          null,
-          2,
-        ) +
-        '\n'
-      error +=
-        'Expected shape: ' +
-        JSON.stringify(expectedShape.map((row) => row.map(toName)), null, 2) +
-        '\n\n'
-      throw new Error(error)
-    }
-
-    try {
-      for (let i = 0; i < row.length; i++) {
-        expect(row[i].type).toBe(toName(rowShape[i]))
-      }
-    } catch (e) {
-      let error =
-        'Shape not equal. Row ' + i + ' had different types of columns: \n\n'
-      error +=
-        'Graph Row: ' + JSON.stringify(row.map((node) => node.type)) + '\n'
-      error +=
-        'Expected shape: ' + JSON.stringify(rowShape.map(toName)) + '\n\n'
-      error +=
-        'Graph: ' +
-        JSON.stringify(
-          nodes.map((row) => row.map((node) => node.type)),
-          null,
-          2,
-        ) +
-        '\n'
-      error +=
-        'Expected shape: ' +
-        JSON.stringify(expectedShape.map((row) => row.map(toName)), null, 2) +
-        '\n\n'
-      throw new Error(error)
-    }
-  }
-}
-
-function expectNodeColours(nodes, expectedColours) {
-  const nodeColours = nodes
-    .map((row) => row.find((node) => node.type === 'node'))
-    .map((node) => ({
-      primaryColour: node.primaryColour,
-      secondaryColour: node.secondaryColour,
-    }))
-
-  for (const i in expectedColours) {
-    const node = nodeColours[i]
-    const expected = expectedColours[i]
-
-    try {
-      expect(node).toEqual(expected)
-    } catch (e) {
-      let error = `Node colours at row index ${i} node colours are wrong\n\n`
-      error += `Received: ${JSON.stringify(node, null, 2)}\n`
-      error += `Expected: ${JSON.stringify(expected, null, 2)}\n\n`
-      error += `Full: ${JSON.stringify(nodeColours, null, 2)}\n`
-      error += `Expected: ${JSON.stringify(expectedColours, null, 2)}`
-      throw new Error(error)
-    }
-  }
-}
-
-function expectLinks(links, expected) {
-  function prettyLink({ x1, x2, colour, nodeAtStart, nodeAtEnd }) {
-    return {
-      from_x: x1,
-      to_x__: x2,
-      colour,
-      nodeAtStart,
-      nodeAtEnd,
-    }
-  }
-
-  try {
-    expect(links.length).toBe(expected.length)
-  } catch (e) {
-    let error = `Expected ${expected.length} rows of links but got ${
-      links.length
-    }: \n\n`
-    error +=
-      'Received: ' + format(links.map((row) => row.map(prettyLink))) + '\n'
-    error +=
-      'Expected: ' + format(expected.map((row) => row.map(prettyLink))) + '\n\n'
-    throw new Error(error)
-  }
-
-  for (const i in links) {
-    const linksRow = links[i]
-    const expectedRow = expected[i]
-
-    try {
-      expect(new Set(linksRow)).toEqual(new Set(expectedRow))
-    } catch (e) {
-      let error = `Links at Row index ${i} did not match: \n\n`
-      error += 'Received: ' + format(linksRow.map(prettyLink)) + '\n'
-      error += 'Expected: ' + format(expectedRow.map(prettyLink)) + '\n\n'
-      error += 'Full: ' + format(links.map((row) => row.map(prettyLink))) + '\n'
-      error +=
-        'Full Expected: ' +
-        format(expected.map((row) => row.map(prettyLink))) +
-        '\n\n'
-      throw new Error(error)
-    }
-  }
-}
