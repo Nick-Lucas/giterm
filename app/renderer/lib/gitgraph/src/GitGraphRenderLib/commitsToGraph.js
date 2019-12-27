@@ -119,6 +119,10 @@ class ChildDirectory {
       }
     }
   }
+
+  remainingParentsToFind = () => {
+    return _.uniq(_.flatMap(Object.values(this._tracked)))
+  }
 }
 
 class ColourTracker {
@@ -175,31 +179,38 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     return { last, next, rowNumber, rowLinks }
   }
 
-  for (const commit of commits) {
-    const { next, rowNumber, rowLinks } = prepareNext()
+  // A merge or branch point might be more than 1 commit away,
+  //  so we have to write links from the merge to the current row
+  function writeLinks(
+    fromY,
+    fromX,
+    toY,
+    toX,
+    colour,
+    { endWithNode = true } = {},
+  ) {
+    const nodeAtEnd = fromY + 1 >= toY
 
-    // A merge or branch point might be more than 1 commit away,
-    //  so we have to write links from the merge to the current row
-    function writeLinks(fromY, fromX, toY, toX, colour) {
-      const nodeAtEnd = fromY + 1 >= toY
+    links[fromY + 1].push(
+      _link(fromY, fromX, fromY + 1, toX, colour, {
+        nodeAtStart: true,
+        nodeAtEnd: nodeAtEnd && endWithNode,
+      }),
+    )
 
-      links[fromY + 1].push(
-        _link(fromY, fromX, fromY + 1, toX, colour, {
-          nodeAtStart: true,
-          nodeAtEnd,
+    for (let row = fromY + 1; row < toY; row++) {
+      const nodeAtEnd = row + 1 >= toY
+      links[row + 1].push(
+        _link(row, toX, row + 1, toX, colour, {
+          nodeAtStart: false,
+          nodeAtEnd: nodeAtEnd && endWithNode,
         }),
       )
-
-      for (let row = fromY + 1; row < toY; row++) {
-        const nodeAtEnd = row + 1 >= toY
-        links[row + 1].push(
-          _link(row, toX, row + 1, toX, colour, {
-            nodeAtStart: false,
-            nodeAtEnd,
-          }),
-        )
-      }
     }
+  }
+
+  for (const commit of commits) {
+    const { next, rowNumber, rowLinks } = prepareNext()
 
     function trackNewBranch(childRow = null, childColumn = null) {
       const colour = colours.next()
@@ -285,6 +296,27 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
     // Keep the child directory minimal
     children.cleanup(commit.sha)
+  }
+
+  // Ensure that even branches we haven't found yet are visible
+  const parentShas = children.remainingParentsToFind()
+  for (const parentSha of parentShas) {
+    const registeredChildren = children.lookup(parentSha)
+    for (const coords of registeredChildren) {
+      // TODO: do this more efficiently
+      const column = nodes
+        .slice(coords.row)
+        .reduce(
+          (cols, nodesRow) => (nodesRow.length > cols ? nodesRow.length : cols),
+          0,
+        )
+
+      const colour = colours.next()
+      nodes[coords.row][coords.column].secondaryColour = colour
+      writeLinks(coords.row, coords.column, nodes.length - 1, column, colour, {
+        endWithNode: false,
+      })
+    }
   }
 
   // TODO: optimise this by making each links row a Set with
