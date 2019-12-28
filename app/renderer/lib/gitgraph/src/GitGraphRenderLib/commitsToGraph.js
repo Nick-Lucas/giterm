@@ -18,6 +18,8 @@ export function _link(
   y2,
   x2,
   colour,
+  childSha,
+  parentSha,
   { nodeAtStart = true, nodeAtEnd = true } = {},
 ) {
   return {
@@ -26,6 +28,8 @@ export function _link(
     x2,
     y2,
     colour,
+    childSha,
+    parentSha,
     nodeAtStart,
     nodeAtEnd,
   }
@@ -146,6 +150,8 @@ class Cursor {
           nextRowIndex,
           column,
           columnObj.colour,
+          columnObj.sha,
+          columnObj.parentSha,
           {
             nodeAtStart: columnObj.isNode,
             nodeAtEnd: false,
@@ -179,7 +185,23 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   const { nodes, links, cursor, colours } = rehydrate(rehydrationPackage)
 
   function prepareNext() {
-    const rowLinks = cursor.next(nodes.length)
+    // Carry over any links generated which do not belong in the previous row
+    // FIXME: Don't love that this needs to exist, would be better to have a futureRowLinks array which gets merged in later
+    const lastRowIndex = links.length - 1
+    const linksToShift = []
+    if (lastRowIndex >= 0) {
+      const lastLinks = links[lastRowIndex]
+      for (let i = lastLinks.length - 1; i >= 0; i--) {
+        if (lastLinks[i].y1 >= lastRowIndex) {
+          linksToShift.push(...lastLinks.splice(i, 1))
+        }
+      }
+    }
+
+    // Move cursor foward to retrieve auto-generated links
+    const autoLinks = cursor.next(nodes.length)
+    const rowLinks = [...autoLinks, ...linksToShift]
+
     links.push(rowLinks)
 
     return {
@@ -207,19 +229,46 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       nodes.push(node)
 
       for (const parentSha of commit.parents.slice(1)) {
-        const colour = colours.next()
+        let colour = null
 
-        // Also assign columns to parents, with a symlink to auto-generated links
-        cursor.assignColumn(
-          rowIndex,
-          commit.sha,
-          parentSha,
-          commit.parents,
-          colour,
-          {
-            symlink: node.column,
-          },
-        )
+        const [firstChildOfParentColumn, firstChildOfParent] =
+          cursor.findChildren(parentSha)[0] || []
+        if (firstChildOfParent && firstChildOfParent.parentIndex === 0) {
+          // If this is a merge in from another branch with a colour already chosen
+          colour = firstChildOfParent.colour
+
+          rowLinks.push(
+            _link(
+              rowIndex,
+              node.column,
+              rowIndex + 1,
+              firstChildOfParentColumn,
+              colour,
+              node.sha,
+              firstChildOfParent.parentSha,
+              {
+                nodeAtStart: true,
+                nodeAtEnd: false,
+              },
+            ),
+          )
+        } else {
+          // If this is a merge in from a new branch not yet discovered
+          colour = colours.next()
+
+          // Also assign columns to parents, with a symlink to auto-generated links
+          cursor.assignColumn(
+            rowIndex,
+            commit.sha,
+            parentSha,
+            commit.parents,
+            colour,
+            {
+              symlink: node.column,
+            },
+          )
+        }
+
         node.secondaryColour = colour
       }
       return node
@@ -231,37 +280,36 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     } else {
       // Track known parent which may belong to 1 or more children
       let node = null
-      let nodeColumn = null
       for (const [childColumn, child] of children) {
         cursor.markParentFound(childColumn, commit.sha)
 
-        if (nodeColumn === null) {
-          // if (child.parentIndex == 0) {
-          nodeColumn = childColumn
+        if (node === null) {
           const colour = child.colour
 
-          node = commitToNode(commit, nodeColumn, colour)
+          node = commitToNode(commit, childColumn, colour)
           nodes.push(node)
 
           cursor.updateColumn(
-            nodeColumn,
+            node.column,
             rowIndex,
             commit.sha,
             commit.parents[0],
             commit.parents,
             node.primaryColour,
           )
-
-          rowLinks[childColumn].nodeAtEnd = true
         }
+      }
 
-        if (!node) {
-          // TODO: Need to handle new branches appearing
-          throw 'Coding error: NODE SHOULD BE SET'
+      if (!node) {
+        // TODO: Need to handle new branches appearing
+        throw 'Coding error: NODE SHOULD BE SET'
+      }
+
+      for (const link of rowLinks) {
+        if (link.parentSha === node.sha) {
+          link.nodeAtEnd = true
+          link.x2 = node.column
         }
-
-        rowLinks[childColumn].nodeAtEnd = true
-        rowLinks[childColumn].x2 = nodeColumn
       }
     }
   }

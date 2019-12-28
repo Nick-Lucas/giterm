@@ -17,7 +17,7 @@ describe('commitsToGraph', () => {
 
   function makeLinks(currentRow, ...pairs) {
     return pairs.map(([from, to, colour, connections = 'both']) => {
-      return _link(currentRow - 1, from, currentRow, to, colour, {
+      return _link(currentRow - 1, from, currentRow, to, colour, null, null, {
         nodeAtStart: ['both', 'start'].includes(connections),
         nodeAtEnd: ['both', 'end'].includes(connections),
       })
@@ -64,8 +64,16 @@ describe('commitsToGraph', () => {
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectNodePositions(nodes, [['.'], [' ', '.'], ['.', ' ']])
-      expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
+      expectNodePositions(nodes, [
+        ['.'], 
+        [' ', '.'], 
+        ['.', ' ']
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0), 
+        makeColours(1), 
+        makeColours(0)
+      ])
       expectLinks(links, [
         [],
         makeLinks(1, [0, 0, 0, 'start']),
