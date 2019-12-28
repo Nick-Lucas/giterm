@@ -36,6 +36,7 @@ function commitToNode(commit, primaryColour, secondaryColour = null) {
     orphan: commit.parents.length === 0,
     primaryColour,
     secondaryColour,
+    purgeOnRehydration: commit.purgeOnRehydration,
   }
 }
 
@@ -45,7 +46,7 @@ export function _link(
   y2,
   x2,
   colour,
-  { nodeAtStart = true, nodeAtEnd = true } = {},
+  { nodeAtStart = true, nodeAtEnd = true, purgeOnRehydration = false } = {},
 ) {
   return {
     x1,
@@ -55,6 +56,7 @@ export function _link(
     colour,
     nodeAtStart,
     nodeAtEnd,
+    purgeOnRehydration,
   }
 }
 
@@ -72,7 +74,7 @@ class ChildDirectory {
   }
 
   register = (sha, parentShas, row, column) => {
-    this._tracked[sha] = parentShas
+    this._tracked[sha] = [...parentShas]
     this._parentCount[sha] = parentShas.length
 
     for (let parentIndex = 0; parentIndex < parentShas.length; parentIndex++) {
@@ -101,6 +103,16 @@ class ChildDirectory {
       for (const item of this._lookup[sha]) {
         if (item.column > column) {
           item.column -= 1
+        }
+      }
+    }
+  }
+
+  insertColumn = (column, fromRow) => {
+    for (const sha in this._lookup) {
+      for (const item of this._lookup[sha]) {
+        if (item.column >= column && item.row >= fromRow) {
+          item.column += 1
         }
       }
     }
@@ -135,8 +147,12 @@ class ColourTracker {
 
 function rehydrate({ nodes = [], links = [], children = {}, colours = {} }) {
   return {
-    nodes,
-    links,
+    nodes: nodes.map((nodesRow) =>
+      nodesRow.filter((node) => !node.purgeOnRehydration),
+    ),
+    links: links.map((linksRow) =>
+      linksRow.filter((link) => !link.purgeOnRehydration),
+    ),
     children: Object.assign(new ChildDirectory(), children),
     colours: Object.assign(new ColourTracker(), colours),
   }
@@ -187,7 +203,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     toY,
     toX,
     colour,
-    { endWithNode = true } = {},
+    { endWithNode = true, purgeOnRehydration = false } = {},
   ) {
     const nodeAtEnd = fromY + 1 >= toY
 
@@ -195,6 +211,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       _link(fromY, fromX, fromY + 1, toX, colour, {
         nodeAtStart: true,
         nodeAtEnd: nodeAtEnd && endWithNode,
+        purgeOnRehydration,
       }),
     )
 
@@ -204,6 +221,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
         _link(row, toX, row + 1, toX, colour, {
           nodeAtStart: false,
           nodeAtEnd: nodeAtEnd && endWithNode,
+          purgeOnRehydration,
         }),
       )
     }
@@ -298,24 +316,61 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     children.cleanup(commit.sha)
   }
 
-  // Ensure that even branches we haven't found yet are visible
+  // Ensure that even branches we haven't found yet are visible, insert a column for each undiscovered branch
   const parentShas = children.remainingParentsToFind()
   for (const parentSha of parentShas) {
     const registeredChildren = children.lookup(parentSha)
     for (const coords of registeredChildren) {
-      // TODO: do this more efficiently
-      const column = nodes
-        .slice(coords.row)
-        .reduce(
-          (cols, nodesRow) => (nodesRow.length > cols ? nodesRow.length : cols),
-          0,
-        )
+      if (coords.parentIndex == 0) {
+        continue
+      }
 
+      const column = coords.column + 1
       const colour = colours.next()
+
+      // Make space
+      if (coords.parentIndex != 0) {
+        for (let i = coords.row + 1; i < nodes.length; i++) {
+          const nodesRow = nodes[i]
+          const linksRow = links[i]
+
+          nodesRow.splice(
+            column,
+            0,
+            cloneNodeAsBlank(
+              commitToNode(
+                {
+                  sha: coords.sha,
+                  parents: [parentSha],
+                  purgeOnRehydration: true,
+                },
+                colour,
+              ),
+            ),
+          )
+          for (const link in linksRow) {
+            if (link.x1 >= column) link.x1++
+            if (link.x2 >= column) link.x2++
+          }
+          children.insertColumn(column)
+        }
+      }
+
+      // Insert
       nodes[coords.row][coords.column].secondaryColour = colour
-      writeLinks(coords.row, coords.column, nodes.length - 1, column, colour, {
-        endWithNode: false,
-      })
+      if (coords.row < links.length - 1) {
+        writeLinks(
+          coords.row,
+          coords.column,
+          nodes.length - 1,
+          column,
+          colour,
+          {
+            endWithNode: false,
+            purgeOnRehydration: true,
+          },
+        )
+      }
     }
   }
 

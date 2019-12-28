@@ -275,4 +275,12 @@ export const scenarios = {
     git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
     return git.getCommits()
   })(),
+  'rehydration.d': (function() {
+    const git = new TestGitBuilder()
+    git.addCommit({ id: 'a1', parentId: 'root' })
+    git.addCommit({ id: 'a2', parentId: 'a1' })
+    git.addCommit({ id: 'a3', parentId: 'a2' })
+    git.addMerge({ parentId1: 'root', parentId2: 'a3' })
+    return git.getCommits()
+  })(),
 }
