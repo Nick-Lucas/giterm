@@ -213,21 +213,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   for (const commit of commits) {
     const { rowLinks, rowIndex } = prepareNext()
 
-    function trackNewBranch() {
-      let node = null
-      const colour = colours.next()
-
-      const column = cursor.assignColumn(
-        rowIndex,
-        commit.sha,
-        commit.parents[0],
-        commit.parents,
-        colour,
-      )
-
-      node = commitToNode(commit, column, colour)
-      nodes.push(node)
-
+    function trackOtherChildren(node) {
       for (const parentSha of commit.parents.slice(1)) {
         let colour = null
 
@@ -271,6 +257,27 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
         node.secondaryColour = colour
       }
+    }
+
+    function trackNewBranch() {
+      let node = null
+      const colour = colours.next()
+
+      const column = cursor.assignColumn(
+        rowIndex,
+        commit.sha,
+        commit.parents[0],
+        commit.parents,
+        colour,
+      )
+
+      node = commitToNode(commit, column, colour)
+      nodes.push(node)
+
+      if (commit.parents.length > 1) {
+        trackOtherChildren(node)
+      }
+
       return node
     }
 
@@ -297,6 +304,10 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
             commit.parents,
             node.primaryColour,
           )
+
+          if (commit.parents.length > 1) {
+            trackOtherChildren(node)
+          }
         }
       }
 
