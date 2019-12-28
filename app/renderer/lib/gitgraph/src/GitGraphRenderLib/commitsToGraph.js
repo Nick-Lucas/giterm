@@ -100,7 +100,8 @@ class Cursor {
       ([, child]) => child.parentIndex === 0,
     )
     if (columns.length > 0) {
-      throw 'Coding error: Do not use assignColumn when a direct  child already exists'
+      throw 'Coding error: Do not use assignColumn when a direct child already exists: ' +
+        sha
     }
 
     let column = 0
@@ -242,7 +243,8 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           // If this is a merge in from a new branch not yet discovered
           colour = colours.next()
 
-          // Also assign columns to parents, with a symlink to auto-generated links
+          // Assign column to parent, with a symlink so
+          //  auto-generated links point back to the current node
           cursor.assignColumn(
             rowIndex,
             commit.sha,
