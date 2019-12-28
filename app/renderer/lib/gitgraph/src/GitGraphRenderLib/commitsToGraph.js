@@ -56,7 +56,15 @@ class Cursor {
     ])
   }
 
-  updateColumn = (column, sha, parentSha, allParents, colour) => {
+  updateColumn = (
+    column,
+    row,
+    sha,
+    parentSha,
+    allParents,
+    colour,
+    { symlink = null } = {},
+  ) => {
     this.workingCopy[column] = {
       sha,
       parentSha,
@@ -65,6 +73,8 @@ class Cursor {
       parentIndex: allParents.indexOf(parentSha),
       colour,
       isNode: true,
+      row,
+      symlink,
     }
 
     return column
@@ -74,24 +84,42 @@ class Cursor {
     this.workingCopy[column].foundParents.push(parentSha)
   }
 
-  assignColumn = (sha, parentSha, allParents, colour) => {
-    const columns = this.findChildren(sha)
+  assignColumn = (
+    row,
+    sha,
+    parentSha,
+    allParents,
+    colour,
+    { symlink = null } = {},
+  ) => {
+    const columns = this.findChildren(sha).filter(
+      ([, child]) => child.parentIndex === 0,
+    )
     if (columns.length > 0) {
-      throw 'Coding error: Do not use assignColumn when a child already exists'
+      throw 'Coding error: Do not use assignColumn when a direct  child already exists'
     }
 
     let column = 0
-    for (; column <= this.head.length; column++) {
-      if (this.head[column] === undefined) {
+    for (; column <= this.workingCopy.length; column++) {
+      if (this.workingCopy[column] === undefined) {
         break
       }
     }
 
-    return this.updateColumn(column, sha, parentSha, allParents, colour)
+    return this.updateColumn(column, row, sha, parentSha, allParents, colour, {
+      symlink,
+    })
   }
 
   next = (nextRowIndex) => {
     const links = []
+
+    // Commit to head
+    this.head = this.workingCopy
+    this.workingCopy = this.workingCopy.map((columnObj) => ({
+      ..._.cloneDeep(columnObj),
+      isNode: false,
+    }))
 
     // Clean up
     for (const index in this.head) {
@@ -102,13 +130,19 @@ class Cursor {
     }
 
     // Generate links
-    for (const columnStr in this.workingCopy) {
+    for (const columnStr in this.head) {
       const column = parseInt(columnStr)
-      const columnObj = this.workingCopy[column]
+      const columnObj = this.head[column]
+      if (!columnObj) {
+        continue
+      }
+
+      const columnFrom = columnObj.symlink === null ? column : columnObj.symlink
+
       links.push(
         _link(
           nextRowIndex - 1,
-          column,
+          columnFrom,
           nextRowIndex,
           column,
           columnObj.colour,
@@ -119,13 +153,6 @@ class Cursor {
         ),
       )
     }
-
-    // Commit to head
-    this.head = this.workingCopy
-    this.workingCopy = this.workingCopy.map((columnObj) => ({
-      ...columnObj,
-      isNode: false,
-    }))
 
     return links
   }
@@ -166,25 +193,36 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
     function trackNewBranch() {
       let node = null
-      for (const parentIndex in commit.parents) {
-        const parentSha = commit.parents[parentIndex]
+      const colour = colours.next()
+
+      const column = cursor.assignColumn(
+        rowIndex,
+        commit.sha,
+        commit.parents[0],
+        commit.parents,
+        colour,
+      )
+
+      node = commitToNode(commit, column, colour)
+      nodes.push(node)
+
+      for (const parentSha of commit.parents.slice(1)) {
         const colour = colours.next()
 
-        const column = cursor.assignColumn(
+        // Also assign columns to parents, with a symlink to auto-generated links
+        cursor.assignColumn(
+          rowIndex,
           commit.sha,
           parentSha,
           commit.parents,
           colour,
+          {
+            symlink: node.column,
+          },
         )
-
-        if (parentIndex == 0) {
-          node = commitToNode(commit, column, colour)
-          nodes.push(node)
-        }
-        if (parentIndex == 1) {
-          node.secondaryColour = colour
-        }
+        node.secondaryColour = colour
       }
+      return node
     }
 
     const children = cursor.findChildren(commit.sha)
@@ -197,7 +235,8 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       for (const [childColumn, child] of children) {
         cursor.markParentFound(childColumn, commit.sha)
 
-        if (nodeColumn === null && child.parentIndex === 0) {
+        if (nodeColumn === null) {
+          // if (child.parentIndex == 0) {
           nodeColumn = childColumn
           const colour = child.colour
 
@@ -206,19 +245,14 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
           cursor.updateColumn(
             nodeColumn,
+            rowIndex,
             commit.sha,
             commit.parents[0],
             commit.parents,
             node.primaryColour,
           )
-          if (commit.parents.length > 1) {
-            const colour = colours.next()
 
-            node.secondaryColour = colour
-            // TODO: node may have other parents, which may or may not already be tracked
-            throw 'NOT IMPLEMENTED YET'
-            // const column = cursor.
-          }
+          rowLinks[childColumn].nodeAtEnd = true
         }
 
         if (!node) {
@@ -226,12 +260,8 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           throw 'Coding error: NODE SHOULD BE SET'
         }
 
-        for (const link of rowLinks) {
-          if (link.x1 === childColumn) {
-            link.nodeAtEnd = true
-            link.x2 = nodeColumn
-          }
-        }
+        rowLinks[childColumn].nodeAtEnd = true
+        rowLinks[childColumn].x2 = nodeColumn
       }
     }
   }

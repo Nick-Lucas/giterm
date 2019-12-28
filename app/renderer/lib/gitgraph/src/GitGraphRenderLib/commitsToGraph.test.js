@@ -85,7 +85,11 @@ describe('commitsToGraph', () => {
 
       const { nodes, links } = commitsToGraph(commits)
 
-      expectNodePositions(nodes, [['.'], [' ', '.'], ['.', ' ']])
+      expectNodePositions(nodes, [
+        ['.'], 
+        [' ', '.'], 
+        ['.', ' ']
+      ])
       expectNodeColours(nodes, [
         makeColours(0, 1),
         makeColours(1),
