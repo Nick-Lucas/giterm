@@ -192,7 +192,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     if (lastRowIndex >= 0) {
       const lastLinks = links[lastRowIndex]
       for (let i = lastLinks.length - 1; i >= 0; i--) {
-        if (lastLinks[i].y1 >= lastRowIndex) {
+        if (lastLinks[i].y2 > lastRowIndex) {
           linksToShift.push(...lastLinks.splice(i, 1))
         }
       }
@@ -310,6 +310,18 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           link.nodeAtEnd = true
           link.x2 = node.column
         }
+      }
+    }
+  }
+
+  // TODO: as in prepareNext() this is a bit of a hack, and needs cleaning up after
+  const lastRowIndex = links.length - 1
+  const linksToShift = []
+  if (lastRowIndex >= 0) {
+    const lastLinks = links[lastRowIndex]
+    for (let i = lastLinks.length - 1; i >= 0; i--) {
+      if (lastLinks[i].y2 > lastRowIndex) {
+        linksToShift.push(...lastLinks.splice(i, 1))
       }
     }
   }
