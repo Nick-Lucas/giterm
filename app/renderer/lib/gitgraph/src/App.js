@@ -167,7 +167,10 @@ const Circle = styled.circle`
     colours[primaryColour % colours.length]};
   stroke-width: 3px;
   fill: ${({ node: { primaryColour, secondaryColour } }) =>
-    colours[(secondaryColour || primaryColour || 0) % colours.length]};
+    colours[
+      (secondaryColour != null ? secondaryColour : primaryColour || 0) %
+        colours.length
+    ]};
 `
 
 const Label = styled.div`
