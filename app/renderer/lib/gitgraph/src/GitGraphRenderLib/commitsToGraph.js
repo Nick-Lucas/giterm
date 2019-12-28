@@ -197,27 +197,6 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     }
   }
 
-  // Ensure that even branches we haven't found yet are visible
-  const parentShas = children.remainingParentsToFind()
-  for (const parentSha of parentShas) {
-    const registeredChildren = children.lookup(parentSha)
-    for (const coords of registeredChildren) {
-      // TODO: do this more efficiently
-      const column = nodes
-        .slice(coords.row)
-        .reduce(
-          (cols, nodesRow) => (nodesRow.length > cols ? nodesRow.length : cols),
-          0,
-        )
-
-      const colour = colours.next()
-      nodes[coords.row][coords.column].secondaryColour = colour
-      writeLinks(coords.row, coords.column, nodes.length - 1, column, colour, {
-        endWithNode: false,
-      })
-    }
-  }
-
   // TODO: optimise this by making each links row a Set with
   //        understanding of its data, to avoid a second iteration over the whole lot
   for (const i in links) {
