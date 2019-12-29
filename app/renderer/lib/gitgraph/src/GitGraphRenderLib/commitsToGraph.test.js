@@ -307,55 +307,6 @@ describe('commitsToGraph', () => {
         makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 0, 2]),
       ])
     })
-
-    it(`should adjust node columns when an inner column is removed
-        --------------------------------------------
-          .৲ 
-          .|৲
-          |.|
-          ||.
-          ./˩৲
-          ||.
-          |.|
-          .//
-        --------------------------------------------
-    `, () => {
-      scenarioPath = 'multi-branch.b'
-      const commits = scenarios[scenarioPath]
-
-      const { nodes, links } = commitsToGraph(commits)
-
-      expectNodePositions(nodes, [
-        ['.'],
-        ['.'],
-        [' ', '.'],
-        [' ', ' ', '.'],
-        ['.', ' ', ' '],
-        [' ', ' ', '.'],
-        [' ', '.', ' '],
-        ['.', ' ', ' '],
-      ])
-      expectNodeColours(nodes, [
-        makeColours(0, 1),
-        makeColours(0, 2),
-        makeColours(1),
-        makeColours(2),
-        makeColours(0, 3),
-        makeColours(3),
-        makeColours(2),
-        makeColours(0),
-      ])
-      expectLinks(links, [
-        [],
-        makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
-        makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
-        makeLinks(3, [0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 2, 2, 'start']),
-        makeLinks(5, [0, 0, 0, 'start'], [2, 1, 2, 'none'], [0, 2, 3, 'both']),
-        makeLinks(6, [0, 0, 0, 'none'], [1, 1, 2, 'end'], [2, 2, 3, 'start']),
-        makeLinks(7, [0, 0, 0, 'end'], [1, 0, 2, 'both'], [2, 0, 3, 'end']),
-      ])
-    })
   })
 
   describe('Data driven scenarios', () => {
