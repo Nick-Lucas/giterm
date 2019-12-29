@@ -489,20 +489,18 @@ describe('commitsToGraph', () => {
           [' ', '.'],
           ['.', ' '],
         ])
-        // TODO: test colours once they can be stabilised
-        // expectNodeColours(nodes, [
-        //   makeColours(0, 1), 
-        //   makeColours(0),
-        //   makeColours(1),
-        //   makeColours(0),
-        // ])
+        expectNodeColours(nodes, [
+          makeColours(0, 1), 
+          makeColours(0),
+          makeColours(1),
+          makeColours(0),
+        ])
         expectLinks(links, [
           [],
           makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
           makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end']),
           makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
-        ], 
-        { ignoreColours: true })
+        ])
       }
 
       const rehydrationPackage = test1()
@@ -539,22 +537,20 @@ describe('commitsToGraph', () => {
         [' ', ' ', '.'],
         ['.', ' ', ' '],
       ])
-      // TODO: test colours once they can be stabilised
-      // expectNodeColours(nodes, [
-      //   makeColours(0, 1),
-      //   makeColours(0, 2),
-      //   makeColours(1),
-      //   makeColours(2),
-      //   makeColours(0),
-      // ])
+      expectNodeColours(nodes, [
+        makeColours(0, 1),
+        makeColours(0, 2),
+        makeColours(1),
+        makeColours(2),
+        makeColours(0),
+      ])
       expectLinks(links, [
         [],
         makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
         makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
         makeLinks(3, [0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
         makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 0, 2]),
-      ], 
-      { ignoreColours: true })
+      ])
     })
 
     it(`should rehydrate and continue where it left off on test case:
@@ -616,6 +612,7 @@ describe('commitsToGraph', () => {
       ], 
       { ignoreColours: true })
     })
+
     it('should remain stable over multipler rehydration rounds', () => {
       scenarioPath = 'rehydration.d'
       const commits = scenarios[scenarioPath]
@@ -653,19 +650,18 @@ describe('commitsToGraph', () => {
           [' ', '.'],
           [' ', '.'],
         ])
-        // expectNodeColours(nodes, [
-        //   makeColours(0, 1), 
-        //   makeColours(1),
-        //   makeColours(1),
-        //   makeColours(1),
-        // ])
+        expectNodeColours(nodes, [
+          makeColours(0, 1), 
+          makeColours(1),
+          makeColours(1),
+          makeColours(1),
+        ])
         expectLinks(links, [
           [],
           makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
           makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
           makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
-        ], 
-        { ignoreColours: true })
+        ])
 
         return rehydrationPackage
       }
@@ -680,21 +676,20 @@ describe('commitsToGraph', () => {
           [' ', '.'],
           ['.', ' '],
         ])
-        // TODO: test colours once they can be stabilised
-        // expectNodeColours(nodes, [
-        //   makeColours(0, 1), 
-        //   makeColours(0),
-        //   makeColours(1),
-        //   makeColours(0),
-        // ])
+        expectNodeColours(nodes, [
+          makeColours(0, 1), 
+          makeColours(1),
+          makeColours(1),
+          makeColours(1),
+          makeColours(0),
+        ])
         expectLinks(links, [
           [],
           makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
           makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
           makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
           makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
-        ], 
-        { ignoreColours: true })
+        ])
       }
 
       let rehydrationPackage = test1()
