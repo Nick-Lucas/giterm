@@ -127,7 +127,7 @@ class Cursor {
     this.workingCopy = this.workingCopy.map(
       (columnObj) =>
         columnObj && {
-          ..._.cloneDeep(columnObj),
+          ...columnObj,
           isNode: false,
           symlink: null,
         },
