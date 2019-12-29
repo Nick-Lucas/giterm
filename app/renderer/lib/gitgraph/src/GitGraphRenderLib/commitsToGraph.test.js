@@ -15,9 +15,9 @@ describe('commitsToGraph', () => {
     }
   }
 
-  function makeLinks(currentRow, ...pairs) {
+  function makeLinks(...pairs) {
     return pairs.map(([from, to, colour, connections = 'both']) => {
-      return _link(currentRow - 1, from, currentRow, to, colour, null, null, {
+      return _link(from, to, colour, null, null, {
         nodeAtStart: ['both', 'start'].includes(connections),
         nodeAtEnd: ['both', 'end'].includes(connections),
       })
@@ -49,7 +49,7 @@ describe('commitsToGraph', () => {
 
       expectNodePositions(nodes, [['.'], ['.'], ['.']])
       expectNodeColours(nodes, [makeColours(0), makeColours(0), makeColours(0)])
-      expectLinks(links, [[], makeLinks(1, [0, 0, 0]), makeLinks(2, [0, 0, 0])])
+      expectLinks(links, [[], makeLinks([0, 0, 0]), makeLinks([0, 0, 0])])
     })
 
     it(`should work on an open branch
@@ -76,8 +76,8 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start']),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks([0, 0, 0, 'start']),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
       ])
     })
 
@@ -105,8 +105,8 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
       ])
     })
 
@@ -126,8 +126,8 @@ describe('commitsToGraph', () => {
       expectNodeColours(nodes, [makeColours(0), makeColours(1), makeColours(0)])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start']),
-        makeLinks(2, [0, 0, 0, 'end']),
+        makeLinks([0, 0, 0, 'start']),
+        makeLinks([0, 0, 0, 'end']),
       ])
     })
 
@@ -152,7 +152,7 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0], [0, 1, 1, 'start']),
       ])
     })
 
@@ -186,10 +186,10 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 0, 1]),
-        makeLinks(3, [0, 0, 0, 'start'], [0, 1, 2]),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 2]),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 2]),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 2]),
       ])
     })
   })
@@ -225,10 +225,10 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start']),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 0, 0]),
-        makeLinks(3, [0, 0, 0, 'start'], [1, 1, 1, 'end']),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks([0, 0, 0, 'start']),
+        makeLinks([0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 0, 0]),
+        makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'end']),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
       ])
     })
 
@@ -262,10 +262,10 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start']),
-        makeLinks(3, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 1, 1]),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
       ])
     })
   })
@@ -301,10 +301,10 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
-        makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
-        makeLinks(3, [0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 0, 2]),
+        makeLinks([0, 0, 0], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
+        makeLinks([0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 0, 2]),
       ])
     })
   })
@@ -343,11 +343,11 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start']),
-        makeLinks(3, [0, 0, 0, 'start'], [1, 1, 1, 'none'], [0, 1, 1, 'start']),
-        makeLinks(4, [0, 0, 0, 'none'], [1, 1, 1, 'end'], [2, 2, 2, 'start']),
-        makeLinks(5, [0, 0, 0, 'end'], [1, 0, 1], [2, 0, 2, 'end']),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'none'], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'none'], [1, 1, 1, 'end'], [2, 2, 2, 'start']),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1], [2, 0, 2, 'end']),
       ])
     })
 
@@ -374,9 +374,9 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start']),
-        makeLinks(3, [0, 0, 0], [1, 0, 1, 'end']),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 1, 1, 'start']),
+        makeLinks([0, 0, 0], [1, 0, 1, 'end']),
       ])
     })
 
@@ -408,9 +408,9 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-        makeLinks(2, [0, 0, 0, 'none'], [1, 0, 0, 'start'], [1, 1, 1]),
-        makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks([0, 0, 0, 'none'], [1, 0, 0, 'start'], [1, 1, 1]),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
       ])
     })
 
@@ -444,10 +444,10 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0, 'start']),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 2, 2, 'start']),
-        makeLinks(3, [0, 0, 0], [1, 0, 1, 'end'], [2, 2, 2, 'none']),
-        makeLinks(4, [2, 2, 2, 'end']),
+        makeLinks([0, 0, 0, 'start']),
+        makeLinks([0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 2, 2, 'start']),
+        makeLinks([0, 0, 0], [1, 0, 1, 'end'], [2, 2, 2, 'none']),
+        makeLinks([2, 2, 2, 'end']),
       ])
     })
   })
@@ -474,7 +474,7 @@ describe('commitsToGraph', () => {
         ])
         expectLinks(links, [
           [],
-          makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
+          makeLinks([0, 0, 0], [0, 1, 1, 'start']),
         ])
 
         return rehydrationPackage
@@ -497,9 +497,9 @@ describe('commitsToGraph', () => {
         ])
         expectLinks(links, [
           [],
-          makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
-          makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end']),
-          makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
+          makeLinks([0, 0, 0], [0, 1, 1, 'start']),
+          makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'end']),
+          makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
         ])
       }
 
@@ -546,10 +546,10 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
-        makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
-        makeLinks(3, [0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 0, 2]),
+        makeLinks([0, 0, 0], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
+        makeLinks([0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 0, 2]),
       ])
     })
 
@@ -601,13 +601,13 @@ describe('commitsToGraph', () => {
       ])
       expectLinks(links, [
         [],
-        makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
-        makeLinks(2, [0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
-        makeLinks(3, [0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
-        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 2, 2, 'start']),
-        makeLinks(5, [0, 0, 0, 'start'], [2, 2, 2, 'none'], [0, 1, 3, 'both']),
-        makeLinks(6, [0, 0, 0, 'none'], [2, 2, 2, 'end'], [1, 1, 3, 'start']),
-        makeLinks(7, [0, 0, 0, 'end'], [2, 0, 2, 'both'], [1, 0, 3, 'end']),
+        makeLinks([0, 0, 0], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'start'], [1, 1, 1, 'end'], [0, 2, 2, 'start']),
+        makeLinks([0, 0, 0, 'none'], [1, 1, 1, 'start'], [2, 2, 2, 'end']),
+        makeLinks([0, 0, 0, 'end'], [1, 0, 1, 'end'], [2, 2, 2, 'start']),
+        makeLinks([0, 0, 0, 'start'], [2, 2, 2, 'none'], [0, 1, 3, 'both']),
+        makeLinks([0, 0, 0, 'none'], [2, 2, 2, 'end'], [1, 1, 3, 'start']),
+        makeLinks([0, 0, 0, 'end'], [2, 0, 2, 'both'], [1, 0, 3, 'end']),
       ])
     })
 
@@ -633,7 +633,7 @@ describe('commitsToGraph', () => {
         ])
         expectLinks(links, [
           [],
-          makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
+          makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
         ])
 
         return rehydrationPackage
@@ -656,9 +656,9 @@ describe('commitsToGraph', () => {
         ])
         expectLinks(links, [
           [],
-          makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-          makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
-          makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
+          makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+          makeLinks([0, 0, 0, 'none'], [1, 1, 1]),
+          makeLinks([0, 0, 0, 'none'], [1, 1, 1]),
         ])
 
         return rehydrationPackage
@@ -683,10 +683,10 @@ describe('commitsToGraph', () => {
         ])
         expectLinks(links, [
           [],
-          makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
-          makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
-          makeLinks(2, [0, 0, 0, 'none'], [1, 1, 1]),
-          makeLinks(3, [0, 0, 0, 'end'], [1, 0, 1]),
+          makeLinks([0, 0, 0, 'start'], [0, 1, 1]),
+          makeLinks([0, 0, 0, 'none'], [1, 1, 1]),
+          makeLinks([0, 0, 0, 'none'], [1, 1, 1]),
+          makeLinks([0, 0, 0, 'end'], [1, 0, 1]),
         ])
       }
 
