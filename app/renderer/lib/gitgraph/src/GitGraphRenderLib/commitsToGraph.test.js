@@ -426,14 +426,13 @@ describe('commitsToGraph', () => {
       ])
     })
 
-    it(`should draw a graph where a parent has 3 children, 2 of which are part of the same branch, but a separate commit has been made between this parent and the latest child
-          (was observed to cause a condition where the second node's merge line overlapped its own branch's lines)
+    it(`should draw a graph where a merge has taken place with an old commit on a branch as the first parent
         --------------------------------------------
-          .৲
-          |.
-          .|
-          ⊢|
-          ./
+          .
+          |.৲
+          .||
+          ./|
+            .
         --------------------------------------------
     `, () => {
       scenarioPath = 'data-driven.d'
@@ -446,7 +445,7 @@ describe('commitsToGraph', () => {
         [' ', '.'], 
         ['.', ' '], 
         ['.', ' '],
-        [' ', '.']
+        [' ', ' ', '.']
       ])
       expectNodeColours(nodes, [
         makeColours(0),
@@ -458,9 +457,9 @@ describe('commitsToGraph', () => {
       expectLinks(links, [
         [],
         makeLinks(1, [0, 0, 0, 'start']),
-        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 2, 1, 'start']),
-        makeLinks(3, [0, 0, 0], [1, 0, 1, 'end'], [1, 2, 1, 'none']),
-        makeLinks(4, [2, 1, 1, 'end']),
+        makeLinks(2, [0, 0, 0, 'end'], [1, 1, 1, 'start'], [1, 2, 2, 'start']),
+        makeLinks(3, [0, 0, 0], [1, 0, 1, 'end'], [2, 2, 2, 'none']),
+        makeLinks(4, [2, 2, 2, 'end']),
       ])
     })
   })

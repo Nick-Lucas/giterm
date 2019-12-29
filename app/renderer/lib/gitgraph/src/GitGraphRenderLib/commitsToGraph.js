@@ -68,8 +68,8 @@ class Cursor {
     return []
   }
 
-  markParentFound = (column, parentSha) => {
-    this.workingCopy[column].foundParents.push(parentSha)
+  markParentFound = (column) => {
+    this.workingCopy[column].parentFound = true
   }
 
   updateColumn = (
@@ -84,7 +84,7 @@ class Cursor {
       sha: commit.sha,
       parentSha,
       allParents: [...commit.parents],
-      foundParents: [],
+      parentFound: false,
       parentIndex: commit.parents.indexOf(parentSha),
       colour,
       isNode: true,
@@ -111,21 +111,27 @@ class Cursor {
   next = (nextRowIndex) => {
     const links = []
 
-    // Commit to head
-    this.head = this.workingCopy
-    this.workingCopy = this.workingCopy.map((columnObj) => ({
-      ..._.cloneDeep(columnObj),
-      isNode: false,
-      symlink: null,
-    }))
-
     // Clean up
-    for (const index in this.head) {
-      const { foundParents, allParents } = this.head[index]
-      if (foundParents.length === allParents.length) {
-        this.head[index] = undefined
+    for (const index in this.workingCopy) {
+      if (!this.workingCopy[index]) {
+        continue
+      }
+      const { parentFound, allParents } = this.workingCopy[index]
+      if (parentFound || allParents.length === 0) {
+        this.workingCopy[index] = undefined
       }
     }
+
+    // Commit to head
+    this.head = this.workingCopy
+    this.workingCopy = this.workingCopy.map(
+      (columnObj) =>
+        columnObj && {
+          ..._.cloneDeep(columnObj),
+          isNode: false,
+          symlink: null,
+        },
+    )
 
     // Generate links
     for (const columnStr in this.head) {
@@ -274,7 +280,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       // Track known parent which may belong to 1 or more children
       let node = null
       for (const [childColumn, child] of children) {
-        cursor.markParentFound(childColumn, commit.sha)
+        cursor.markParentFound(childColumn)
 
         if (node === null) {
           const colour = child.colour
