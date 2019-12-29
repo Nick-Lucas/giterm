@@ -187,6 +187,21 @@ class GraphState {
     this._bufferedLinks.push(link)
   }
 
+  setLinkDestinations(destinationNode) {
+    if (_.last(this.nodes) !== destinationNode) {
+      throw new Error(
+        'Coding Error: destination node is not the latest node in the graph',
+      )
+    }
+
+    for (const link of _.last(this.links)) {
+      if (link.parentSha === destinationNode.sha) {
+        link.nodeAtEnd = true
+        link.x2 = destinationNode.column
+      }
+    }
+  }
+
   prepareNext = () => {
     // Move cursor foward to retrieve auto-generated links
     const autoLinks = this.cursor.next(this.nodes.length)
@@ -195,10 +210,6 @@ class GraphState {
     // Update state for next cycle
     this._bufferedLinks = []
     this.links.push(rowLinks)
-
-    return {
-      rowLinks,
-    }
   }
 
   getGraph = () => ({
@@ -227,7 +238,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   const { graph, cursor, colours } = rehydrate(rehydrationPackage)
 
   for (const commit of commits) {
-    const { rowLinks } = graph.prepareNext()
+    graph.prepareNext()
 
     function trackOtherParents(node) {
       cursor.immediatelyUnassignFoundColumns()
@@ -322,12 +333,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
         throw 'Coding error: NODE SHOULD BE SET'
       }
 
-      for (const link of rowLinks) {
-        if (link.parentSha === node.sha) {
-          link.nodeAtEnd = true
-          link.x2 = node.column
-        }
-      }
+      graph.setLinkDestinations(node)
     }
   }
 
