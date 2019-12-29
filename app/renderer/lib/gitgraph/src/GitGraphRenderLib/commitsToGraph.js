@@ -180,46 +180,69 @@ class ColourTracker {
   next = () => ++this._colourIndex
 }
 
-function rehydrate({ nodes = [], links = [], cursor = {}, colours = {} }) {
+class GraphState {
+  constructor(nodes, links, cursor) {
+    this.nodes = nodes
+    this.links = links
+    this.cursor = cursor
+
+    this._bufferedLinks = []
+  }
+
+  addNode = (node) => {
+    return this.nodes.push(node)
+  }
+
+  addLinkForNextRow(link) {
+    this._bufferedLinks.push(link)
+  }
+
+  index = () => {
+    return this.nodes.length
+  }
+
+  prepareNext = () => {
+    // Move cursor foward to retrieve auto-generated links
+    const autoLinks = this.cursor.next(this.nodes.length)
+    const rowLinks = [...autoLinks, ...this._bufferedLinks]
+
+    // Update state for next cycle
+    this._bufferedLinks = []
+    this.links.push(rowLinks)
+
+    return {
+      rowLinks,
+      rowIndex: this.index(),
+    }
+  }
+
+  getGraph = () => ({
+    nodes: this.nodes,
+    links: this.links,
+  })
+}
+
+function rehydrate({
+  nodes: nodesData = [],
+  links: linksData = [],
+  cursor: cursorData = {},
+  colours: coloursData = {},
+}) {
+  const cursor = Object.assign(new Cursor(), cursorData)
+  const colours = Object.assign(new ColourTracker(), coloursData)
+
   return {
-    nodes,
-    links,
-    cursor: Object.assign(new Cursor(), cursor),
-    colours: Object.assign(new ColourTracker(), colours),
+    graph: new GraphState(nodesData, linksData, cursor),
+    cursor,
+    colours,
   }
 }
 
 export function commitsToGraph(commits = [], rehydrationPackage = {}) {
-  const { nodes, links, cursor, colours } = rehydrate(rehydrationPackage)
-
-  function prepareNext() {
-    // Carry over any links generated which do not belong in the previous row
-    // FIXME: Don't love that this needs to exist, would be better to have a futureRowLinks array which gets merged in later
-    const lastRowIndex = links.length - 1
-    const linksToShift = []
-    if (lastRowIndex >= 0) {
-      const lastLinks = links[lastRowIndex]
-      for (let i = lastLinks.length - 1; i >= 0; i--) {
-        if (lastLinks[i].y2 > lastRowIndex) {
-          linksToShift.push(...lastLinks.splice(i, 1))
-        }
-      }
-    }
-
-    // Move cursor foward to retrieve auto-generated links
-    const autoLinks = cursor.next(nodes.length)
-    const rowLinks = [...autoLinks, ...linksToShift]
-
-    links.push(rowLinks)
-
-    return {
-      rowLinks,
-      rowIndex: nodes.length,
-    }
-  }
+  const { graph, cursor, colours } = rehydrate(rehydrationPackage)
 
   for (const commit of commits) {
-    const { rowLinks, rowIndex } = prepareNext()
+    const { rowLinks, rowIndex } = graph.prepareNext()
 
     function trackOtherParents(node) {
       cursor.immediatelyUnassignFoundColumns()
@@ -236,7 +259,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           // If this is a merge in from another branch with a colour already chosen
           colour = firstChildOfParent.colour
 
-          rowLinks.push(
+          graph.addLinkForNextRow(
             _link(
               rowIndex,
               node.column,
@@ -274,7 +297,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       const column = cursor.assignColumn(rowIndex, parentSha, commit, colour)
 
       node = commitToNode(commit, column, colour)
-      nodes.push(node)
+      graph.addNode(node)
 
       if (commit.parents.length > 1) {
         trackOtherParents(node)
@@ -296,7 +319,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           const colour = child.colour
 
           node = commitToNode(commit, childColumn, colour)
-          nodes.push(node)
+          graph.addNode(node)
 
           cursor.updateColumn(
             node.column,
@@ -326,17 +349,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     }
   }
 
-  // TODO: as in prepareNext() this is a bit of a hack, and needs cleaning up after
-  const lastRowIndex = links.length - 1
-  const linksToShift = []
-  if (lastRowIndex >= 0) {
-    const lastLinks = links[lastRowIndex]
-    for (let i = lastLinks.length - 1; i >= 0; i--) {
-      if (lastLinks[i].y2 > lastRowIndex) {
-        linksToShift.push(...lastLinks.splice(i, 1))
-      }
-    }
-  }
+  const { nodes, links } = graph.getGraph()
 
   return {
     nodes: nodes.map((node) => {

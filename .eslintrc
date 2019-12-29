@@ -21,7 +21,7 @@
     "no-console": "off",
     "no-loop-func": "warn",
     "new-cap": "off",
-    "no-param-reassign": "warn",
+    "no-param-reassign": "off",
     "func-names": "off",
     "block-scoped-var": "error",
     "react/prop-types": "off",
@@ -29,6 +29,7 @@
     "no-redeclare": "error",
     "no-undef": "error",
     "no-unused-vars": "error",
+
 
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error" 
