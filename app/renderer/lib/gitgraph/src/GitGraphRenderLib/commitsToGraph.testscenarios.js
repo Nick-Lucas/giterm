@@ -113,6 +113,14 @@ export const scenarios = {
     })
     return git.getCommits()
   })(),
+  'standard.f': (function() {
+    const git = new TestGitBuilder()
+    git.addCommit({ id: 'a1', parentId: 'root' })
+    git.addMerge({ id: 'root1', parentId1: 'root', parentId2: 'a1' })
+    git.addCommit({ id: 'b1', parentId: 'root1' })
+    git.addMerge({ id: 'root2', parentId1: 'root1', parentId2: 'b1' })
+    return git.getCommits()
+  })(),
 
   'repeated-merging.a': (function() {
     const git = new TestGitBuilder()

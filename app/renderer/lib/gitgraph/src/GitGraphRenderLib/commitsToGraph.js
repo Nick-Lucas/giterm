@@ -68,8 +68,24 @@ class Cursor {
     return []
   }
 
-  markParentFound = (column) => {
-    this.workingCopy[column].parentFound = true
+  markParentFound = (parentSha) => {
+    for (const child of this.workingCopy) {
+      if (child && child.parentSha === parentSha) {
+        child.parentFound = true
+      }
+    }
+  }
+
+  immediatelyUnassignFoundColumns = () => {
+    for (const index in this.workingCopy) {
+      if (!this.workingCopy[index]) {
+        continue
+      }
+      const { parentFound, allParents } = this.workingCopy[index]
+      if (parentFound || allParents.length === 0) {
+        this.workingCopy[index] = undefined
+      }
+    }
   }
 
   updateColumn = (
@@ -112,15 +128,7 @@ class Cursor {
     const links = []
 
     // Clean up
-    for (const index in this.workingCopy) {
-      if (!this.workingCopy[index]) {
-        continue
-      }
-      const { parentFound, allParents } = this.workingCopy[index]
-      if (parentFound || allParents.length === 0) {
-        this.workingCopy[index] = undefined
-      }
-    }
+    this.immediatelyUnassignFoundColumns()
 
     // Commit to head
     this.head = this.workingCopy
@@ -213,7 +221,9 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   for (const commit of commits) {
     const { rowLinks, rowIndex } = prepareNext()
 
-    function trackOtherChildren(node) {
+    function trackOtherParents(node) {
+      cursor.immediatelyUnassignFoundColumns()
+
       for (const parentSha of commit.parents.slice(1)) {
         let colour = null
 
@@ -267,7 +277,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       nodes.push(node)
 
       if (commit.parents.length > 1) {
-        trackOtherChildren(node)
+        trackOtherParents(node)
       }
 
       return node
@@ -280,7 +290,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       // Track known parent which may belong to 1 or more children
       let node = null
       for (const [childColumn, child] of children) {
-        cursor.markParentFound(childColumn)
+        cursor.markParentFound(commit.sha)
 
         if (node === null) {
           const colour = child.colour
@@ -297,7 +307,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           )
 
           if (commit.parents.length > 1) {
-            trackOtherChildren(node)
+            trackOtherParents(node)
           }
         }
       }

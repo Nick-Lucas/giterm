@@ -155,6 +155,43 @@ describe('commitsToGraph', () => {
         makeLinks(1, [0, 0, 0], [0, 1, 1, 'start']),
       ])
     })
+
+    it(`should render consecutive branches in the same column, because it can!
+        --------------------------------------------
+          .৲
+          |.
+          ./৲
+          | .
+          . /
+        --------------------------------------------
+    `, () => {
+      scenarioPath = 'standard.f'
+      const commits = scenarios[scenarioPath]
+
+      const { nodes, links } = commitsToGraph(commits)
+
+      expectNodePositions(nodes, [
+        ['.'], 
+        [' ', '.'],
+        ['.'], 
+        [' ', '.'],
+        ['.']
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0, 1), 
+        makeColours(1),
+        makeColours(0, 2), 
+        makeColours(2),
+        makeColours(0)
+      ])
+      expectLinks(links, [
+        [],
+        makeLinks(1, [0, 0, 0, 'start'], [0, 1, 1]),
+        makeLinks(2, [0, 0, 0, 'end'], [1, 0, 1]),
+        makeLinks(3, [0, 0, 0, 'start'], [0, 1, 2]),
+        makeLinks(4, [0, 0, 0, 'end'], [1, 0, 2]),
+      ])
+    })
   })
 
   describe('Repeated merging with active branch', () => {
