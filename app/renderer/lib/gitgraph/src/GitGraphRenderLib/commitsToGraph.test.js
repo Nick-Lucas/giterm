@@ -463,7 +463,7 @@ describe('commitsToGraph', () => {
       const commits = scenarios[scenarioPath]
 
       const { nodes, links } = commitsToGraph(commits)
-
+      
       expectNodePositions(nodes, [
         ['.'], 
         [' ', ' ', '.'], 

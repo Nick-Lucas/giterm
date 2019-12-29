@@ -169,21 +169,21 @@ class ColourTracker {
 }
 
 class GraphState {
-  constructor(nodes, links, branchTracker) {
+  constructor(nodes = [], links = [], branchTracker) {
     this.nodes = nodes
     this.links = links
     this.branchTracker = branchTracker
 
-    this._bufferedLinks = []
+    this._linksForNextRow = []
   }
 
-  addNode = (node) => {
-    return this.nodes.push(node)
+  setNode = (node) => {
+    this.nodes[this.nodes.length - 1] = node
   }
 
   /** Buffers a link which has been discovered for the next layer. Will be appended in the next layer */
   addLinkForNextRow(link) {
-    this._bufferedLinks.push(link)
+    this._linksForNextRow.push(link)
   }
 
   /** Once a parent is found, generated links from the current layer need updating to point to it */
@@ -204,13 +204,27 @@ class GraphState {
 
   /** Prepare the graph for a new commit to be worked on */
   prepareNextRow = () => {
-    // Move cursor foward to retrieve auto-generated links
+    // Finalise iteration
+    if (this.nodes.length > 0 && _.last(this.nodes) == null) {
+      throw new Error(
+        'Coding Error: prepareNextRow called before node was set. Every iteration must set a node',
+      )
+    }
+    if (this.links.length > 0) {
+      this.links[this.links.length - 1] = _.sortBy(
+        _.last(this.links),
+        (link) => link.x1 === link.x2,
+      )
+    }
+
+    // Move branch tracking foward and generate initial links
     const autoLinks = this.branchTracker.next(this.nodes.length)
-    const rowLinks = [...this._bufferedLinks, ...autoLinks]
+    const rowLinks = [...this._linksForNextRow, ...autoLinks]
 
     // Update state for next cycle
-    this._bufferedLinks = []
+    this._linksForNextRow = []
     this.links.push(rowLinks)
+    this.nodes.push(null)
   }
 
   getGraph = () => ({
@@ -290,7 +304,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       const column = branchTracker.assignColumn(parentSha, commit, colour)
 
       const node = commitToNode(commit, column, colour)
-      graph.addNode(node)
+      graph.setNode(node)
 
       return node
     }
@@ -299,7 +313,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       const colour = child.colour
 
       const node = commitToNode(commit, childColumn, colour)
-      graph.addNode(node)
+      graph.setNode(node)
 
       branchTracker.updateColumn(
         node.column,
