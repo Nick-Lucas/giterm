@@ -55,15 +55,6 @@ class BranchTracker {
     return firstChild || []
   }
 
-  /** Find the first child of a given sha which considers the parent its first parent */
-  findDirectChild = (parentSha) => {
-    const [firstChildColumn, firstChild] = this.findFirstChild(parentSha)
-    if (firstChild && firstChild.parentIndex === 0) {
-      return [firstChildColumn, firstChild]
-    }
-    return []
-  }
-
   /** Mark all children as found for a given parent */
   markParentFound = (parentSha) => {
     for (const child of this._workingLayer) {
@@ -255,23 +246,23 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
       const otherParentShas = commit.parents.slice(1)
       for (const parentSha of otherParentShas) {
-        const [directChildColumn, directChild] = branchTracker.findDirectChild(
+        const [firstChildColumn, firstChild] = branchTracker.findFirstChild(
           parentSha,
         )
 
-        if (directChild && directChild.parentIndex === 0) {
+        if (firstChild) {
           // If this is a merge in from another branch with a colour already chosen
-          const colour = directChild.colour
+          const colour = firstChild.colour
 
           node.secondaryColour = colour
 
           graph.addLinkForNextRow(
             _link(
               node.column,
-              directChildColumn,
+              firstChildColumn,
               colour,
               node.sha,
-              directChild.parentSha,
+              firstChild.parentSha,
               {
                 nodeAtStart: true,
                 nodeAtEnd: false,

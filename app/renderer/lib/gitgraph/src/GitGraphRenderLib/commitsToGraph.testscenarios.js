@@ -13,70 +13,27 @@ export const scenarios = {
     // git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
     // commits: git.getCommits(),
 
-    // TODO: fix bug
     return [
       {
-        sha: 'root2',
-        parents: ['root1'],
-        isHead: false,
+        sha: 'e945d9ef4a4111f2a238fcdafa5351e6ad6bc5aa',
+        sha7: 'e945d9',
+        parents: [
+          '0a9958d128674738606501ce74c931f08a18425d',
+          '615aa3860dc3d703587035353dcb48a369deac6d',
+        ],
       },
       {
-        sha: 'a2',
-        parents: ['root', 'a1_root'],
-        isHead: false,
+        sha: '290134b09a8a3eb4ef0fac33293dbe53d7b19faf',
+        parents: [
+          '7acacd60a409e4349e84ad113a3f879cebc6a944',
+          '615aa3860dc3d703587035353dcb48a369deac6d',
+        ],
       },
       {
-        sha: 'root1',
-        parents: ['root'],
-        isHead: false,
-      },
-      {
-        // TODO: this is what's messing it up now, because it gets marked as an
-        //         orphan and removed, causing A2 to be tracked as column:0
-        sha: 'root',
+        sha: '615aa3860dc3d703587035353dcb48a369deac6d',
         parents: [],
-        isHead: false,
-      },
-      {
-        sha: 'a1_root',
-        parents: [],
-        isHead: false,
       },
     ]
-
-    // TODO: check that this also behaves once fixed
-    // commits: [
-    //   {
-    //     sha: 'root2',
-    //     parents: ['root1'],
-    //     isHead: false,
-    //   },
-    //   {
-    //     sha: 'a3',
-    //     parents: ['root', 'a2'],
-    //     isHead: false,
-    //   },
-    //   {
-    //     sha: 'a2',
-    //     parents: ['a1_root'],
-    //     isHead: false,
-    //   },
-    //   {
-    //     sha: 'root1',
-    //     parents: ['root'],
-    //     isHead: false,
-    //   },
-    //   {
-    //     sha: 'root',
-    //     parents: [],
-    //     isHead: false,
-    //   },
-    //   {
-    //     sha: 'a1_root',
-    //     parents: [],
-    //     isHead: false,
-    //   },
-    // ],
   },
 
   'standard.a': (function() {
@@ -254,6 +211,20 @@ export const scenarios = {
       sha: 'a1_root',
       parents: [],
       isHead: false,
+    },
+  ],
+  'data-driven.e': [
+    {
+      sha: 'a1',
+      parents: ['unseen1', 'root'],
+    },
+    {
+      sha: 'b1',
+      parents: ['unseen2', 'root'],
+    },
+    {
+      sha: 'root',
+      parents: [],
     },
   ],
 

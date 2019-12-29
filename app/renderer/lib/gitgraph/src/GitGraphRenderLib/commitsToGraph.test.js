@@ -451,6 +451,35 @@ describe('commitsToGraph', () => {
         makeLinks([2, 2, 2, 'end']),
       ])
     })
+
+    it(`should draw a graph where two commits merge from the same commit
+        --------------------------------------------
+          .৲
+          ||.
+          |.⩘
+        --------------------------------------------
+    `, () => {
+      scenarioPath = 'data-driven.e'
+      const commits = scenarios[scenarioPath]
+
+      const { nodes, links } = commitsToGraph(commits)
+
+      expectNodePositions(nodes, [
+        ['.'], 
+        [' ', ' ', '.'], 
+        [' ', '.'],
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0, 1),
+        makeColours(2, 1),
+        makeColours(1),
+      ])
+      expectLinks(links, [
+        [],
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'none'], [1, 1, 1, 'end'], [2, 1, 1], [2, 2, 2, 'start']),
+      ])
+    })
   })
 
   describe('Rehydration', () => {
