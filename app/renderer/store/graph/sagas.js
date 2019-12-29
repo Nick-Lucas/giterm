@@ -6,12 +6,13 @@ import { COMMITS_UPDATED } from '../commits/actions'
 function* recalculateGraph() {
   const { cwd } = yield select((state) => state.config)
   const { commits, digest } = yield select((state) => state.commits)
+
   const graph = yield select((state) => state.graph)
 
   const projectChanged = cwd !== graph.holistics.cwd
   const commitsUnchanged = digest === graph.holistics.digest
 
-  if (commitsUnchanged) {
+  if (commitsUnchanged || !commits || !commits.length) {
     yield put(graphUpdateSkipped())
     return
   }

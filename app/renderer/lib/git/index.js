@@ -15,6 +15,10 @@ export class Git {
 
   getSimple = () => {
     if (!this._simple) {
+      if (this.cwd === '/') {
+        return null
+      }
+
       try {
         this._simple = new SimpleGit(this.cwd)
       } catch (err) {
@@ -27,6 +31,10 @@ export class Git {
 
   getComplex = async () => {
     if (!this._complex) {
+      if (this.cwd === '/') {
+        return null
+      }
+
       try {
         this._complex = NodeGit.Repository.open(this.cwd)
       } catch (err) {
@@ -178,6 +186,10 @@ export class Git {
   getStatus = async () => {
     const repo = this.getSimple()
     return new Promise((resolve) => {
+      if (!repo) {
+        return ''
+      }
+
       repo.status((err, status) => {
         if (err) {
           console.error(err)
