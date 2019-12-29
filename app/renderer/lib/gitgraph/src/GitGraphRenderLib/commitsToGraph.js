@@ -75,8 +75,8 @@ class Cursor {
       if (!this.workingCopy[index]) {
         continue
       }
-      const { parentFound, allParents } = this.workingCopy[index]
-      if (parentFound || allParents.length === 0) {
+      const { parentFound, orphan } = this.workingCopy[index]
+      if (parentFound || orphan) {
         this.workingCopy[index] = undefined
       }
     }
@@ -93,7 +93,7 @@ class Cursor {
       isNode: true,
       sha: commit.sha,
       parentSha,
-      allParents: [...commit.parents],
+      orphan: commit.parents.length === 0,
       parentFound: false,
       parentIndex: commit.parents.indexOf(parentSha),
       colour,

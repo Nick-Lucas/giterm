@@ -50,7 +50,7 @@ export default function App() {
       return !rehydrateFrom
         ? commitsToGraph(commits)
         : (function() {
-            return commitsToGraph(commits.slice(0, rehydrateFrom))
+            // return commitsToGraph(commits.slice(0, rehydrateFrom))
             const { rehydrationPackage } = commitsToGraph(
               commits.slice(0, rehydrateFrom),
             )
