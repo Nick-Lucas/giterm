@@ -352,7 +352,8 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       }
       return row
     }),
-    links,
+    // TODO: reverse this at a better time, or insert links in the best order for presentation to begin with
+    links: links.map((rowLinks) => _.reverse(rowLinks)),
     commits,
     rehydrationPackage: {
       nodes: [...nodes],
