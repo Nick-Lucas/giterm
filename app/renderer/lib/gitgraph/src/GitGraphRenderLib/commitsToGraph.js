@@ -60,6 +60,14 @@ class Cursor {
     ])
   }
 
+  findChildWithParentIndex0 = (parentSha) => {
+    const [firstChild] = this.findChildren(parentSha)
+    if (firstChild && firstChild[1].parentIndex === 0) {
+      return firstChild
+    }
+    return []
+  }
+
   markParentFound = (column, parentSha) => {
     this.workingCopy[column].foundParents.push(parentSha)
   }
@@ -88,16 +96,6 @@ class Cursor {
   }
 
   assignColumn = (row, parentSha, commit, colour, { symlink = null } = {}) => {
-    const sha = commit.sha
-
-    const columns = this.findChildren(sha).filter(
-      ([, child]) => child.parentIndex === 0,
-    )
-    if (columns.length > 0) {
-      throw 'Coding error: Do not use assignColumn when a direct child already exists: ' +
-        sha
-    }
-
     let column = 0
     for (; column <= this.workingCopy.length; column++) {
       if (this.workingCopy[column] === undefined) {
@@ -212,8 +210,11 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       for (const parentSha of commit.parents.slice(1)) {
         let colour = null
 
-        const [firstChildOfParentColumn, firstChildOfParent] =
-          cursor.findChildren(parentSha)[0] || []
+        const [
+          firstChildOfParentColumn,
+          firstChildOfParent,
+        ] = cursor.findChildWithParentIndex0(parentSha)
+
         if (firstChildOfParent && firstChildOfParent.parentIndex === 0) {
           // If this is a merge in from another branch with a colour already chosen
           colour = firstChildOfParent.colour
@@ -251,13 +252,9 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     function trackNewBranch() {
       let node = null
       const colour = colours.next()
+      const parentSha = commit.parents[0]
 
-      const column = cursor.assignColumn(
-        rowIndex,
-        commit.parents[0],
-        commit,
-        colour,
-      )
+      const column = cursor.assignColumn(rowIndex, parentSha, commit, colour)
 
       node = commitToNode(commit, column, colour)
       nodes.push(node)
