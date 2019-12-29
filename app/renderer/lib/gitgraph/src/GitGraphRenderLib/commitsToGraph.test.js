@@ -1,4 +1,5 @@
 /* eslint-disable prettier/prettier */
+import _ from 'lodash'
 
 import { commitsToGraph, _link } from './commitsToGraph'
 import { scenarios } from "./commitsToGraph.testscenarios";
@@ -737,8 +738,7 @@ describe('commitsToGraph', () => {
     }
   
     for (let i = 0; i < nodes.length; i++) {
-      expect(nodes[i].filter(node => node.type === 'node').length).toBe(1)
-      const nodePosition = nodes[i].findIndex(node => node.type === 'node')
+      const nodePosition = nodes[i].column
       const expectedNodePosition = expectedShape[i].findIndex(node => node === '.')
   
       try {
@@ -747,7 +747,7 @@ describe('commitsToGraph', () => {
         let error =
           'Node position not equal. Row ' + i + ' should have a node in position' + expectedNodePosition + ': \n\n'
         error +=
-          'Graph Row: ' + JSON.stringify(nodes[i].map((node) => node.type)) + '\n'
+          'Graph Row: ' + JSON.stringify(_.range(nodes[i].column).map((column) => nodes[i].column === column ? 'node' : 'blank')) + '\n'
         error +=
           'Expected shape: ' + JSON.stringify(expectedShape[i].map(toName)) + '\n\n'
         error +=
@@ -770,7 +770,6 @@ describe('commitsToGraph', () => {
   
   function expectNodeColours(nodes, expectedColours) {
     const nodeColours = nodes
-      .map((row) => row.find((node) => node.type === 'node'))
       .map((node) => ({
         primaryColour: node.primaryColour,
         secondaryColour: node.secondaryColour,

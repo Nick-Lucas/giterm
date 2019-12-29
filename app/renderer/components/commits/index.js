@@ -118,7 +118,7 @@ export class Commits extends React.Component {
       return
     }
 
-    const nodeRow = nodes[index]
+    const node = nodes[index]
     const linksBefore = links[index] || []
     const linksAfter = links[index + 1] || []
     const commit = commits[index]
@@ -137,7 +137,7 @@ export class Commits extends React.Component {
           onDoubleClick={(commit) => checkoutCommit(commit.sha)}
           height={RowHeight}
           currentBranchName={currentBranchName}
-          nodeRow={nodeRow}
+          node={node}
           linksBefore={linksBefore}
           linksAfter={linksAfter}
         />

@@ -121,10 +121,7 @@ export default class Row extends React.Component {
   }
 
   renderGraphItem() {
-    const { nodeRow, linksBefore, linksAfter } = this.props
-
-    const nodeIndex = nodeRow.findIndex((node) => node.type === 'node')
-    const node = nodeRow[nodeIndex]
+    const { node, linksBefore, linksAfter } = this.props
     if (!node) {
       return null
     }
@@ -153,7 +150,7 @@ export default class Row extends React.Component {
         ))}
         <circle
           key={node.sha}
-          cx={GraphIndent + nodeIndex * GraphColumnWidth}
+          cx={GraphIndent + node.column * GraphColumnWidth}
           cy={RowHeight / 2}
           r={5}
           fill={
@@ -198,7 +195,7 @@ Row.propTypes = {
   branches: props.branches,
   showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
-  nodeRow: PropTypes.array.isRequired,
+  node: PropTypes.object.isRequired,
   linksBefore: PropTypes.array.isRequired,
   linksAfter: PropTypes.array.isRequired,
   height: PropTypes.number.isRequired,

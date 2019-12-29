@@ -134,19 +134,13 @@ export default function App() {
                         />
                       )
                     })}
-                  {nodes[i].map((node, col) => {
-                    return (
-                      node.type === 'node' && (
-                        <Circle
-                          key="node"
-                          cy={10}
-                          cx={10 + col * 20}
-                          r={5}
-                          node={node}
-                        />
-                      )
-                    )
-                  })}
+                  <Circle
+                    key="node"
+                    cy={10}
+                    cx={10 + nodes[i].column * 20}
+                    r={5}
+                    node={nodes[i]}
+                  />
                 </GraphContainer>
               </div>
             )

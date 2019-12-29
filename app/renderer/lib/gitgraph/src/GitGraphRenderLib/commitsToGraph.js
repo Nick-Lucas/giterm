@@ -4,8 +4,6 @@ function commitToNode(commit, column, primaryColour, secondaryColour = null) {
   return {
     type: 'node',
     sha: commit.sha,
-    deleted: false,
-    orphan: commit.parents.length === 0,
     primaryColour,
     secondaryColour,
     column,
@@ -336,19 +334,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   const { nodes, links } = graph.getGraph()
 
   return {
-    nodes: nodes.map((node) => {
-      // TODO: this is for compatibility, remove this later!
-      const row = []
-      row[node.column] = node
-      for (let col = 0; col < row.length; col++) {
-        if (row[col] === undefined) {
-          row[col] = {
-            type: 'blank',
-          }
-        }
-      }
-      return row
-    }),
+    nodes,
     // TODO: reverse this at a better time, or insert links in the best order for presentation to begin with
     links: links.map((rowLinks) => _.reverse(rowLinks)),
     commits,
