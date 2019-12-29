@@ -60,21 +60,24 @@ class Cursor {
     ])
   }
 
+  markParentFound = (column, parentSha) => {
+    this.workingCopy[column].foundParents.push(parentSha)
+  }
+
   updateColumn = (
     column,
     row,
-    sha,
     parentSha,
-    allParents,
+    commit,
     colour,
     { symlink = null } = {},
   ) => {
     this.workingCopy[column] = {
-      sha,
+      sha: commit.sha,
       parentSha,
-      allParents: [...allParents],
+      allParents: [...commit.parents],
       foundParents: [],
-      parentIndex: allParents.indexOf(parentSha),
+      parentIndex: commit.parents.indexOf(parentSha),
       colour,
       isNode: true,
       row,
@@ -84,18 +87,9 @@ class Cursor {
     return column
   }
 
-  markParentFound = (column, parentSha) => {
-    this.workingCopy[column].foundParents.push(parentSha)
-  }
+  assignColumn = (row, parentSha, commit, colour, { symlink = null } = {}) => {
+    const sha = commit.sha
 
-  assignColumn = (
-    row,
-    sha,
-    parentSha,
-    allParents,
-    colour,
-    { symlink = null } = {},
-  ) => {
     const columns = this.findChildren(sha).filter(
       ([, child]) => child.parentIndex === 0,
     )
@@ -111,7 +105,7 @@ class Cursor {
       }
     }
 
-    return this.updateColumn(column, row, sha, parentSha, allParents, colour, {
+    return this.updateColumn(column, row, parentSha, commit, colour, {
       symlink,
     })
   }
@@ -245,16 +239,9 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
           // Assign column to parent, with a symlink so
           //  auto-generated links point back to the current node
-          cursor.assignColumn(
-            rowIndex,
-            commit.sha,
-            parentSha,
-            commit.parents,
-            colour,
-            {
-              symlink: node.column,
-            },
-          )
+          cursor.assignColumn(rowIndex, parentSha, commit, colour, {
+            symlink: node.column,
+          })
         }
 
         node.secondaryColour = colour
@@ -267,9 +254,8 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
 
       const column = cursor.assignColumn(
         rowIndex,
-        commit.sha,
         commit.parents[0],
-        commit.parents,
+        commit,
         colour,
       )
 
@@ -301,9 +287,8 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           cursor.updateColumn(
             node.column,
             rowIndex,
-            commit.sha,
             commit.parents[0],
-            commit.parents,
+            commit,
             node.primaryColour,
           )
 
