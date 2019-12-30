@@ -1,0 +1,19 @@
+.App {
+  text-align: center;
+  background-color: #282c34;
+  color: grey;
+  padding: 10px;
+  text-align: left;
+
+  display: flex;
+  flex-direction: row;
+}
+
+a {
+  color: white;
+}
+
+.sidebar {
+  flex: 1 0 auto;
+  margin-right: 50px;
+}

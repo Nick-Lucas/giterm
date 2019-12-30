@@ -4,7 +4,9 @@
     "plugin:prettier/recommended",
     "plugin:react/recommended",
     "prettier/react",
-    "prettier/standard"
+    "prettier/standard",
+    "plugin:import/errors",
+    "plugin:import/warnings"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -13,30 +15,33 @@
       "modules": true
     }
   },
-  "plugins": [ "react", "prettier" ],
+  "plugins": [ "react", "prettier", "jest", "import", "react-hooks" ],
   "rules": {
     "prefer-const": "warn",
     "no-console": "off",
     "no-loop-func": "warn",
     "new-cap": "off",
-    "no-param-reassign": "warn",
+    "no-param-reassign": "off",
     "func-names": "off",
     "block-scoped-var": "error",
     "react/prop-types": "off",
     "prettier/prettier": "error",
     "no-redeclare": "error",
     "no-undef": "error",
-    "no-unused-vars": "error"
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
+
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "error" 
   },
   "settings": {
     "react": {
       "pragma": "React",
-      "version": "16.2"
+      "version": "16.9"
     }
   },
   "env": {
     "es6": true,
     "node": true,
-    "mocha": true
+    "jest/globals": true
   }
 }

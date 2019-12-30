@@ -1,11 +1,43 @@
-import React, { PureComponent } from 'react'
-import { connect } from 'react-redux'
+import React, { useEffect } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import styled, { css } from 'styled-components'
 
 import Commits from '../components/commits'
 import Terminal from '../components/terminal'
-import { refreshApplication } from '../store/coreapp'
-import StatusBar from '../components/status-bar'
+import { StatusBar } from '../components/StatusBar'
+import { init } from '../store/core/actions'
+
+export function Home() {
+  const terminalFullscreen = useSelector((state) => state.terminal.fullscreen)
+
+  const dispatch = useDispatch()
+  useEffect(
+    () => {
+      dispatch(init())
+    },
+    [dispatch],
+  )
+
+  return (
+    <>
+      <StatusBar />
+
+      <Divider />
+
+      <FullscreenWrapper>
+        <CommitsWrapper hide={terminalFullscreen}>
+          <Commits />
+        </CommitsWrapper>
+
+        <Divider hide={terminalFullscreen} />
+
+        <TerminalWrapper fullscreen={terminalFullscreen}>
+          <Terminal />
+        </TerminalWrapper>
+      </FullscreenWrapper>
+    </>
+  )
+}
 
 const FullscreenWrapper = styled.div`
   display: flex;
@@ -55,34 +87,3 @@ const Divider = styled.hr`
       display: none;
     `};
 `
-
-export class Home extends PureComponent {
-  componentDidMount() {
-    const { refreshApplication } = this.props
-    refreshApplication()
-  }
-
-  render() {
-    const { terminalFullscreen } = this.props
-    return (
-      <React.Fragment>
-        <StatusBar />
-        <Divider />
-        <FullscreenWrapper>
-          <CommitsWrapper hide={terminalFullscreen}>
-            <Commits />
-          </CommitsWrapper>
-          <Divider hide={terminalFullscreen} />
-          <TerminalWrapper fullscreen={terminalFullscreen}>
-            <Terminal />
-          </TerminalWrapper>
-        </FullscreenWrapper>
-      </React.Fragment>
-    )
-  }
-}
-
-export default connect(
-  ({ terminal: { fullscreen } }) => ({ terminalFullscreen: fullscreen }),
-  { refreshApplication },
-)(Home)

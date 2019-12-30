@@ -1,28 +1,25 @@
+import _ from 'lodash'
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 
 import { createHash } from 'crypto'
 import Moment from 'moment'
 import repoResolver from './repo-resolver'
-import { UPDATE_CWD } from '../../store/config'
+import { INITIAL_CWD } from '../cwd'
 
 export class Git {
-  reduxMiddleware = () => (next) => (action) => {
-    if (action.type === UPDATE_CWD) {
-      this.updateCwd(action.payload)
-    }
-
-    return next(action)
-  }
-
-  updateCwd = (newCwd) => {
-    this.cwd = repoResolver(newCwd)
+  constructor(cwd = INITIAL_CWD) {
+    this.cwd = repoResolver(cwd)
     this._simple = null
     this._complex = null
   }
 
   getSimple = () => {
     if (!this._simple) {
+      if (this.cwd === '/') {
+        return null
+      }
+
       try {
         this._simple = new SimpleGit(this.cwd)
       } catch (err) {
@@ -35,6 +32,10 @@ export class Git {
 
   getComplex = async () => {
     if (!this._complex) {
+      if (this.cwd === '/') {
+        return null
+      }
+
       try {
         this._complex = NodeGit.Repository.open(this.cwd)
       } catch (err) {
@@ -91,8 +92,8 @@ export class Git {
       return []
     }
 
-    const refs = await repo.getReferences(NodeGit.Reference.TYPE.OID)
-    return Promise.all(
+    const refs = await repo.getReferences()
+    const branches = await Promise.all(
       refs
         .filter((ref) => ref.isBranch() || ref.isRemote())
         .sort(
@@ -111,6 +112,8 @@ export class Git {
           }
         }),
     )
+
+    return _.uniqBy(branches, (branch) => branch.id)
   }
 
   loadAllCommits = async (showRemote, number = 500) => {
@@ -186,6 +189,10 @@ export class Git {
   getStatus = async () => {
     const repo = this.getSimple()
     return new Promise((resolve) => {
+      if (!repo) {
+        return ''
+      }
+
       repo.status((err, status) => {
         if (err) {
           console.error(err)

@@ -9,24 +9,16 @@ import debounce from 'debounce'
 
 import * as props from './props'
 import Header from './header'
-import Row from './row'
-import { checkoutCommit, loadMoreCommits } from '../../store/commits'
+import Row, { RowHeight } from './row'
+import { checkoutCommit, reachedEndOfList } from '../../store/commits/actions'
 
-const Wrapper = styled.div`
-  display: flex;
-  flex: 1;
-  flex-direction: column;
-`
-
-const TableWrapper = styled.div`
-  flex: 1;
-`
-
-const VirtualList = styled(List)`
-  outline: none;
-`
-
-export const RowHeight = 25
+const COLUMNS = [
+  { name: '', key: 'graph', width: '150px' },
+  { name: 'SHA', key: 'sha7', width: '50px' },
+  { name: 'Message', key: 'message', width: '500px', showTags: true },
+  { name: 'Author', key: 'authorStr', width: '150px' },
+  { name: 'Date', key: 'dateStr', width: '150px' },
+]
 
 export class Commits extends React.Component {
   constructor(props) {
@@ -49,6 +41,11 @@ export class Commits extends React.Component {
   ]
 
   considerLoadMoreItems = ({ clientHeight, scrollHeight, scrollTop }) => {
+    const { commits } = this.props
+    if (commits.length === 0) {
+      return
+    }
+
     const scrollBottom = scrollTop + clientHeight
     const remainingRows = Math.trunc((scrollHeight - scrollBottom) / RowHeight)
     if (remainingRows < 20) {
@@ -56,7 +53,7 @@ export class Commits extends React.Component {
     }
   }
 
-  loadMoreItems = debounce(() => this.props.loadMoreCommits(), 1000, true)
+  loadMoreItems = debounce(() => this.props.reachedEndOfList(), 1000, true)
 
   scrollToSha = (sha) => {
     const index = this.props.commits.findIndex((c) => c.sha === sha)
@@ -67,7 +64,8 @@ export class Commits extends React.Component {
     }
   }
 
-  componentWillUpdate() {
+  // TODO: migrate this
+  UNSAFE_componentWillUpdate() {
     this.list.current.forceUpdateGrid()
   }
 
@@ -92,7 +90,7 @@ export class Commits extends React.Component {
                 height={height}
                 rowHeight={RowHeight}
                 rowCount={commits.length}
-                overscanRowCount={2}
+                overscanRowCount={50}
                 rowRenderer={this.renderRow}
                 onScroll={this.considerLoadMoreItems}
               />
@@ -107,7 +105,8 @@ export class Commits extends React.Component {
     const {
       columns,
       commits,
-      graphRows,
+      nodes,
+      links,
       branches,
       showRemoteBranches,
       checkoutCommit,
@@ -115,11 +114,13 @@ export class Commits extends React.Component {
     } = this.props
     const { selectedSHA } = this.state
 
-    if (commits.length !== graphRows.length) {
+    if (commits.length !== nodes.length) {
       return
     }
 
-    const graphRow = graphRows[index]
+    const node = nodes[index]
+    const linksBefore = links[index] || []
+    const linksAfter = links[index + 1] || []
     const commit = commits[index]
     return (
       <RightClickArea
@@ -136,7 +137,9 @@ export class Commits extends React.Component {
           onDoubleClick={(commit) => checkoutCommit(commit.sha)}
           height={RowHeight}
           currentBranchName={currentBranchName}
-          graphRow={graphRow}
+          node={node}
+          linksBefore={linksBefore}
+          linksAfter={linksAfter}
         />
       </RightClickArea>
     )
@@ -150,34 +153,41 @@ Commits.propTypes = {
   showRemoteBranches: PropTypes.bool.isRequired,
 }
 
-const columns = [
-  { name: '', key: 'graph', width: '100px' },
-  { name: 'SHA', key: 'sha7', width: '50px' },
-  { name: 'Message', key: 'message', width: '500px', showTags: true },
-  { name: 'Author', key: 'authorStr', width: '150px' },
-  { name: 'Date', key: 'dateStr', width: '150px' },
-]
+const Wrapper = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+`
+
+const TableWrapper = styled.div`
+  flex: 1;
+`
+
+const VirtualList = styled(List)`
+  outline: none;
+`
 
 export default connect(
   ({
     commits: { commits = [] } = {},
-    graph: { rows: graphRows = [] },
+    graph: { nodes, links },
     branches,
     status,
     config: { showRemoteBranches },
   }) => ({
     commits,
-    graphRows,
+    nodes,
+    links,
     branches,
     showRemoteBranches,
-    columns,
+    columns: COLUMNS,
     status,
   }),
   // TODO: not sure why but the condensed form isn't working here...
   (dispatch) => {
     return {
       checkoutCommit: (...args) => dispatch(checkoutCommit(...args)),
-      loadMoreCommits: (...args) => dispatch(loadMoreCommits(...args)),
+      reachedEndOfList: () => dispatch(reachedEndOfList()),
     }
   },
 )(Commits)
