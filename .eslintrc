@@ -28,8 +28,7 @@
     "prettier/prettier": "error",
     "no-redeclare": "error",
     "no-undef": "error",
-    "no-unused-vars": "error",
-
+    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
 
     "react-hooks/rules-of-hooks": "error",
     "react-hooks/exhaustive-deps": "error" 

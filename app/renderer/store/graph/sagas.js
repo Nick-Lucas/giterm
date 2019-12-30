@@ -1,41 +1,48 @@
 import { takeEvery, put, select } from 'redux-saga/effects'
+import _ from 'lodash'
+
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '../../lib/gitgraph'
 import { COMMITS_UPDATED } from '../commits/actions'
 
 function* recalculateGraph() {
-  const { cwd } = yield select((state) => state.config)
+  const { cwd, showRemoteBranches } = yield select((state) => state.config)
   const { commits, digest } = yield select((state) => state.commits)
+
+  const nextHolistics = {
+    digest,
+    commitsAlreadyProcessed: commits.length,
+    rehydrationHolistics: {
+      cwd,
+      showRemoteBranches,
+    },
+  }
 
   const graph = yield select((state) => state.graph)
 
-  const projectChanged = cwd !== graph.holistics.cwd
   const commitsUnchanged = digest === graph.holistics.digest
-
   if (commitsUnchanged || !commits || !commits.length) {
     yield put(graphUpdateSkipped())
     return
   }
 
-  const remainingCommits = projectChanged
-    ? commits
-    : commits.slice(graph.holistics.length)
-  const currentRehydrationPackage = projectChanged
-    ? undefined
-    : graph.rehydrationPackage
+  const shouldRehydrate = _.isEqual(
+    graph.holistics.rehydrationHolistics,
+    nextHolistics.rehydrationHolistics,
+  )
+  const unprocessedCommits = shouldRehydrate
+    ? commits.slice(graph.holistics.commitsAlreadyProcessed)
+    : commits
+  const currentRehydrationPackage = shouldRehydrate
+    ? graph.rehydrationPackage
+    : undefined
 
   const { nodes, links, rehydrationPackage } = commitsToGraph(
-    remainingCommits,
+    unprocessedCommits,
     currentRehydrationPackage,
   )
 
-  const holistics = {
-    digest,
-    cwd,
-    length: commits.length,
-  }
-
-  yield put(graphUpdated(holistics, nodes, links, rehydrationPackage))
+  yield put(graphUpdated(nextHolistics, nodes, links, rehydrationPackage))
 }
 
 export function* watch() {
