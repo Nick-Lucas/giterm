@@ -1,5 +1,5 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects'
-import { commitsUpdated, LOAD_MORE_COMMITS, CHECKOUT_COMMIT } from './actions'
+import { commitsUpdated, REACHED_END_OF_LIST, CHECKOUT_COMMIT } from './actions'
 
 import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from '../config/actions'
 import { TERMINAL_CHANGED } from '../terminal/actions'
@@ -34,7 +34,7 @@ export function* watch() {
       CORE_INIT,
       TERMINAL_CHANGED,
       CWD_UPDATED,
-      LOAD_MORE_COMMITS,
+      REACHED_END_OF_LIST,
       SHOW_REMOTE_BRANCHES,
     ],
     reloadCommits,

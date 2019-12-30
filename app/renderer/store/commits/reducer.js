@@ -1,4 +1,4 @@
-import { COMMITS_UPDATED, LOAD_MORE_COMMITS } from './actions'
+import { COMMITS_UPDATED, REACHED_END_OF_LIST } from './actions'
 
 const initialState = {
   numberToLoad: 500,
@@ -13,10 +13,13 @@ export const reducer = (state = initialState, action) => {
         commits: action.commits,
         digest: action.digest,
       }
-    case LOAD_MORE_COMMITS:
+    case REACHED_END_OF_LIST:
       return {
         ...state,
-        numberToLoad: state.numberToLoad + 500,
+        numberToLoad:
+          state.commits.length < state.numberToLoad
+            ? state.numberToLoad
+            : state.numberToLoad + 500,
       }
     default:
       return state

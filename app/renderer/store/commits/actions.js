@@ -5,9 +5,9 @@ export const commitsUpdated = (commits, digest) => ({
   digest,
 })
 
-export const LOAD_MORE_COMMITS = 'commits/load_more'
-export const loadMore = () => ({
-  type: LOAD_MORE_COMMITS,
+export const REACHED_END_OF_LIST = 'commits/reached_end_of_list'
+export const reachedEndOfList = () => ({
+  type: REACHED_END_OF_LIST,
 })
 
 export const CHECKOUT_COMMIT = 'commits/checkout'

@@ -10,7 +10,7 @@ import debounce from 'debounce'
 import * as props from './props'
 import Header from './header'
 import Row, { RowHeight } from './row'
-import { checkoutCommit, loadMore } from '../../store/commits/actions'
+import { checkoutCommit, reachedEndOfList } from '../../store/commits/actions'
 
 const COLUMNS = [
   { name: '', key: 'graph', width: '150px' },
@@ -53,7 +53,7 @@ export class Commits extends React.Component {
     }
   }
 
-  loadMoreItems = debounce(() => this.props.loadMoreCommits(), 1000, true)
+  loadMoreItems = debounce(() => this.props.reachedEndOfList(), 1000, true)
 
   scrollToSha = (sha) => {
     const index = this.props.commits.findIndex((c) => c.sha === sha)
@@ -187,7 +187,7 @@ export default connect(
   (dispatch) => {
     return {
       checkoutCommit: (...args) => dispatch(checkoutCommit(...args)),
-      loadMoreCommits: (...args) => dispatch(loadMore(...args)),
+      reachedEndOfList: () => dispatch(reachedEndOfList()),
     }
   },
 )(Commits)

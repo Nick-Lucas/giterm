@@ -741,7 +741,6 @@ describe('commitsToGraph', () => {
       expect(commits1.length + commits2.length).toBe(commits.length)
 
       const { rehydrationPackage } = commitsToGraph(commits1)
-      console.log("stop")
       const { nodes, links } = commitsToGraph(
         commits2,
         JSON.parse(JSON.stringify(rehydrationPackage)),
