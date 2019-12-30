@@ -77,7 +77,7 @@ export class Commits extends React.Component {
 
   render() {
     const { columns, commits } = this.props
-
+    console.log(commits)
     return (
       <Wrapper>
         <Header columns={columns} />
@@ -90,7 +90,7 @@ export class Commits extends React.Component {
                 height={height}
                 rowHeight={RowHeight}
                 rowCount={commits.length}
-                overscanRowCount={2}
+                overscanRowCount={50}
                 rowRenderer={this.renderRow}
                 onScroll={this.considerLoadMoreItems}
               />
