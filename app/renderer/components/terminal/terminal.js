@@ -9,7 +9,7 @@ import React, {
 import PropTypes from 'prop-types'
 import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import debounce from 'debounce'
+import _ from 'lodash'
 
 import * as XTerm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
@@ -103,12 +103,12 @@ export function Terminal({ onAlternateBufferChange }) {
   // Resize terminal based on window size changes
   useEffect(
     () => {
-      const handleResize = debounce(handleResizeTerminal, 5)
+      const handleResize = _.throttle(handleResizeTerminal, 5)
 
       window.addEventListener('resize', handleResize, false)
 
       const onResizeDisposable = terminal.onResize(
-        debounce(({ cols, rows }) => {
+        _.throttle(({ cols, rows }) => {
           ptyProcess.resize(cols, rows)
         }, 5),
       )
@@ -125,7 +125,7 @@ export function Terminal({ onAlternateBufferChange }) {
   useEffect(
     () => {
       const updateAlternateBuffer = () =>
-        debounce((active) => {
+        _.debounce((active) => {
           // ensure xterm has a few moments to trigger its
           // own re-render before we trigger a resize
           setTimeout(() => {
@@ -137,6 +137,7 @@ export function Terminal({ onAlternateBufferChange }) {
       const onDataTerminalDisposable = terminal.onData((data) => {
         ptyProcess.write(data)
       })
+
       const onDataPTYDisposable = ptyProcess.onData(function(data) {
         terminal.write(data)
 
@@ -170,27 +171,39 @@ export function Terminal({ onAlternateBufferChange }) {
           })
         })
 
-      // TODO: this doesn't work well for long-running git processes, as the 'ready' prompt won't trigger a refresh
-      // TODO: find a more stable way to trigger terminalChanged after processes exit, perhaps ptyProcess.process ?
-      const handleNewLine = debounce(() => {
-        getCWD(ptyProcess.pid).then((cwd) => {
-          if (!alternateBuffer) {
-            dispatch(terminalChanged(cwd))
-          }
-        })
-      }, 300)
+      const dispatchTerminalChanged = _.throttle(
+        () => {
+          getCWD(ptyProcess.pid).then((cwd) => {
+            if (!alternateBuffer) {
+              dispatch(terminalChanged(cwd))
+            }
+          })
+        },
+        150,
+        { leading: true, trailing: true },
+      )
 
-      const onKeyDisposable = terminal.onKey((e) => {
+      const onNewLineDisposable = terminal.onKey((e) => {
         if (e.domEvent.code === 'Enter') {
-          handleNewLine()
+          dispatchTerminalChanged()
+        }
+      })
+
+      let lastProcess = ptyProcess.process
+      const onProcessChangedDisposable = ptyProcess.onData(function() {
+        const processChanged = lastProcess !== ptyProcess.process
+        if (processChanged) {
+          lastProcess = ptyProcess.process
+          dispatchTerminalChanged()
         }
       })
 
       return () => {
-        onKeyDisposable.dispose()
+        onNewLineDisposable.dispose()
+        onProcessChangedDisposable.dispose()
       }
     },
-    [alternateBuffer, dispatch, ptyProcess.pid, terminal],
+    [alternateBuffer, dispatch, ptyProcess, ptyProcess.pid, terminal],
   )
 
   // Ensure typing always gives focus to the terminal
