@@ -1,3 +1,4 @@
+import _ from 'lodash'
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 
@@ -92,7 +93,7 @@ export class Git {
     }
 
     const refs = await repo.getReferences()
-    return Promise.all(
+    const branches = await Promise.all(
       refs
         .filter((ref) => ref.isBranch() || ref.isRemote())
         .sort(
@@ -111,6 +112,8 @@ export class Git {
           }
         }),
     )
+
+    return _.uniqBy(branches, (branch) => branch.id)
   }
 
   loadAllCommits = async (showRemote, number = 500) => {

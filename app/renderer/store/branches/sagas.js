@@ -10,6 +10,7 @@ function* updateBranches() {
   const git = new Git(cwd)
 
   const branches = yield call(() => git.getAllBranches())
+
   yield put(branchesUpdated(branches))
 }
 

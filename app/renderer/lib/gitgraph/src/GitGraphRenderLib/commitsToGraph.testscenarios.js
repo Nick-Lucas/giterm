@@ -262,4 +262,18 @@ export const scenarios = {
     git.addMerge({ parentId1: 'root', parentId2: 'a3' })
     return git.getCommits()
   })(),
+  'rehydration.e': [
+    {
+      sha: 'a1',
+      parents: ['unseen1', 'root'],
+    },
+    {
+      sha: 'b1',
+      parents: ['unseen2', 'root'],
+    },
+    {
+      sha: 'root',
+      parents: [],
+    },
+  ],
 }

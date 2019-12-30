@@ -725,6 +725,45 @@ describe('commitsToGraph', () => {
       test3(rehydrationPackage)
     })
 
+    it(`should draw a graph where two commits merge from the same commit
+        Ensure b1-root link is retained
+        --------------------------------------------
+          .৲
+          ||.
+          |.⩘
+        --------------------------------------------
+    `, () => {
+      scenarioPath = 'rehydration.e'
+      const commits = scenarios[scenarioPath]
+
+      const commits1 = commits.slice(0, 2)
+      const commits2 = commits.slice(2)
+      expect(commits1.length + commits2.length).toBe(commits.length)
+
+      const { rehydrationPackage } = commitsToGraph(commits1)
+      console.log("stop")
+      const { nodes, links } = commitsToGraph(
+        commits2,
+        JSON.parse(JSON.stringify(rehydrationPackage)),
+      )
+
+      expectNodePositions(nodes, [
+        ['.'], 
+        [' ', ' ', '.'], 
+        [' ', '.'],
+      ])
+      expectNodeColours(nodes, [
+        makeColours(0, 1),
+        makeColours(2, 1),
+        makeColours(1),
+      ])
+      expectLinks(links, [
+        [],
+        makeLinks([0, 0, 0, 'start'], [0, 1, 1, 'start']),
+        makeLinks([0, 0, 0, 'none'], [1, 1, 1, 'end'], [2, 1, 1], [2, 2, 2, 'start']),
+      ])
+    })
+
   })
 
   // Test helpers!
@@ -750,17 +789,27 @@ describe('commitsToGraph', () => {
           return 'blank'
       }
     }
+
+    function nodeToPretty(node) {
+      return _.range(node.column)
+              .map((column) => 
+                node.column === column 
+                  ? 'node' 
+                  : 'blank'
+              )
+    }
+
     try {
       expect(nodes.length).toBe(expectedShape.length)
     } catch (e) {
       let error = 'Shape not equal. Different length: \n\n'
       error +=
         'Graph: ' +
-        JSON.stringify(nodes.map((row) => row.map((node) => node.type))) +
+        JSON.stringify(nodes.map(nodeToPretty), null, 2) +
         '\n'
       error +=
         'Expected shape: ' +
-        JSON.stringify(expectedShape.map((row) => row.map(toName))) +
+        JSON.stringify(expectedShape.map((row) => row.map(toName)), null, 2) +
         '\n\n'
       
       failTest(error)
@@ -776,13 +825,13 @@ describe('commitsToGraph', () => {
         let error =
           'Node position not equal. Row ' + i + ' should have a node in position' + expectedNodePosition + ': \n\n'
         error +=
-          'Graph Row: ' + JSON.stringify(_.range(nodes[i].column).map((column) => nodes[i].column === column ? 'node' : 'blank')) + '\n'
+          'Graph Row: ' + JSON.stringify(nodes.map(nodeToPretty)) + '\n'
         error +=
           'Expected shape: ' + JSON.stringify(expectedShape[i].map(toName)) + '\n\n'
         error +=
           'Graph: ' +
           JSON.stringify(
-            nodes.map((row) => row.map((node) => node.type)),
+            nodeToPretty(nodes[i]),
             null,
             2,
           ) +

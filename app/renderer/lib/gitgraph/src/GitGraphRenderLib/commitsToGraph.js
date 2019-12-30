@@ -169,11 +169,9 @@ class ColourTracker {
 }
 
 class GraphState {
-  constructor(nodes = [], links = [], branchTracker) {
-    this.nodes = nodes
-    this.links = links
-    this.branchTracker = branchTracker
-
+  constructor() {
+    this.nodes = []
+    this.links = []
     this._linksForNextRow = []
   }
 
@@ -203,7 +201,7 @@ class GraphState {
   }
 
   /** Prepare the graph for a new commit to be worked on */
-  prepareNextRow = () => {
+  prepareNextRow = (branchTracker) => {
     // Finalise iteration
     if (this.nodes.length > 0 && _.last(this.nodes) == null) {
       throw new Error(
@@ -218,7 +216,7 @@ class GraphState {
     }
 
     // Move branch tracking foward and generate initial links
-    const autoLinks = this.branchTracker.next(this.nodes.length)
+    const autoLinks = branchTracker.next(this.nodes.length)
     const rowLinks = [...this._linksForNextRow, ...autoLinks]
 
     // Update state for next cycle
@@ -234,16 +232,16 @@ class GraphState {
 }
 
 function rehydrate({
-  nodes: nodesData = [],
-  links: linksData = [],
+  graph: graphData = {},
   branchTracker: branchTrackerData = {},
   colours: coloursData = {},
 }) {
   const branchTracker = Object.assign(new BranchTracker(), branchTrackerData)
   const colours = Object.assign(new ColourTracker(), coloursData)
+  const graph = Object.assign(new GraphState(), graphData)
 
   return {
-    graph: new GraphState(nodesData, linksData, branchTracker),
+    graph,
     branchTracker,
     colours,
   }
@@ -253,7 +251,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   const { graph, branchTracker, colours } = rehydrate(rehydrationPackage)
 
   for (const commit of commits) {
-    graph.prepareNextRow()
+    graph.prepareNextRow(branchTracker)
 
     function trackOtherParents(node) {
       branchTracker.immediatelyUnassignFoundColumns()
@@ -346,12 +344,11 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
   const { nodes, links } = graph.getGraph()
 
   return {
-    nodes,
-    links,
+    nodes: [...nodes],
+    links: [...links],
     commits,
     rehydrationPackage: {
-      nodes: [...nodes],
-      links: [...links],
+      graph,
       branchTracker,
       colours,
     },
