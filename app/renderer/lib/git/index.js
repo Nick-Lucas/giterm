@@ -119,7 +119,7 @@ export class Git {
     return _.uniqBy(branches, (branch) => branch.id)
   }
 
-  loadAllCommits = async (showRemote, number = 500) => {
+  loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
     const repo = await this.getComplex()
     if (!repo) {
       return []
@@ -132,6 +132,9 @@ export class Git {
     walker.pushGlob('refs/heads/*')
     if (showRemote) walker.pushGlob('refs/remotes/*')
 
+    if (startIndex > 0) {
+      await walker.fastWalk(startIndex)
+    }
     const foundCommits = await walker.getCommits(number)
 
     const hash = createHash('sha1')

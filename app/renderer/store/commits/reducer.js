@@ -1,7 +1,7 @@
 import { COMMITS_UPDATED, REACHED_END_OF_LIST } from './actions'
 
 const initialState = {
-  numberToLoad: 500,
+  numberToLoad: 100,
   commits: [],
 }
 
@@ -19,7 +19,7 @@ export const reducer = (state = initialState, action) => {
         numberToLoad:
           state.commits.length < state.numberToLoad
             ? state.numberToLoad
-            : state.numberToLoad + 500,
+            : state.numberToLoad + 100,
       }
     default:
       return state

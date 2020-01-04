@@ -11,13 +11,19 @@ function* reloadCommits() {
   const git = new Git(cwd)
 
   const { showRemoteBranches } = yield select((state) => state.config)
-  const { numberToLoad } = yield select((state) => state.commits)
-
-  const [commits, digest] = yield call(() =>
-    git.loadAllCommits(showRemoteBranches, numberToLoad),
+  const { commits: existingCommits, numberToLoad } = yield select(
+    (state) => state.commits,
   )
 
-  yield put(commitsUpdated(commits, digest))
+  const [commits, digest] = yield call(() =>
+    git.loadAllCommits(
+      showRemoteBranches,
+      existingCommits.length,
+      numberToLoad - existingCommits.length,
+    ),
+  )
+
+  yield put(commitsUpdated([...existingCommits, ...commits], digest))
 }
 
 function* checkoutCommit(action) {
