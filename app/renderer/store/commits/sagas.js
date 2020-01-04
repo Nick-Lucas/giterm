@@ -6,7 +6,7 @@ import { GIT_REFS_CHANGED } from '../emitters/actions'
 import { Git } from '../../lib/git'
 import { CORE_INIT } from '../core/actions'
 
-function* reloadCommits() {
+function* reloadCommits(action) {
   const cwd = yield select((state) => state.config.cwd)
   const git = new Git(cwd)
 
@@ -15,15 +15,21 @@ function* reloadCommits() {
     (state) => state.commits,
   )
 
+  const reloadAll = [GIT_REFS_CHANGED, SHOW_REMOTE_BRANCHES].includes(
+    action.type,
+  )
+
   const [commits, digest] = yield call(() =>
     git.loadAllCommits(
       showRemoteBranches,
-      existingCommits.length,
-      numberToLoad - existingCommits.length,
+      reloadAll ? 0 : existingCommits.length,
+      reloadAll ? numberToLoad : numberToLoad - existingCommits.length,
     ),
   )
 
-  yield put(commitsUpdated([...existingCommits, ...commits], digest))
+  const nextCommits = reloadAll ? commits : [...existingCommits, ...commits]
+
+  yield put(commitsUpdated(nextCommits, digest))
 }
 
 function* checkoutCommit(action) {
