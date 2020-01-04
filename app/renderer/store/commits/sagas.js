@@ -2,7 +2,7 @@ import { takeLatest, call, put, select } from 'redux-saga/effects'
 import { commitsUpdated, REACHED_END_OF_LIST, CHECKOUT_COMMIT } from './actions'
 
 import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from '../config/actions'
-import { TERMINAL_CHANGED } from '../terminal/actions'
+import { GIT_REFS_CHANGED } from '../emitters/actions'
 import { Git } from '../../lib/git'
 import { CORE_INIT } from '../core/actions'
 
@@ -32,7 +32,7 @@ export function* watch() {
   yield takeLatest(
     [
       CORE_INIT,
-      TERMINAL_CHANGED,
+      GIT_REFS_CHANGED,
       CWD_UPDATED,
       REACHED_END_OF_LIST,
       SHOW_REMOTE_BRANCHES,

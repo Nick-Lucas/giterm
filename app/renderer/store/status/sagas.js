@@ -1,6 +1,7 @@
 import { takeLatest, select, call, put } from 'redux-saga/effects'
 import { statusUpdated } from './actions'
 import { TERMINAL_CHANGED } from '../terminal/actions'
+import { GIT_REFS_CHANGED } from '../emitters/actions'
 import { CWD_UPDATED } from '../config/actions'
 import { Git } from '../../lib/git'
 import { CORE_INIT } from '../core/actions'
@@ -17,5 +18,8 @@ function* updateStatus() {
 }
 
 export function* watch() {
-  yield takeLatest([CORE_INIT, CWD_UPDATED, TERMINAL_CHANGED], updateStatus)
+  yield takeLatest(
+    [CORE_INIT, CWD_UPDATED, TERMINAL_CHANGED, GIT_REFS_CHANGED],
+    updateStatus,
+  )
 }

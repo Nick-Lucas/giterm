@@ -1,4 +1,4 @@
-export function updateReducer(updateType, initialState) {
+export function updateReducer(updateType, initialState, clearType = null) {
   return function(state = initialState, action) {
     switch (action.type) {
       case updateType: {
@@ -8,6 +8,15 @@ export function updateReducer(updateType, initialState) {
         return Object.keys(payload).length === 1
           ? Object.values(payload)[0]
           : { ...payload }
+      }
+      case clearType: {
+        if (clearType == null) {
+          return state
+        }
+
+        return {
+          ...initialState,
+        }
       }
       default:
         return state

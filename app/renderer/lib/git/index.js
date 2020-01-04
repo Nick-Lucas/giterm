@@ -1,9 +1,11 @@
 import _ from 'lodash'
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
-
+import chokidar from 'chokidar'
+import path from 'path'
 import { createHash } from 'crypto'
 import Moment from 'moment'
+
 import repoResolver from './repo-resolver'
 import { INITIAL_CWD } from '../cwd'
 
@@ -12,6 +14,7 @@ export class Git {
     this.cwd = repoResolver(cwd)
     this._simple = null
     this._complex = null
+    this._watcher = null
   }
 
   getSimple = () => {
@@ -202,5 +205,28 @@ export class Git {
         resolve(status)
       })
     })
+  }
+
+  watchRefs = (callback) => {
+    const gitDir = path.join(this.cwd, '.git')
+    const refsPath = path.join(gitDir, 'refs')
+    const watcher = chokidar.watch(refsPath, {
+      cwd: gitDir,
+      awaitWriteFinish: {
+        stabilityThreshold: 1000,
+        pollInterval: 50,
+      },
+    })
+
+    watcher.on('change', (path) => {
+      callback({
+        ref: path,
+        isRemote: path.startsWith('refs/remotes'),
+      })
+    })
+
+    return () => {
+      watcher.close()
+    }
   }
 }
