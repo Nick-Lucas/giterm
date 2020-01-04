@@ -21,20 +21,21 @@ function* listenForRefChanges() {
       changed: take(refChangeEmitter),
       cancel: take(CWD_UPDATED),
     })
-
+    console.log('CHANGED', { changed, cancel })
     if (cancel) {
       break
     }
 
     const { showRemoteBranches } = yield select((state) => state.config)
 
-    const { ref, isRemote } = changed
+    const { event, ref, isRemote } = changed
     if (isRemote && !showRemoteBranches) {
       // Hasn't actually changed visibly
+      console.log('SKIPPED', { isRemote, showRemoteBranches })
       continue
     }
 
-    yield put(gitRefsChanged(ref, isRemote))
+    yield put(gitRefsChanged(event, ref, isRemote))
   }
 }
 
