@@ -234,6 +234,7 @@ export class Git {
       ignorePermissionErrors: true,
     })
 
+    // Watch individual refs
     function processChange(event) {
       return (path) =>
         void callback({
@@ -245,8 +246,8 @@ export class Git {
     watcher.on('add', processChange('add'))
     watcher.on('unlink', processChange('unlink'))
     watcher.on('change', processChange('change'))
-    watcher.on('error', (err) => console.error('watchRefs error: ', err))
 
+    // Watch for repo destruction and creation
     function repoChange(event) {
       return function(path) {
         if (path === 'refs') {
@@ -256,6 +257,8 @@ export class Git {
     }
     watcher.on('addDir', repoChange('repo-create'))
     watcher.on('unlinkDir', repoChange('repo-remove'))
+
+    watcher.on('error', (err) => console.error('watchRefs error: ', err))
 
     return () => {
       watcher.close()
