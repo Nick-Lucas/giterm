@@ -4,8 +4,9 @@ import _ from 'lodash'
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '../../lib/gitgraph'
 import { COMMITS_UPDATED } from '../commits/actions'
+import { GIT_REFS_CHANGED } from '../emitters/actions'
 
-function* recalculateGraph() {
+function* recalculateGraph(action) {
   const { cwd, showRemoteBranches } = yield select((state) => state.config)
   const { commits, digest } = yield select((state) => state.commits)
 
@@ -26,10 +27,12 @@ function* recalculateGraph() {
     return
   }
 
-  const shouldRehydrate = _.isEqual(
-    graph.holistics.rehydrationHolistics,
-    nextHolistics.rehydrationHolistics,
-  )
+  const shouldRehydrate =
+    action.type !== GIT_REFS_CHANGED &&
+    _.isEqual(
+      graph.holistics.rehydrationHolistics,
+      nextHolistics.rehydrationHolistics,
+    )
   const unprocessedCommits = shouldRehydrate
     ? commits.slice(graph.holistics.commitsAlreadyProcessed)
     : commits
@@ -46,5 +49,5 @@ function* recalculateGraph() {
 }
 
 export function* watch() {
-  yield takeEvery([COMMITS_UPDATED], recalculateGraph)
+  yield takeEvery([COMMITS_UPDATED, GIT_REFS_CHANGED], recalculateGraph)
 }
