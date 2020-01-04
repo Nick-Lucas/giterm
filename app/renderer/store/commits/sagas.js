@@ -15,9 +15,11 @@ function* reloadCommits(action) {
     (state) => state.commits,
   )
 
-  const reloadAll = [GIT_REFS_CHANGED, SHOW_REMOTE_BRANCHES].includes(
-    action.type,
-  )
+  const reloadAll = [
+    CWD_UPDATED,
+    GIT_REFS_CHANGED,
+    SHOW_REMOTE_BRANCHES,
+  ].includes(action.type)
 
   const [commits, digest] = yield call(() =>
     git.loadAllCommits(
