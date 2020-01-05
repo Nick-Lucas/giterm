@@ -1,17 +1,21 @@
 import _ from 'lodash'
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
-
+import chokidar from 'chokidar'
+import path from 'path'
 import { createHash } from 'crypto'
 import Moment from 'moment'
+
 import repoResolver from './repo-resolver'
 import { INITIAL_CWD } from '../cwd'
 
 export class Git {
   constructor(cwd = INITIAL_CWD) {
+    this.rawCwd = cwd
     this.cwd = repoResolver(cwd)
     this._simple = null
     this._complex = null
+    this._watcher = null
   }
 
   getSimple = () => {
@@ -37,7 +41,7 @@ export class Git {
       }
 
       try {
-        this._complex = NodeGit.Repository.open(this.cwd)
+        this._complex = await NodeGit.Repository.open(this.cwd)
       } catch (err) {
         console.error(err)
         this._complex = null
@@ -83,6 +87,10 @@ export class Git {
     }
 
     const commit = await repo.getHeadCommit()
+    if (!commit) {
+      return ''
+    }
+
     return commit.sha()
   }
 
@@ -116,19 +124,25 @@ export class Git {
     return _.uniqBy(branches, (branch) => branch.id)
   }
 
-  loadAllCommits = async (showRemote, number = 500) => {
+  loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
     const repo = await this.getComplex()
     if (!repo) {
-      return []
+      return [[], '']
     }
 
-    const headSHA = (await repo.head()).target().toString()
+    const headSha = this.getHeadSHA()
+    if (!headSha) {
+      return []
+    }
 
     const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
     walker.pushGlob('refs/heads/*')
     if (showRemote) walker.pushGlob('refs/remotes/*')
 
+    if (startIndex > 0) {
+      await walker.fastWalk(startIndex)
+    }
     const foundCommits = await walker.getCommits(number)
 
     const hash = createHash('sha1')
@@ -156,7 +170,7 @@ export class Git {
         author: c.author().name(),
         authorStr: `${c.author().name()} <${c.author().email()}>`,
         parents: c.parents().map((p) => p.toString()),
-        isHead: headSHA === c.sha(),
+        isHead: headSha === c.sha(),
       }
     }
     return [commits, hash.digest('hex')]
@@ -202,5 +216,52 @@ export class Git {
         resolve(status)
       })
     })
+  }
+
+  watchRefs = (callback) => {
+    const cwd = this.cwd === '/' ? this.rawCwd : this.cwd
+    const gitDir = path.join(cwd, '.git')
+    const refsPath = path.join(gitDir, 'refs')
+
+    // Watch the refs themselves
+    const watcher = chokidar.watch(refsPath, {
+      cwd: gitDir,
+      awaitWriteFinish: {
+        stabilityThreshold: 1000,
+        pollInterval: 50,
+      },
+      ignoreInitial: true,
+      ignorePermissionErrors: true,
+    })
+
+    // Watch individual refs
+    function processChange(event) {
+      return (path) =>
+        void callback({
+          event,
+          ref: path,
+          isRemote: path.startsWith('refs/remotes'),
+        })
+    }
+    watcher.on('add', processChange('add'))
+    watcher.on('unlink', processChange('unlink'))
+    watcher.on('change', processChange('change'))
+
+    // Watch for repo destruction and creation
+    function repoChange(event) {
+      return function(path) {
+        if (path === 'refs') {
+          processChange(event)(path)
+        }
+      }
+    }
+    watcher.on('addDir', repoChange('repo-create'))
+    watcher.on('unlinkDir', repoChange('repo-remove'))
+
+    watcher.on('error', (err) => console.error('watchRefs error: ', err))
+
+    return () => {
+      watcher.close()
+    }
   }
 }

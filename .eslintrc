@@ -6,7 +6,7 @@
     "prettier/react",
     "prettier/standard",
     "plugin:import/errors",
-    "plugin:import/warnings"
+    "plugin:import/warnings",
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -15,7 +15,14 @@
       "modules": true
     }
   },
-  "plugins": [ "react", "prettier", "jest", "import", "react-hooks" ],
+  "plugins": [ 
+    "react", 
+    "prettier", 
+    "jest", 
+    "import", 
+    "react-hooks", 
+    "redux-saga" 
+  ],
   "rules": {
     "prefer-const": "warn",
     "no-console": "off",
@@ -31,7 +38,9 @@
     "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
 
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "error" 
+    "react-hooks/exhaustive-deps": "error" ,
+    "redux-saga/yield-effects": "error",
+    "redux-saga/no-yield-in-race": "error",
   },
   "settings": {
     "react": {

@@ -19,7 +19,9 @@ export default function configureStore(initialState) {
   })()
 
   // Side effect middlewares
-  const sagaMiddleware = createSagaMiddleware()
+  const sagaMiddleware = createSagaMiddleware({
+    onError: (error, info) => console.error('Error in saga: ', error, info),
+  })
 
   // Store composition
   const enhancer = composeEnhancers(

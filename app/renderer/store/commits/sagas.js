@@ -2,22 +2,36 @@ import { takeLatest, call, put, select } from 'redux-saga/effects'
 import { commitsUpdated, REACHED_END_OF_LIST, CHECKOUT_COMMIT } from './actions'
 
 import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from '../config/actions'
-import { TERMINAL_CHANGED } from '../terminal/actions'
+import { GIT_REFS_CHANGED } from '../emitters/actions'
 import { Git } from '../../lib/git'
 import { CORE_INIT } from '../core/actions'
 
-function* reloadCommits() {
+function* reloadCommits(action) {
   const cwd = yield select((state) => state.config.cwd)
   const git = new Git(cwd)
 
   const { showRemoteBranches } = yield select((state) => state.config)
-  const { numberToLoad } = yield select((state) => state.commits)
-
-  const [commits, digest] = yield call(() =>
-    git.loadAllCommits(showRemoteBranches, numberToLoad),
+  const { commits: existingCommits, numberToLoad } = yield select(
+    (state) => state.commits,
   )
 
-  yield put(commitsUpdated(commits, digest))
+  const reloadAll = [
+    CWD_UPDATED,
+    GIT_REFS_CHANGED,
+    SHOW_REMOTE_BRANCHES,
+  ].includes(action.type)
+
+  const [commits, digest] = yield call(() =>
+    git.loadAllCommits(
+      showRemoteBranches,
+      reloadAll ? 0 : existingCommits.length,
+      reloadAll ? numberToLoad : numberToLoad - existingCommits.length,
+    ),
+  )
+
+  const nextCommits = reloadAll ? commits : [...existingCommits, ...commits]
+
+  yield put(commitsUpdated(nextCommits, digest))
 }
 
 function* checkoutCommit(action) {
@@ -32,7 +46,7 @@ export function* watch() {
   yield takeLatest(
     [
       CORE_INIT,
-      TERMINAL_CHANGED,
+      GIT_REFS_CHANGED,
       CWD_UPDATED,
       REACHED_END_OF_LIST,
       SHOW_REMOTE_BRANCHES,
