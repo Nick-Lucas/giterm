@@ -17,7 +17,7 @@ function* listenForRefChanges() {
   })
 
   while (true) {
-    const { event, ref, isRemote } = take(refChangeEmitter)
+    const { event, ref, isRemote } = yield take(refChangeEmitter)
 
     const { showRemoteBranches } = yield select((state) => state.config)
     if (isRemote && !showRemoteBranches) {
