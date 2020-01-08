@@ -93,9 +93,9 @@ export function Terminal({ onAlternateBufferChange }) {
   )
   useLayoutEffect(
     () => {
-      if ((fullscreen || !fullscreen) && terminal.element) {
+      setTimeout(() => {
         handleResizeTerminal()
-      }
+      }, 0)
     },
     [fullscreen, handleResizeTerminal, terminal.element],
   )
@@ -103,7 +103,7 @@ export function Terminal({ onAlternateBufferChange }) {
   // Resize terminal based on window size changes
   useEffect(
     () => {
-      const handleResize = _.throttle(handleResizeTerminal, 5)
+      const handleResize = _.debounce(handleResizeTerminal, 5)
 
       window.addEventListener('resize', handleResize, false)
 

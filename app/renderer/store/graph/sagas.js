@@ -4,19 +4,18 @@ import _ from 'lodash'
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '../../lib/gitgraph'
 import { COMMITS_UPDATED } from '../commits/actions'
-import { GIT_REFS_CHANGED } from '../emitters/actions'
 
-function* recalculateGraph(action) {
-  const { cwd, showRemoteBranches } = yield select((state) => state.config)
+function* recalculateGraph() {
+  // const { cwd, showRemoteBranches } = yield select((state) => state.config)
   const { commits, digest } = yield select((state) => state.commits)
 
   const nextHolistics = {
     digest,
-    commitsAlreadyProcessed: commits.length,
-    rehydrationHolistics: {
-      cwd,
-      showRemoteBranches,
-    },
+    // commitsAlreadyProcessed: commits.length,
+    // rehydrationHolistics: {
+    //   cwd,
+    //   showRemoteBranches,
+    // },
   }
 
   const graph = yield select((state) => state.graph)
@@ -27,27 +26,25 @@ function* recalculateGraph(action) {
     return
   }
 
-  const shouldRehydrate =
-    action.type !== GIT_REFS_CHANGED &&
-    _.isEqual(
-      graph.holistics.rehydrationHolistics,
-      nextHolistics.rehydrationHolistics,
-    )
-  const unprocessedCommits = shouldRehydrate
-    ? commits.slice(graph.holistics.commitsAlreadyProcessed)
-    : commits
-  const currentRehydrationPackage = shouldRehydrate
-    ? graph.rehydrationPackage
-    : undefined
+  // const shouldRehydrate = _.isEqual(
+  //   graph.holistics.rehydrationHolistics,
+  //   nextHolistics.rehydrationHolistics,
+  // )
+  // const unprocessedCommits = shouldRehydrate
+  //   ? commits.slice(graph.holistics.commitsAlreadyProcessed)
+  //   : commits
+  // const currentRehydrationPackage = shouldRehydrate
+  //   ? graph.rehydrationPackage
+  //   : undefined
 
   const { nodes, links, rehydrationPackage } = commitsToGraph(
-    unprocessedCommits,
-    currentRehydrationPackage,
+    commits, //unprocessedCommits,
+    // currentRehydrationPackage,
   )
 
   yield put(graphUpdated(nextHolistics, nodes, links, rehydrationPackage))
 }
 
 export function* watch() {
-  yield takeEvery([COMMITS_UPDATED, GIT_REFS_CHANGED], recalculateGraph)
+  yield takeEvery([COMMITS_UPDATED], recalculateGraph)
 }
