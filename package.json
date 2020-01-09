@@ -12,6 +12,7 @@
   "license": "UNLICENSED",
   "scripts": {
     "start": "npm run private:compile -- --source-maps true && run-p -r private:watch private:serve",
+    "start:nowatch": "npm run private:compile -- --source-maps true && npm run private:serve",
     "test": "jest --watch \\.*\\.test.js\\",
     "lint": "eslint --no-ignore scripts app *.js",
     "lint:fix": "eslint --no-ignore scripts app *.js --fix",
