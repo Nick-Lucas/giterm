@@ -19,9 +19,12 @@ export function StatusBar() {
 
   const config = useSelector((state) => state.config)
 
-  const toggleShowRemoteBranches = useCallback(() => {
-    dispatch(showRemoteBranches(!showRemoteBranches))
-  }, [])
+  const toggleShowRemoteBranches = useCallback(
+    () => {
+      dispatch(showRemoteBranches(!showRemoteBranches))
+    },
+    [dispatch],
+  )
 
   return (
     <Wrapper>

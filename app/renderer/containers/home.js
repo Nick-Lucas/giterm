@@ -6,6 +6,7 @@ import Commits from '../components/commits'
 import Terminal from '../components/terminal'
 import { StatusBar } from '../components/StatusBar'
 import { init } from '../store/core/actions'
+import * as Sidebar from '../components/sidebar'
 
 export function Home() {
   const terminalFullscreen = useSelector((state) => state.terminal.fullscreen)
@@ -25,9 +26,19 @@ export function Home() {
       <Divider />
 
       <FullscreenWrapper>
-        <CommitsWrapper hide={terminalFullscreen}>
-          <Commits />
-        </CommitsWrapper>
+        <PlaygroundWrapper hide={terminalFullscreen}>
+          <PlaygroundColumn width="15">
+            <PlaygroundColumnScroller>
+              <Sidebar.Branches />
+            </PlaygroundColumnScroller>
+          </PlaygroundColumn>
+
+          <Divider />
+
+          <PlaygroundColumn>
+            <Commits />
+          </PlaygroundColumn>
+        </PlaygroundWrapper>
 
         <Divider hide={terminalFullscreen} />
 
@@ -47,15 +58,46 @@ const FullscreenWrapper = styled.div`
   max-width: 100%;
 `
 
-const CommitsWrapper = styled.div`
+const PlaygroundWrapper = styled.div`
   display: flex;
   flex: 1;
+  flex-direction: row;
+
+  max-width: 100%;
+  overflow: scroll;
 
   ${(props) =>
     props.hide &&
     css`
       display: none;
     `};
+`
+
+const PlaygroundColumn = styled.div`
+  display: flex;
+  flex: 1;
+  position: relative;
+
+  ${(props) =>
+    props.width != null &&
+    css`
+      min-width: ${props.width}rem;
+      max-width: ${props.width}rem;
+      overflow-x: hidden;
+      overflow-y: scroll;
+    `};
+`
+
+const PlaygroundColumnScroller = styled.div`
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+
+  position: absolute;
+
+  min-width: 100%;
+  max-width: 100%;
+  min-height: 100%;
 `
 
 const TerminalWrapper = styled.div`
@@ -76,8 +118,7 @@ const TerminalWrapper = styled.div`
 `
 
 const Divider = styled.hr`
-  width: 100%;
-  border-width: 0.5px;
+  border-width: 1px;
   border-color: gray;
   margin: 0;
 

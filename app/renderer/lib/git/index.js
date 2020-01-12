@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import fp from 'lodash/fp'
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import chokidar from 'chokidar'
@@ -100,28 +101,37 @@ export class Git {
       return []
     }
 
-    const refs = await repo.getReferences()
-    const branches = await Promise.all(
-      refs
-        .filter((ref) => ref.isBranch() || ref.isRemote())
-        .sort(
-          (a, b) =>
-            a.isRemote() - b.isRemote() || a.name().localeCompare(b.name()),
-        )
-        .map(async (ref) => {
-          const headRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-          const head = await repo.getCommit(headRef)
-          return {
-            name: ref.shorthand(),
-            isRemote: !!ref.isRemote(),
-            isHead: !!ref.isHead(),
-            id: ref.name(),
-            headSHA: head.sha(),
-          }
-        }),
+    const refs = await Promise.all(
+      await repo.getReferences().then((refs) =>
+        refs
+          .filter((ref) => ref.isBranch() || ref.isRemote())
+          .map(async (ref) => {
+            const id = ref.name()
+            const simpleName = _.last(id.match(/.*\/(.*$)/))
+
+            const commit = await repo.getCommit(ref.target())
+
+            return {
+              id,
+              name: ref.shorthand(),
+              simpleName,
+              isRemote: !!ref.isRemote(),
+              isHead: !!ref.isHead(),
+              headSHA: ref.target().tostrS(),
+              date: commit.date(),
+            }
+          }),
+      ),
     )
 
-    return _.uniqBy(branches, (branch) => branch.id)
+    return fp.flow(
+      fp.uniqBy((branch) => branch.id),
+      fp.sortBy([
+        (branch) => branch.isRemote,
+        (branch) => -branch.date,
+        (branch) => branch.name,
+      ]),
+    )(refs)
   }
 
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
