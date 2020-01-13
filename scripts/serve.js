@@ -48,6 +48,8 @@ bsync.init(
       process.exit()
     })
 
-    bsync.watch('build/**/*').on('change', bsync.reload)
+    if (!process.env.NOWATCH) {
+      bsync.watch('build/**/*').on('change', bsync.reload)
+    }
   },
 )
