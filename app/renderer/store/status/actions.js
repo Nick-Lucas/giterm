@@ -1,9 +1,9 @@
 export const STATUS_UPDATED = 'status/updated'
 
-export const statusUpdated = (status, state, headSHA) => ({
+export const statusUpdated = (files, state, headSHA) => ({
   type: STATUS_UPDATED,
   payload: {
-    ...status,
+    files,
     state,
     headSHA,
   },

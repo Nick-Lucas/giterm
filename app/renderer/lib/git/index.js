@@ -211,20 +211,19 @@ export class Git {
   }
 
   getStatus = async () => {
-    const repo = this.getSimple()
-    return new Promise((resolve) => {
-      if (!repo) {
-        return ''
-      }
+    const repo = await this.getComplex()
+    const files = await repo.getStatus()
 
-      repo.status((err, status) => {
-        if (err) {
-          console.error(err)
-          resolve({ err })
-          return
-        }
-        resolve(status)
-      })
+    return files.map((file) => {
+      return {
+        path: file.path(),
+        staged: !!file.inIndex(),
+        isNew: !!file.isNew(),
+        isDeleted: !!file.isDeleted(),
+        isModified: !!file.isModified(),
+        isRenamed: !!file.isRenamed() || !!file.isTypechange(),
+        isIgnored: !!file.isIgnored(),
+      }
     })
   }
 
