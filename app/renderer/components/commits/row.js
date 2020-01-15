@@ -66,12 +66,12 @@ export default class Row extends React.Component {
   }
 
   getWrapperStyle() {
-    const { height, selected, commit } = this.props
+    const { height, selected, isHead } = this.props
 
     return {
       height,
       ...(selected ? selectedStyle : {}),
-      ...(commit.isHead ? headStyle : {}),
+      ...(isHead ? headStyle : {}),
     }
   }
 
@@ -99,24 +99,15 @@ export default class Row extends React.Component {
   }
 
   renderTags() {
-    const {
-      branches,
-      showRemoteBranches,
-      commit,
-      currentBranchName,
-    } = this.props
+    const { branches, showRemoteBranches, commit } = this.props
     return branches
       .filter(
         (branch) =>
           commit.sha === branch.headSHA &&
-          (branch.isRemote ? showRemoteBranches : true),
+          (showRemoteBranches || !branch.isRemote),
       )
       .map((branch) => (
-        <Tag
-          key={branch.id}
-          label={branch.name}
-          current={branch.name === currentBranchName}
-        />
+        <Tag key={branch.id} label={branch.name} current={branch.isHead} />
       ))
   }
 

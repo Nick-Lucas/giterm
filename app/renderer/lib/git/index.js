@@ -111,6 +111,24 @@ export class Git {
 
             const commit = await repo.getCommit(ref.target())
 
+            let upstream = null
+            const upstreamRef = await NodeGit.Branch.upstream(ref).catch(
+              () => null,
+            )
+            if (upstreamRef) {
+              const { ahead, behind } = await NodeGit.Graph.aheadBehind(
+                repo,
+                ref.target(),
+                upstreamRef.target(),
+              )
+
+              upstream = {
+                name: upstreamRef.name(),
+                ahead,
+                behind,
+              }
+            }
+
             return {
               id,
               name: ref.shorthand(),
@@ -119,6 +137,7 @@ export class Git {
               isHead: !!ref.isHead(),
               headSHA: ref.target().tostrS(),
               date: commit.date(),
+              upstream,
             }
           }),
       ),
