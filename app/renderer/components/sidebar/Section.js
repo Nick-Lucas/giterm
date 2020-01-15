@@ -11,7 +11,7 @@ export function Section({ children }) {
   return (
     <Container>
       <Button onClick={toggleOpen}>
-        <Chevron open={open} width="3rem" />
+        <Chevron open={open} width="2rem" />
         <h2>BRANCHES</h2>
       </Button>
 

@@ -16,49 +16,39 @@ import _ from 'lodash'
 */
 
 export function Branches() {
-  const branches = useSelector((state) => state.branches) || []
-
-  const groups = useMemo(
+  const _branches = useSelector((state) => state.branches) || []
+  const branches = useMemo(
     () => {
-      const groups = {}
+      const foundRemotes = {}
+      const branches = []
 
-      for (const branch of branches) {
-        if (!groups[branch.simpleName]) {
-          groups[branch.simpleName] = {
-            key: branch.simpleName,
-            label: branch.simpleName,
-            localId: null,
-            hasRemote: false,
-            remoteId: null,
-          }
+      for (const branch of _branches) {
+        if (branch.upstream) {
+          foundRemotes[branch.upstream.name] = true
         }
 
-        const group = groups[branch.simpleName]
-        if (branch.isRemote) {
-          group.hasRemote = true
-          group.remoteId = branch.id
-        }
-        if (!branch.isRemote) {
-          group.localId = branch.id
+        if (!foundRemotes[branch.name]) {
+          branches.push(branch)
         }
       }
 
-      return Object.values(groups)
+      return branches
     },
-    [branches],
+    [_branches],
   )
 
   return (
     <Section>
-      {groups.map((branch) => {
-        // if (branch.localId == null) {
-        //   console.log(branch)
-        //   return null
-        // }
-
+      {branches.map((branch) => {
         return (
-          <Row key={branch.key}>
-            <div>{branch.label}</div>
+          <Row key={branch.id}>
+            <Label>{branch.name}</Label>
+            {branch.upstream && (
+              <div>
+                {branch.upstream.ahead > 0 && '>' + branch.upstream.ahead}
+                {branch.upstream.behind > 0 && ' <' + branch.upstream.behind}
+              </div>
+            )}
           </Row>
         )
       })}
@@ -67,9 +57,15 @@ export function Branches() {
 }
 
 const Row = styled.div`
+  display: flex;
+  flex-direction: row;
   padding: 0.25rem 0.5rem;
 
   :hover {
     background-color: rgba(255, 255, 255, 0.1);
   }
+`
+
+const Label = styled.div`
+  flex: 1;
 `
