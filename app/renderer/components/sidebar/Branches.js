@@ -47,6 +47,9 @@ export function Branches() {
               <div>
                 {branch.upstream.ahead > 0 && '>' + branch.upstream.ahead}
                 {branch.upstream.behind > 0 && ' <' + branch.upstream.behind}
+                {branch.upstream.ahead === 0 &&
+                  branch.upstream.behind === 0 &&
+                  ':)'}
               </div>
             )}
           </Row>
