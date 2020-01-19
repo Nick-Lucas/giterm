@@ -39,6 +39,7 @@ export function Branches() {
             id: branch.id,
             name: branch.name,
             upstream: branch.upstream,
+            isHead: branch.isHead,
             menuItems: [
               {
                 label: 'Copy Name',
@@ -59,13 +60,14 @@ export function Branches() {
       {branches.map((branch) => {
         return (
           <RightClickArea key={branch.id} menuItems={branch.menuItems}>
-            <Row>
+            <Row active={branch.isHead}>
               <Label>{branch.name}</Label>
 
               {branch.upstream && (
                 <BranchUpstreamState
                   ahead={branch.upstream.ahead}
                   behind={branch.upstream.behind}
+                  selected={branch.isHead}
                 />
               )}
             </Row>

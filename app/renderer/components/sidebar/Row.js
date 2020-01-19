@@ -11,6 +11,9 @@ export const Row = styled.div`
   }
 
   max-width: 100%;
+
+  font-weight: ${({ active }) => (active ? 'bold' : 'inherit')};
+  color: ${({ active }) => (active ? 'rgba(255, 255, 255, 1)' : 'inherit')};
 `
 
 export const Label = styled.div`
@@ -21,4 +24,6 @@ export const Label = styled.div`
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+  direction: ${({ trimStart }) => (trimStart ? 'rtl' : 'inherit')};
+  text-align: left;
 `

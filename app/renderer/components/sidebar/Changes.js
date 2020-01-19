@@ -54,7 +54,9 @@ export function Changes() {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
             <Row>
-              <Label colour={file.colour}>{file.path}</Label>
+              <Label colour={file.colour} trimStart>
+                {file.path}
+              </Label>
             </Row>
           </RightClickArea>
         )
@@ -66,7 +68,9 @@ export function Changes() {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
             <Row>
-              <Label colour={file.colour}>{file.path}</Label>
+              <Label colour={file.colour} trimStart>
+                {file.path}
+              </Label>
             </Row>
           </RightClickArea>
         )
