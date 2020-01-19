@@ -26,6 +26,10 @@ export function Branches() {
       const branches = []
 
       for (const branch of _branches) {
+        if (branch.isRemote) {
+          continue
+        }
+
         if (branch.upstream) {
           foundRemotes[branch.upstream.name] = true
         }
