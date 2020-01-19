@@ -1,9 +1,12 @@
-import React, { useState, useCallback, useMemo } from 'react'
-import { ChevronDown } from 'react-feather'
-import styled from 'styled-components'
-import { Section } from './Section'
+import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
-import _ from 'lodash'
+
+import RightClickArea from 'react-electron-contextmenu'
+import { clipboard } from 'electron'
+
+import { Section } from './Section'
+import { Row, Label } from './Row'
+import { BranchUpstreamState } from './BranchUpstreamState'
 
 /*  A branch
     {
@@ -28,7 +31,17 @@ export function Branches() {
         }
 
         if (!foundRemotes[branch.name]) {
-          branches.push(branch)
+          branches.push({
+            id: branch.id,
+            name: branch.name,
+            upstream: branch.upstream,
+            menuItems: [
+              {
+                label: 'Copy Name',
+                click: () => clipboard.writeText(branch.name),
+              },
+            ],
+          })
         }
       }
 
@@ -41,34 +54,20 @@ export function Branches() {
     <Section>
       {branches.map((branch) => {
         return (
-          <Row key={branch.id}>
-            <Label>{branch.name}</Label>
-            {branch.upstream && (
-              <div>
-                {branch.upstream.ahead > 0 && '>' + branch.upstream.ahead}
-                {branch.upstream.behind > 0 && ' <' + branch.upstream.behind}
-                {branch.upstream.ahead === 0 &&
-                  branch.upstream.behind === 0 &&
-                  ':)'}
-              </div>
-            )}
-          </Row>
+          <RightClickArea key={branch.id} menuItems={branch.menuItems}>
+            <Row>
+              <Label>{branch.name}</Label>
+
+              {branch.upstream && (
+                <BranchUpstreamState
+                  ahead={branch.upstream.ahead}
+                  behind={branch.upstream.behind}
+                />
+              )}
+            </Row>
+          </RightClickArea>
         )
       })}
     </Section>
   )
 }
-
-const Row = styled.div`
-  display: flex;
-  flex-direction: row;
-  padding: 0.25rem 0.5rem;
-
-  :hover {
-    background-color: rgba(255, 255, 255, 0.1);
-  }
-`
-
-const Label = styled.div`
-  flex: 1;
-`
