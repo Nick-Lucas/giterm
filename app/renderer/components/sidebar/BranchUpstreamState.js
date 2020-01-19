@@ -4,16 +4,25 @@ import { ArrowUp, ArrowDown, ThumbsUp } from 'react-feather'
 import styled from 'styled-components'
 
 export function BranchUpstreamState({ ahead, behind }) {
+  const inSync = ahead === 0 && behind === 0
+
   return (
     <Container>
-      {ahead === 0 && behind === 0 ? (
+      {inSync && (
         <>
           <ThumbsUp size={15} />
         </>
-      ) : (
+      )}
+
+      {ahead > 0 && (
         <>
           <ArrowUp size={15} />
           {ahead}
+        </>
+      )}
+
+      {behind > 0 && (
+        <>
           <ArrowDown size={15} />
           {behind}
         </>
