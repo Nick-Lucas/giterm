@@ -55,7 +55,7 @@ export function Branches() {
   )
 
   return (
-    <Section>
+    <Section title="BRANCHES">
       {branches.map((branch) => {
         return (
           <RightClickArea key={branch.id} menuItems={branch.menuItems}>

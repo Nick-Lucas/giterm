@@ -29,6 +29,7 @@ export function Home() {
         <PlaygroundWrapper hide={terminalFullscreen}>
           <PlaygroundColumn width="15">
             <PlaygroundColumnScroller>
+              <Sidebar.Changes />
               <Sidebar.Branches />
             </PlaygroundColumnScroller>
           </PlaygroundColumn>

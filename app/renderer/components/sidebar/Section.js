@@ -1,8 +1,9 @@
 import React, { useState, useCallback } from 'react'
+import PropTypes from 'prop-types'
 import { ChevronDown } from 'react-feather'
 import styled from 'styled-components'
 
-export function Section({ children }) {
+export function Section({ title, children }) {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => {
     setOpen((open) => !open)
@@ -12,7 +13,7 @@ export function Section({ children }) {
     <Container>
       <Button onClick={toggleOpen}>
         <Chevron open={open} width="2rem" />
-        <h2>BRANCHES</h2>
+        <h2>{title}</h2>
       </Button>
 
       {/* TODO: make transition on this pretty */}
@@ -21,7 +22,14 @@ export function Section({ children }) {
   )
 }
 
-const Container = styled.div``
+Section.propTypes = {
+  title: PropTypes.string.isRequired,
+  children: PropTypes.node,
+}
+
+const Container = styled.div`
+  margin-bottom: 1rem;
+`
 
 const Button = styled.button`
   display: flex;
