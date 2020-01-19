@@ -16,6 +16,8 @@ export const Row = styled.div`
 export const Label = styled.div`
   flex: 1;
 
+  color: ${({ colour }) => colour || 'inherit'};
+
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;

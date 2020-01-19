@@ -16,7 +16,15 @@ export function Changes() {
       const unstaged = []
 
       for (const file of _files) {
-        const colour = 'white'
+        let colour = null
+        if (file.isNew) {
+          colour = '#149490'
+        } else if (file.isDeleted) {
+          colour = '#890045'
+        } else if (file.isModified) {
+          colour = '#0055A2'
+        }
+
         const item = {
           path: file.path,
           colour,
@@ -39,14 +47,14 @@ export function Changes() {
     },
     [_files],
   )
-  console.log({ staged, unstaged })
+
   return (
     <Section title="CHANGES">
       {staged.map((file) => {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
             <Row>
-              <Label>{file.path}</Label>
+              <Label colour={file.colour}>{file.path}</Label>
             </Row>
           </RightClickArea>
         )
@@ -58,7 +66,7 @@ export function Changes() {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
             <Row>
-              <Label>{file.path}</Label>
+              <Label colour={file.colour}>{file.path}</Label>
             </Row>
           </RightClickArea>
         )
