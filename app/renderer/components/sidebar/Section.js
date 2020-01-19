@@ -1,23 +1,28 @@
 import React, { useState, useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { ChevronDown } from 'react-feather'
+import { ChevronDown, Minus } from 'react-feather'
 import styled from 'styled-components'
 
-export function Section({ title, children }) {
+export function Section({ title, children, hasContent = true }) {
   const [open, setOpen] = useState(true)
   const toggleOpen = useCallback(() => {
     setOpen((open) => !open)
   }, [])
 
   return (
-    <Container open={open}>
-      <Button onClick={toggleOpen}>
-        <Chevron open={open} width="2rem" />
+    <Container open={open && hasContent}>
+      <Button onClick={toggleOpen} disabled={!hasContent}>
+        {hasContent ? (
+          <Chevron open={open} width="2rem" />
+        ) : (
+          <Minus width="2rem" />
+        )}
+
         <h2>{title}</h2>
       </Button>
 
       {/* TODO: make transition on this pretty */}
-      {open && children}
+      {open && hasContent && children}
     </Container>
   )
 }
@@ -25,6 +30,7 @@ export function Section({ title, children }) {
 Section.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node,
+  hasContent: PropTypes.bool,
 }
 
 const Container = styled.div`
@@ -44,7 +50,11 @@ const Button = styled.button`
   color: inherit;
   border: none;
   outline: none;
+
   cursor: pointer;
+  :disabled {
+    cursor: default;
+  }
 
   margin-top: 0.5rem;
   padding: 0;

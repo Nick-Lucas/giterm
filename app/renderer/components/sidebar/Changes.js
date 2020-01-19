@@ -49,7 +49,7 @@ export function Changes() {
   )
 
   return (
-    <Section title="CHANGES">
+    <Section title="CHANGES" hasContent={_files.length > 0}>
       {staged.map((file) => {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
