@@ -10,7 +10,7 @@ export function Section({ title, children }) {
   }, [])
 
   return (
-    <Container>
+    <Container open={open}>
       <Button onClick={toggleOpen}>
         <Chevron open={open} width="2rem" />
         <h2>{title}</h2>
@@ -28,7 +28,7 @@ Section.propTypes = {
 }
 
 const Container = styled.div`
-  margin-bottom: 1rem;
+  margin-bottom: ${({ open }) => (open ? '1rem' : '0')};
 `
 
 const Button = styled.button`
