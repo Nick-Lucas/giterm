@@ -124,15 +124,14 @@ export function Terminal({ onAlternateBufferChange }) {
   // Integrate terminal and pty processes
   useEffect(
     () => {
-      const updateAlternateBuffer = () =>
-        _.debounce((active) => {
-          // ensure xterm has a few moments to trigger its
-          // own re-render before we trigger a resize
-          setTimeout(() => {
-            setAlternateBuffer(active)
-            onAlternateBufferChange(active)
-          }, 5)
+      const updateAlternateBuffer = _.debounce((active) => {
+        // ensure xterm has a few moments to trigger its
+        // own re-render before we trigger a resize
+        setTimeout(() => {
+          setAlternateBuffer(active)
+          onAlternateBufferChange(active)
         }, 5)
+      }, 5)
 
       const onDataTerminalDisposable = terminal.onData((data) => {
         ptyProcess.write(data)
@@ -142,9 +141,11 @@ export function Terminal({ onAlternateBufferChange }) {
         terminal.write(data)
 
         if (isStartAlternateBuffer(data)) {
+          console.log('Start buffer')
           updateAlternateBuffer(true)
         }
         if (isEndAlternateBuffer(data)) {
+          console.log('End buffer')
           updateAlternateBuffer(false)
         }
       })
