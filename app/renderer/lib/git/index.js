@@ -182,6 +182,21 @@ export class Git {
     ])
   }
 
+  getAllRemotes = async () => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
+    const remotes = await repo.getRemotes()
+
+    return remotes.map((remote) => {
+      return {
+        name: remote.name(),
+      }
+    })
+  }
+
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
     const repo = await this.getComplex()
     if (!repo) {

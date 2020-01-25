@@ -32,6 +32,7 @@ export function Home() {
               <Sidebar.Changes />
               <Sidebar.Branches />
               <Sidebar.Tags />
+              <Sidebar.Remotes />
             </PlaygroundColumnScroller>
           </PlaygroundColumn>
 
@@ -100,6 +101,8 @@ const PlaygroundColumnScroller = styled.div`
   min-width: 100%;
   max-width: 100%;
   min-height: 100%;
+
+  padding-bottom: 1rem;
 `
 
 const TerminalWrapper = styled.div`

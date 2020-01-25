@@ -36,7 +36,7 @@ export function Tags() {
       {tags.map((tag) => {
         return (
           <RightClickArea key={tag.id} menuItems={tag.menuItems}>
-            <Row active={tag.isHead}>
+            <Row>
               <Label>{tag.name}</Label>
             </Row>
           </RightClickArea>
