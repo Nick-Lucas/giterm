@@ -9,16 +9,9 @@ import debounce from 'debounce'
 
 import * as props from './props'
 import Header from './header'
-import Row, { RowHeight } from './row'
+import Row from './row'
 import { checkoutCommit, reachedEndOfList } from '../../store/commits/actions'
-
-const COLUMNS = [
-  { name: '', key: 'graph', width: '150px' },
-  { name: 'SHA', key: 'sha7', width: '50px' },
-  { name: 'Message', key: 'message', width: '500px', showTags: true },
-  { name: 'Author', key: 'authorStr', width: '150px' },
-  { name: 'Date', key: 'dateStr', width: '150px' },
-]
+import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 
 export class Commits extends React.Component {
   constructor(props) {
@@ -26,6 +19,31 @@ export class Commits extends React.Component {
     this.list = React.createRef()
     this.state = {
       selectedSHA: '',
+      columns: [],
+    }
+  }
+
+  static getDerivedStateFromProps(props, state) {
+    const { nodes } = props
+
+    const graphCols = Math.min(
+      8,
+      nodes.reduce((max, node) => Math.max(node.column + 1, max), 3),
+    )
+
+    return {
+      ...state,
+      columns: [
+        {
+          name: '',
+          key: 'graph',
+          width: `${GraphIndent + GraphColumnWidth * graphCols}px`,
+        },
+        { name: 'SHA', key: 'sha7', width: '50px' },
+        { name: 'Message', key: 'message', width: '500px', showTags: true },
+        { name: 'Author', key: 'authorStr', width: '150px' },
+        { name: 'Date', key: 'dateStr', width: '150px' },
+      ],
     }
   }
 
@@ -64,19 +82,17 @@ export class Commits extends React.Component {
     }
   }
 
-  // TODO: migrate this
-  UNSAFE_componentWillUpdate() {
-    this.list.current.forceUpdateGrid()
-  }
-
   componentDidUpdate(prevProps) {
+    this.list.current.forceUpdateGrid()
+
     if (this.props.status.headSHA !== prevProps.status.headSHA) {
       this.scrollToSha(this.props.status.headSHA)
     }
   }
 
   render() {
-    const { columns, commits } = this.props
+    const { commits } = this.props
+    const { columns } = this.state
 
     return (
       <Wrapper>
@@ -103,7 +119,6 @@ export class Commits extends React.Component {
 
   renderRow = ({ index, style }) => {
     const {
-      columns,
       commits,
       nodes,
       links,
@@ -112,6 +127,7 @@ export class Commits extends React.Component {
       checkoutCommit,
       status: { current: currentBranchName, headSHA },
     } = this.props
+    const { columns } = this.state
     const { selectedSHA } = this.state
 
     if (commits.length !== nodes.length) {
@@ -148,7 +164,6 @@ export class Commits extends React.Component {
 }
 
 Commits.propTypes = {
-  columns: props.columns,
   commits: props.commits,
   branches: props.branches,
   showRemoteBranches: PropTypes.bool.isRequired,
@@ -181,7 +196,6 @@ export default connect(
     links,
     branches,
     showRemoteBranches,
-    columns: COLUMNS,
     status,
   }),
   // TODO: not sure why but the condensed form isn't working here...

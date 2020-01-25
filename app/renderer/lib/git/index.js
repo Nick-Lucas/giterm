@@ -109,7 +109,8 @@ export class Git {
             const id = ref.name()
             const simpleName = _.last(id.match(/.*\/(.*$)/))
 
-            const commit = await repo.getCommit(ref.target())
+            const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
+            const commit = await repo.getCommit(commitRef)
 
             let upstream = null
             const upstreamRef = await NodeGit.Branch.upstream(ref).catch(
@@ -163,7 +164,8 @@ export class Git {
       await repo.getReferences().then((refs) =>
         refs.filter((ref) => ref.isTag()).map(async (ref) => {
           const id = ref.name()
-          const commit = await repo.getCommit(ref.target())
+          const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
+          const commit = await repo.getCommit(commitRef)
 
           return {
             id,
@@ -175,11 +177,7 @@ export class Git {
       ),
     )
 
-    return _.sortBy(refs, [
-      (tag) => tag.isRemote,
-      (tag) => -tag.date,
-      (tag) => tag.name,
-    ])
+    return _.sortBy(refs, [(tag) => -tag.date, (tag) => tag.name])
   }
 
   getAllRemotes = async () => {

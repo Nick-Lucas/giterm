@@ -4,6 +4,7 @@ import styled from 'styled-components'
 import * as props from './props'
 import Tag from './tag'
 import { PathLine } from '../graph/pathline'
+import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 
 const Colours = [
   '#058ED9',
@@ -14,10 +15,6 @@ const Colours = [
   '#0055A2',
   '#96C5F7',
 ]
-
-export const RowHeight = 25
-const GraphColumnWidth = 15
-const GraphIndent = 10
 
 const RowWrapper = styled.div`
   display: flex;

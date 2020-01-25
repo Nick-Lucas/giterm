@@ -3,8 +3,13 @@ import PropTypes from 'prop-types'
 import { ChevronDown, Minus } from 'react-feather'
 import styled from 'styled-components'
 
-export function Section({ title, children, hasContent = true }) {
-  const [open, setOpen] = useState(true)
+export function Section({
+  title,
+  children,
+  hasContent = true,
+  initialOpenState = true,
+}) {
+  const [open, setOpen] = useState(initialOpenState)
   const toggleOpen = useCallback(() => {
     setOpen((open) => !open)
   }, [])
@@ -31,6 +36,7 @@ Section.propTypes = {
   title: PropTypes.string.isRequired,
   children: PropTypes.node,
   hasContent: PropTypes.bool,
+  initialOpenState: PropTypes.bool,
 }
 
 const Container = styled.div`

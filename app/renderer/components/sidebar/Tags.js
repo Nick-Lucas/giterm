@@ -32,7 +32,7 @@ export function Tags() {
   )
 
   return (
-    <Section title="TAGS">
+    <Section title="TAGS" initialOpenState={false}>
       {tags.map((tag) => {
         return (
           <RightClickArea key={tag.id} menuItems={tag.menuItems}>
