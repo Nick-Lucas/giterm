@@ -1,4 +1,5 @@
 import _ from 'lodash'
+import fp from 'lodash/fp'
 import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import chokidar from 'chokidar'
@@ -100,28 +101,100 @@ export class Git {
       return []
     }
 
-    const refs = await repo.getReferences()
-    const branches = await Promise.all(
-      refs
-        .filter((ref) => ref.isBranch() || ref.isRemote())
-        .sort(
-          (a, b) =>
-            a.isRemote() - b.isRemote() || a.name().localeCompare(b.name()),
-        )
-        .map(async (ref) => {
-          const headRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-          const head = await repo.getCommit(headRef)
-          return {
-            name: ref.shorthand(),
-            isRemote: !!ref.isRemote(),
-            isHead: !!ref.isHead(),
-            id: ref.name(),
-            headSHA: head.sha(),
-          }
-        }),
+    const refs = await Promise.all(
+      await repo.getReferences().then((refs) =>
+        refs
+          .filter((ref) => ref.isBranch() || ref.isRemote())
+          .map(async (ref) => {
+            const id = ref.name()
+            const simpleName = _.last(id.match(/.*\/(.*$)/))
+
+            const commit = await repo.getCommit(ref.target())
+
+            let upstream = null
+            const upstreamRef = await NodeGit.Branch.upstream(ref).catch(
+              () => null,
+            )
+            if (upstreamRef) {
+              const { ahead, behind } = await NodeGit.Graph.aheadBehind(
+                repo,
+                ref.target(),
+                upstreamRef.target(),
+              )
+
+              upstream = {
+                name: upstreamRef.name(),
+                ahead,
+                behind,
+              }
+            }
+
+            return {
+              id,
+              name: ref.shorthand(),
+              simpleName,
+              isRemote: !!ref.isRemote(),
+              isHead: !!ref.isHead(),
+              headSHA: ref.target().tostrS(),
+              date: commit.date(),
+              upstream,
+            }
+          }),
+      ),
     )
 
-    return _.uniqBy(branches, (branch) => branch.id)
+    return fp.flow(
+      fp.uniqBy((branch) => branch.id),
+      fp.sortBy([
+        (branch) => branch.isRemote,
+        (branch) => -branch.date,
+        (branch) => branch.name,
+      ]),
+    )(refs)
+  }
+
+  getAllTags = async () => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
+    const refs = await Promise.all(
+      await repo.getReferences().then((refs) =>
+        refs.filter((ref) => ref.isTag()).map(async (ref) => {
+          const id = ref.name()
+          const commit = await repo.getCommit(ref.target())
+
+          return {
+            id,
+            name: ref.shorthand(),
+            headSHA: ref.target().tostrS(),
+            date: commit.date(),
+          }
+        }),
+      ),
+    )
+
+    return _.sortBy(refs, [
+      (tag) => tag.isRemote,
+      (tag) => -tag.date,
+      (tag) => tag.name,
+    ])
+  }
+
+  getAllRemotes = async () => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
+    const remotes = await repo.getRemotes()
+
+    return remotes.map((remote) => {
+      return {
+        name: remote.name(),
+      }
+    })
   }
 
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
@@ -201,20 +274,19 @@ export class Git {
   }
 
   getStatus = async () => {
-    const repo = this.getSimple()
-    return new Promise((resolve) => {
-      if (!repo) {
-        return ''
-      }
+    const repo = await this.getComplex()
+    const files = await repo.getStatus()
 
-      repo.status((err, status) => {
-        if (err) {
-          console.error(err)
-          resolve({ err })
-          return
-        }
-        resolve(status)
-      })
+    return files.map((file) => {
+      return {
+        path: file.path(),
+        staged: !!file.inIndex(),
+        isNew: !!file.isNew(),
+        isDeleted: !!file.isDeleted(),
+        isModified: !!file.isModified(),
+        isRenamed: !!file.isRenamed() || !!file.isTypechange(),
+        isIgnored: !!file.isIgnored(),
+      }
     })
   }
 

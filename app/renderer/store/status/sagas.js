@@ -11,10 +11,10 @@ function* updateStatus() {
   const git = new Git(cwd)
 
   const state = yield call(() => git.getStateText())
-  const status = yield call(() => git.getStatus())
+  const files = yield call(() => git.getStatus())
   const headSHA = yield call(() => git.getHeadSHA())
 
-  yield put(statusUpdated(status, state, headSHA))
+  yield put(statusUpdated(files, state, headSHA))
 }
 
 export function* watch() {

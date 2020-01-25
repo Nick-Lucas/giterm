@@ -1,4 +1,4 @@
-import React, { useCallback } from 'react'
+import React, { useCallback, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled, { css } from 'styled-components'
 
@@ -8,20 +8,26 @@ import { showRemoteBranches } from '../../store/config/actions'
 export function StatusBar() {
   const dispatch = useDispatch()
 
-  const {
-    state = '',
-    current = '',
-    ahead = 0,
-    behind = 0,
-    files = [],
-    staged = [],
-  } = useSelector((state) => state.status)
+  const { state = '', files = [], staged = [] } = useSelector(
+    (state) => state.status,
+  )
+
+  const branches = useSelector((state) => state.branches)
+  const currentBranch = useMemo(
+    () => {
+      return branches.find((branch) => branch.isHead)
+    },
+    [branches],
+  )
 
   const config = useSelector((state) => state.config)
 
-  const toggleShowRemoteBranches = useCallback(() => {
-    dispatch(showRemoteBranches(!showRemoteBranches))
-  }, [])
+  const toggleShowRemoteBranches = useCallback(
+    () => {
+      dispatch(showRemoteBranches(!showRemoteBranches))
+    },
+    [dispatch],
+  )
 
   return (
     <Wrapper>
@@ -33,13 +39,19 @@ export function StatusBar() {
       </Group>
 
       <Group width={300}>
-        <Item>Branch: {current}</Item>
-        <Item>
-          <ArrowUp size={15} />
-          {ahead}
-          <ArrowDown size={15} />
-          {behind}
-        </Item>
+        {currentBranch && (
+          <>
+            <Item>Branch: {currentBranch.name}</Item>
+            {currentBranch.upstream && (
+              <Item>
+                <ArrowUp size={15} />
+                {currentBranch.upstream.ahead}
+                <ArrowDown size={15} />
+                {currentBranch.upstream.behind}
+              </Item>
+            )}
+          </>
+        )}
       </Group>
 
       <Group>

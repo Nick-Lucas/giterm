@@ -110,7 +110,7 @@ export class Commits extends React.Component {
       branches,
       showRemoteBranches,
       checkoutCommit,
-      status: { current: currentBranchName },
+      status: { current: currentBranchName, headSHA },
     } = this.props
     const { selectedSHA } = this.state
 
@@ -135,6 +135,7 @@ export class Commits extends React.Component {
           selected={selectedSHA === commit.sha}
           onSelect={this.handleSelect}
           onDoubleClick={(commit) => checkoutCommit(commit.sha)}
+          isHead={headSHA === commit.sha}
           height={RowHeight}
           currentBranchName={currentBranchName}
           node={node}
