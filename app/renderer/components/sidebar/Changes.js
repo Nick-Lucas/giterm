@@ -20,9 +20,9 @@ export function Changes() {
         if (file.isNew) {
           colour = '#149490'
         } else if (file.isDeleted) {
-          colour = '#890045'
+          colour = '#A60053'
         } else if (file.isModified) {
-          colour = '#0055A2'
+          colour = '#0086FF'
         }
 
         const item = {
