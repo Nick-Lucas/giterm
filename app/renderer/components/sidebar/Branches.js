@@ -42,8 +42,8 @@ export function Branches() {
             isHead: branch.isHead,
             menuItems: [
               {
-                label: 'Copy Name',
-                click: () => clipboard.writeText(branch.name),
+                label: 'Copy ID',
+                click: () => clipboard.writeText(branch.id),
               },
             ],
           })

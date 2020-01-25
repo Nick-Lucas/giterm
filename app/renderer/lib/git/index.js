@@ -153,6 +153,35 @@ export class Git {
     )(refs)
   }
 
+  getAllTags = async () => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
+    const refs = await Promise.all(
+      await repo.getReferences().then((refs) =>
+        refs.filter((ref) => ref.isTag()).map(async (ref) => {
+          const id = ref.name()
+          const commit = await repo.getCommit(ref.target())
+
+          return {
+            id,
+            name: ref.shorthand(),
+            headSHA: ref.target().tostrS(),
+            date: commit.date(),
+          }
+        }),
+      ),
+    )
+
+    return _.sortBy(refs, [
+      (tag) => tag.isRemote,
+      (tag) => -tag.date,
+      (tag) => tag.name,
+    ])
+  }
+
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
     const repo = await this.getComplex()
     if (!repo) {

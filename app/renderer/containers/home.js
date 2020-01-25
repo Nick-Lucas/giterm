@@ -31,6 +31,7 @@ export function Home() {
             <PlaygroundColumnScroller>
               <Sidebar.Changes />
               <Sidebar.Branches />
+              <Sidebar.Tags />
             </PlaygroundColumnScroller>
           </PlaygroundColumn>
 
