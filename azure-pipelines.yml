@@ -31,6 +31,8 @@ stages:
       displayName: Install
     - script: |
         yarn pack:mac
+        ls
+        ls dist
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist/Giterm-*.dmg
       artifact: GitermMac
@@ -41,6 +43,8 @@ stages:
       displayName: Install
     - script: |
         yarn pack:linux
+        ls
+        ls dist
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist/Giterm-*.dmg
       artifact: GitermLinux
@@ -53,6 +57,8 @@ stages:
       displayName: Install
     - script: |
         yarn pack:win
+        dir
+        dir dist
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist/Giterm-*.dmg
       artifact: GitermWindows
