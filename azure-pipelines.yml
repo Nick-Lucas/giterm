@@ -3,7 +3,7 @@ trigger:
 - azure-pipelines
 
 pool:
-  vmImage: 'macOS-10.15'
+  vmImage: 'ubuntu-16.04'
 
 stages:
 - stage: JSChecks
@@ -23,6 +23,8 @@ stages:
 - stage: Build
   jobs:
   - job: Mac
+    pool:
+      vmImage: 'macOS-10.15'
     steps:
     - script: |
         yarn install
@@ -32,3 +34,25 @@ stages:
       displayName: Build
     - publish: dist/Giterm-*.dmg
       artifact: GitermMac
+  - job: Linux
+    steps:
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn pack:linux
+      displayName: Build
+    - publish: dist/Giterm-*.dmg
+      artifact: GitermLinux
+  - job: Windows
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn pack:win
+      displayName: Build
+    - publish: dist/Giterm-*.dmg
+      artifact: GitermWindows
