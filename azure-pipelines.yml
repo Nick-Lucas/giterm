@@ -17,7 +17,7 @@ stages:
         yarn lint
       displayName: Lint
     - script: |
-        yarn test
+        yarn ci:test
       displayName: Unit Tests
 
 - stage: Build

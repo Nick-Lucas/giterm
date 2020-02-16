@@ -13,7 +13,8 @@
   "scripts": {
     "start": "npm run private:compile -- --source-maps true && run-p -r private:watch private:serve",
     "start:nowatch": "NOWATCH=true npm run private:compile -- --source-maps true && npm run private:serve",
-    "test": "jest --watch \\.*\\.test.js\\",
+    "test": "jest --watch",
+    "ci:test": "jest",
     "lint": "eslint --no-ignore scripts app *.js",
     "lint:fix": "eslint --no-ignore scripts app *.js --fix",
     "check-format": "npm run private:format -- --list-different",
