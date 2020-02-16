@@ -11,6 +11,7 @@ stages:
   - job: JSChecks
     steps:
     - script: |
+        nvm use
         yarn install
       displayName: Install
     - script: |
@@ -24,12 +25,13 @@ stages:
   jobs:
   - job: Mac
     pool:
-      vmImage: 'macOS-10.14'
+      vmImage: 'macOS-10.15'
     steps:
     - script: |
         yarn install
       displayName: Install
     - script: |
+        nvm use
         yarn pack:mac
         rm -rf dist/mac
       displayName: Build
@@ -42,6 +44,7 @@ stages:
         yarn install
       displayName: Install
     - script: |
+        nvm use
         yarn pack:linux
         rm -rf dist/linux-unpacked
       displayName: Build
@@ -56,6 +59,7 @@ stages:
         yarn install
       displayName: Install
     - script: |
+        nvm use
         yarn pack:win
         rmdir dist\win-unpacked /s /q
       displayName: Build
