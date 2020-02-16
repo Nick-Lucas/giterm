@@ -55,7 +55,7 @@ stages:
       displayName: Install
     - script: |
         yarn pack:linux
-        yarn rimraf dist/linux-unpacked
+        yarn rimraf dist/linux-unpacked dist/.icon-set
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist 
       artifact: GitermLinux
