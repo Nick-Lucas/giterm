@@ -39,7 +39,7 @@ stages:
       displayName: Install
     - script: |
         yarn pack:mac
-        rm -rf dist/mac
+        yarn rimraf dist/mac
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist 
       artifact: GitermMac
@@ -55,7 +55,7 @@ stages:
       displayName: Install
     - script: |
         yarn pack:linux
-        rm -rf dist/linux-unpacked
+        yarn rimraf dist/linux-unpacked
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist 
       artifact: GitermLinux
@@ -73,7 +73,7 @@ stages:
       displayName: Install
     - script: |
         yarn pack:win
-        rmdir dist\win-unpacked /s /q
+        yarn rimraf dist\win-unpacked
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist 
       artifact: GitermWindows
