@@ -18,7 +18,7 @@ Check of the [releases](https://github.com/Nick-Lucas/giterm/releases) tab
 
 1. checkout
 2. `yarn`/`npm install` (NodeGit can take a while to build, so be patient)
-3. `yarn run develop` or `npm run develop`. 
+3. `yarn run start` or `npm run start`. 
 
 ## Usage
 
