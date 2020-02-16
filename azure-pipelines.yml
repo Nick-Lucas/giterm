@@ -1,0 +1,34 @@
+trigger:
+- master
+- azure-pipelines
+
+pool:
+  vmImage: 'macOS-10.15'
+
+stages:
+- stage: JSChecks
+  jobs:
+  - job: JSChecks
+    steps:
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn lint
+      displayName: Lint
+    - script: |
+        yarn test
+      displayName: Unit Tests
+
+- stage: Build
+  jobs:
+  - job: Mac
+    steps:
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn pack:mac
+      displayName: Build
+    - publish: dist/Giterm-*.dmg
+      artifact: GitermMac
