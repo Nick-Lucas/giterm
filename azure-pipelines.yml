@@ -73,6 +73,7 @@ stages:
       displayName: Install
     - script: |
         yarn pack:win
+        yarn rimraf dist/win-unpacked
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist/*.exe
+    - publish: $(Build.SourcesDirectory)/dist
       artifact: GitermWindows
