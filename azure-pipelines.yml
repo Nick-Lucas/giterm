@@ -57,7 +57,7 @@ stages:
       displayName: Install
     - script: |
         yarn pack:win
-        rm -r dist/win-unpacked
+        rmdir dist\win-unpacked /s /q
       displayName: Build
     - publish: $(Build.SourcesDirectory)/dist 
       artifact: GitermWindows
