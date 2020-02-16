@@ -24,7 +24,7 @@ stages:
   jobs:
   - job: Mac
     pool:
-      vmImage: 'macOS-10.15'
+      vmImage: 'macOS-10.14'
     steps:
     - script: |
         yarn install
