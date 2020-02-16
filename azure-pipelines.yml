@@ -1,0 +1,78 @@
+trigger:
+- master
+
+pool:
+  vmImage: 'ubuntu-16.04'
+
+stages:
+- stage: JSChecks
+  jobs:
+  - job: JSChecks
+    steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn lint
+      displayName: Lint
+    - script: |
+        yarn ci:test
+      displayName: Unit Tests
+
+- stage: Build
+  jobs:
+  - job: Mac
+    pool:
+      vmImage: 'macOS-10.15'
+    steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn pack:mac
+        yarn rimraf dist/mac
+      displayName: Build
+    - publish: $(Build.SourcesDirectory)/dist 
+      artifact: GitermMac
+
+  - job: Linux
+    steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn pack:linux
+        yarn rimraf dist/linux-unpacked dist/.icon-set
+      displayName: Build
+    - publish: $(Build.SourcesDirectory)/dist 
+      artifact: GitermLinux
+      
+  - job: Windows
+    pool:
+      vmImage: 'windows-2019'
+    steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
+    - script: |
+        yarn install
+      displayName: Install
+    - script: |
+        yarn pack:win
+        yarn rimraf dist/win-unpacked
+      displayName: Build
+    - publish: $(Build.SourcesDirectory)/dist
+      artifact: GitermWindows

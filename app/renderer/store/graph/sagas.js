@@ -1,5 +1,4 @@
 import { takeEvery, put, select } from 'redux-saga/effects'
-import _ from 'lodash'
 
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '../../lib/gitgraph'
