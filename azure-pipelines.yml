@@ -32,7 +32,7 @@ stages:
     - script: |
         yarn pack:mac
       displayName: Build
-    - publish: dist/Giterm-*.dmg
+    - publish: $(Build.SourcesDirectory)/dist/Giterm-*.dmg
       artifact: GitermMac
   - job: Linux
     steps:
@@ -42,7 +42,7 @@ stages:
     - script: |
         yarn pack:linux
       displayName: Build
-    - publish: dist/Giterm-*.dmg
+    - publish: $(Build.SourcesDirectory)/dist/Giterm-*.dmg
       artifact: GitermLinux
   - job: Windows
     pool:
@@ -54,5 +54,5 @@ stages:
     - script: |
         yarn pack:win
       displayName: Build
-    - publish: dist/Giterm-*.dmg
+    - publish: $(Build.SourcesDirectory)/dist/Giterm-*.dmg
       artifact: GitermWindows
