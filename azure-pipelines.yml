@@ -10,8 +10,11 @@ stages:
   jobs:
   - job: JSChecks
     steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
     - script: |
-        nvm use
         yarn install
       displayName: Install
     - script: |
@@ -27,8 +30,11 @@ stages:
     pool:
       vmImage: 'macOS-10.15'
     steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
     - script: |
-        nvm use
         yarn install
       displayName: Install
     - script: |
@@ -40,8 +46,11 @@ stages:
 
   - job: Linux
     steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
     - script: |
-        nvm use
         yarn install
       displayName: Install
     - script: |
@@ -55,8 +64,11 @@ stages:
     pool:
       vmImage: 'windows-2019'
     steps:
+    - task: UseNode@1
+      inputs:
+        version: '10.x'
+        checkLatest: true
     - script: |
-        nvm use
         yarn install
       displayName: Install
     - script: |
