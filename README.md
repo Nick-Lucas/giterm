@@ -1,4 +1,4 @@
-[![Build Status](https://dev.azure.com/me0457/Giterm/_apis/build/status/Nick-Lucas.giterm?branchName=master)](https://dev.azure.com/me0457/Giterm/_build/latest?definitionId=1&branchName=master)
+[![Build Status](https://dev.azure.com/Nick-Lucas/Giterm/_apis/build/status/Giterm?branchName=master)](https://dev.azure.com/Nick-Lucas/Giterm/_build/latest?definitionId=1&branchName=master)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/nick-lucas/giterm)](https://github.com/Nick-Lucas/giterm/releases/latest)
 
 ## giterm
