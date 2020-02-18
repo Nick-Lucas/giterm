@@ -1,5 +1,6 @@
 import path from 'path'
 import { app, crashReporter, BrowserWindow, Menu } from 'electron'
+import { autoUpdater } from 'electron-updater'
 import getMenu from './menu'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
@@ -105,4 +106,6 @@ app.on('ready', async () => {
   }
 
   Menu.setApplicationMenu(getMenu(mainWindow))
+
+  await autoUpdater.checkForUpdatesAndNotify()
 })

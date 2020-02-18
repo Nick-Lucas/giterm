@@ -8,6 +8,11 @@ directories:
   buildResources: dist-assets/
   output: dist/
 
+publish:
+  provider: github
+  owner: nick-lucas
+  repo: giterm
+
 files:
   - package.json
   - init.js
