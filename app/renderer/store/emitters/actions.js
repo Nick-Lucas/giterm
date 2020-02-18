@@ -7,3 +7,8 @@ export function gitRefsChanged(event, ref, isRemote) {
     isRemote,
   }
 }
+
+export const GIT_HEAD_CHANGED = 'git/head_changed'
+export const gitHeadChanged = () => ({
+  type: GIT_HEAD_CHANGED,
+})

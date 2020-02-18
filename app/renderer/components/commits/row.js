@@ -187,5 +187,4 @@ Row.propTypes = {
   linksBefore: PropTypes.array.isRequired,
   linksAfter: PropTypes.array.isRequired,
   height: PropTypes.number.isRequired,
-  currentBranchName: PropTypes.string,
 }

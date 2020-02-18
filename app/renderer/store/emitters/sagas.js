@@ -1,10 +1,11 @@
-import { takeLatest, take, put, select } from 'redux-saga/effects'
+import { takeEvery, takeLatest, take, put, select } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
 
 import { Git } from '../../lib/git'
 import { CWD_UPDATED } from '../config/actions'
-import { gitRefsChanged } from './actions'
+import { gitRefsChanged, gitHeadChanged } from './actions'
 import { CORE_INIT } from '../core/actions'
+import { STATUS_UPDATED } from '../status/actions'
 
 function* listenForRefChanges() {
   const cwd = yield select((state) => state.config.cwd)
@@ -29,6 +30,20 @@ function* listenForRefChanges() {
   }
 }
 
+function* listenForHeadChanges() {
+  while (true) {
+    const lastHeadSHA = yield select((state) => state.status.headSHA)
+
+    yield take(STATUS_UPDATED)
+
+    const headSHA = yield select((state) => state.status.headSHA)
+    if (lastHeadSHA !== headSHA) {
+      yield put(gitHeadChanged(headSHA))
+    }
+  }
+}
+
 export function* watch() {
   yield takeLatest([CORE_INIT, CWD_UPDATED], listenForRefChanges)
+  yield takeEvery([CORE_INIT], listenForHeadChanges)
 }
