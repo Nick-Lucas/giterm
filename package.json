@@ -1,6 +1,6 @@
 {
   "name": "giterm",
-  "version": "0.4.4",
+  "version": "0.4.5",
   "description": "A git gui for terminal lovers",
   "homepage": "https://github.com/Nick-Lucas/giterm",
   "main": "init.js",
@@ -74,8 +74,8 @@
     "@types/jest": "^24.0.23",
     "babel-eslint": "^10.0.3",
     "browser-sync": "^2.23.6",
-    "electron": "^7.1.5",
-    "electron-builder": "^21.2.0",
+    "electron": "7.1.12",
+    "electron-builder": "^22.3.2",
     "electron-devtools-installer": "^2.2.4",
     "eslint": "^6.7.2",
     "eslint-config-prettier": "^6.7.0",

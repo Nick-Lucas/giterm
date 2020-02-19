@@ -6,7 +6,7 @@ import getMenu from './menu'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
-autoUpdater.logger = logger
+// autoUpdater.logger = logger
 
 let mainWindow = null
 let forceQuit = false
@@ -109,6 +109,36 @@ app.on('ready', async () => {
   }
 
   Menu.setApplicationMenu(getMenu(mainWindow))
+
+  // Auto-update!
+
+  autoUpdater.on('checking-for-update', () => {
+    logger.log('Checking for update...')
+  })
+  autoUpdater.on('update-available', () => {
+    logger.log('Update available.')
+  })
+  autoUpdater.on('update-not-available', () => {
+    logger.log('Update not available.')
+  })
+  autoUpdater.on('error', (err) => {
+    logger.log('Error in auto-updater. ' + err)
+  })
+  autoUpdater.on('download-progress', (progressObj) => {
+    let log_message = 'Download speed: ' + progressObj.bytesPerSecond
+    log_message = log_message + ' - Downloaded ' + progressObj.percent + '%'
+    log_message =
+      log_message +
+      ' (' +
+      progressObj.transferred +
+      '/' +
+      progressObj.total +
+      ')'
+    logger.log(log_message)
+  })
+  autoUpdater.on('update-downloaded', () => {
+    logger.log('Update downloaded')
+  })
 
   logger.log('Checking for updates...')
   const result = await autoUpdater.checkForUpdatesAndNotify()
