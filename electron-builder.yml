@@ -35,7 +35,9 @@ dmg:
   icon: icon.icns
 
 mac:
-  target: dmg
+  target: 
+    - dmg
+    - zip
   category: public.app-category.tools
   icon: icon.icns
 
