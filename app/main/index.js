@@ -1,9 +1,12 @@
 import path from 'path'
 import { app, crashReporter, BrowserWindow, Menu } from 'electron'
+import logger from 'electron-log'
 import { autoUpdater } from 'electron-updater'
 import getMenu from './menu'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
+
+autoUpdater.logger = logger
 
 let mainWindow = null
 let forceQuit = false
@@ -16,7 +19,7 @@ const installExtensions = async () => {
     try {
       await installer.default(installer[name], forceDownload)
     } catch (e) {
-      console.log(`Error installing ${name} extension: ${e.message}`)
+      logger.log(`Error installing ${name} extension: ${e.message}`)
     }
   }
 }
@@ -107,5 +110,7 @@ app.on('ready', async () => {
 
   Menu.setApplicationMenu(getMenu(mainWindow))
 
-  await autoUpdater.checkForUpdatesAndNotify()
+  logger.log('Checking for updates...')
+  const result = await autoUpdater.checkForUpdatesAndNotify()
+  logger.log('Update result:', result)
 })
