@@ -18,7 +18,7 @@ const installExtensions = async () => {
   }
 }
 
-export default async () => {
+module.exports = async () => {
   let forceQuit = false
 
   if (isDevelopment) {

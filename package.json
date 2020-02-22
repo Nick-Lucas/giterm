@@ -15,6 +15,7 @@
     "start:nowatch": "NOWATCH=true npm run private:compile -- --source-maps true && npm run private:serve",
     "test": "jest --watch",
     "ci:test": "jest",
+    "cypress:open": "run-s private:clean private:compile && run-p -r private:watch private:cypress:open",
     "lint": "eslint --no-ignore scripts app *.js",
     "lint:fix": "eslint --no-ignore scripts app *.js --fix",
     "check-format": "npm run private:format -- --list-different",
@@ -29,7 +30,8 @@
     "private:serve": "babel-node scripts/serve.js",
     "private:compile": "babel app/ --ignore **/gitgraph/node_modules --copy-files --out-dir build",
     "private:clean": "rimraf build",
-    "private:format": "prettier \"scripts/*.js\" \"app/**/*.js\" \"test/**/*.js\""
+    "private:format": "prettier \"scripts/*.js\" \"app/**/*.js\" \"test/**/*.js\"",
+    "private:cypress:open": "cypress open --browser electron --project build"
   },
   "dependencies": {
     "@babel/runtime": "^7.7.6",
@@ -71,9 +73,11 @@
     "@babel/plugin-proposal-class-properties": "^7.7.4",
     "@babel/preset-env": "^7.7.6",
     "@babel/preset-react": "^7.7.4",
+    "@cypress/electron-plugin": "^1.1.0",
     "@types/jest": "^24.0.23",
     "babel-eslint": "^10.0.3",
     "browser-sync": "^2.23.6",
+    "cypress": "^4.0.2",
     "electron": "7.1.12",
     "electron-builder": "^22.3.2",
     "electron-devtools-installer": "^2.2.4",

@@ -9,5 +9,10 @@
     "include": [
       "jest"
     ]
-  }
+  },
+  "include": [
+    "./node_modules/cypress",
+    "@cypress/electron-plugin",
+    "app/cypress/**/*.js"
+  ]
 }
