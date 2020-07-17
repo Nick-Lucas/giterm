@@ -5,16 +5,9 @@ import * as props from './props'
 import Tag from './tag'
 import { PathLine } from '../graph/pathline'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
+import { colours } from '../../lib/theme'
 
-const Colours = [
-  '#058ED9',
-  '#880044',
-  '#875053',
-  '#129490',
-  '#E5A823',
-  '#0055A2',
-  '#96C5F7',
-]
+const Colours = colours.GRAPH_NODES
 
 const RowWrapper = styled.div`
   display: flex;

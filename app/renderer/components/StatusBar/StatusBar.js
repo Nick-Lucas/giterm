@@ -6,25 +6,26 @@ import { ArrowUp, ArrowDown } from 'react-feather'
 import { StatusBarItem } from './StatusBarItem'
 import { showRemoteBranches } from '../../store/config/actions'
 import { STATE } from '../../lib/git'
+import { colours } from '../../lib/theme'
 
 function mapStateToDisplay(state) {
   switch (state) {
     case STATE.OK:
-      return ['white', 'OK']
+      return [colours.TEXT.DEFAULT, 'OK']
     case STATE.REBASING:
-      return ['white', 'Rebasing']
+      return [colours.TEXT.WARNING, 'Rebasing']
     case STATE.MERGING:
-      return ['white', 'Merging']
+      return [colours.TEXT.WARNING, 'Merging']
     case STATE.REVERTING:
-      return ['white', 'Reverting']
+      return [colours.TEXT.WARNING, 'Reverting']
     case STATE.CHERRY_PICKING:
-      return ['white', 'Cherry Picking']
+      return [colours.TEXT.WARNING, 'Cherry Picking']
     case STATE.BISECTING:
-      return ['white', 'Bisecting']
+      return [colours.TEXT.WARNING, 'Bisecting']
     case STATE.APPLYING_MAILBOX:
-      return ['white', 'Applying Mailbox']
+      return [colours.TEXT.WARNING, 'Applying Mailbox']
     case STATE.NO_REPO:
-      return ['white', 'No Repository']
+      return [colours.TEXT.NEGATIVE, 'No Repository']
     default:
       return [null, '']
   }

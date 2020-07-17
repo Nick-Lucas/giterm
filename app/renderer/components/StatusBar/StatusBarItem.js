@@ -5,8 +5,8 @@ import PropTypes from 'prop-types'
 export function StatusBarItem({ title, colour, children }) {
   return (
     <Container>
-      {title && <Label colour={colour}>{title}</Label>}
-      {children && <Body>{children}</Body>}
+      {title && <Label>{title}</Label>}
+      {children && <Body colour={colour}>{children}</Body>}
     </Container>
   )
 }
