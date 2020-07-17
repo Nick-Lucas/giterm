@@ -90,17 +90,10 @@ export class Row extends React.Component {
   }
 
   renderTags() {
-    const { branches, showRemoteBranches, commit } = this.props
-
-    // TODO: this is very inefficient, build a branchesBySha lookup in redux instead
-    const filtered = branches.filter(
-      (branch) =>
-        commit.sha === branch.headSHA &&
-        (showRemoteBranches ? true : !branch.isRemote),
-    )
+    const { branches } = this.props
 
     const [upstreamBranches, localBranches] = _.partition(
-      filtered,
+      branches,
       (branch) => branch.isRemote,
     )
 
@@ -208,7 +201,6 @@ Row.propTypes = {
   onDoubleClick: PropTypes.func,
   columns: props.columns,
   branches: props.branches,
-  showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
   node: PropTypes.object.isRequired,
   linksBefore: PropTypes.array.isRequired,

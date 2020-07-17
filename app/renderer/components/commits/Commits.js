@@ -51,11 +51,15 @@ class Commits extends React.Component {
     this.setState({ selectedSHA: commit.sha })
   }
 
-  getMenuItems = (item) => [
+  getMenuItems = (commit, branchesForCommit) => [
     {
       label: 'Copy SHA',
-      click: () => clipboard.writeText(item.sha),
+      click: () => clipboard.writeText(commit.sha),
     },
+    ...branchesForCommit.map((branch) => ({
+      label: `Copy "${branch.name}"`,
+      click: () => clipboard.writeText(branch.name),
+    })),
   ]
 
   considerLoadMoreItems = ({ clientHeight, scrollHeight, scrollTop }) => {
@@ -138,16 +142,23 @@ class Commits extends React.Component {
     const linksBefore = links[index] || []
     const linksAfter = links[index + 1] || []
     const commit = commits[index]
+
+    // TODO: this is very inefficient, build a branchesBySha lookup in redux instead
+    const branchesForCommit = branches.filter(
+      (branch) =>
+        commit.sha === branch.headSHA &&
+        (showRemoteBranches ? true : !branch.isRemote),
+    )
+
     return (
       <RightClickArea
         key={commit.sha}
-        menuItems={this.getMenuItems(commit)}
+        menuItems={this.getMenuItems(commit, branchesForCommit)}
         style={style}>
         <Row
           commit={commit}
           columns={columns}
-          branches={branches}
-          showRemoteBranches={showRemoteBranches}
+          branches={branchesForCommit}
           selected={selectedSHA === commit.sha}
           onSelect={this.handleSelect}
           onDoubleClick={(commit) => checkoutCommit(commit.sha)}
