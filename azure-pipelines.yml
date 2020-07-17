@@ -7,7 +7,7 @@ trigger:
     - v*.*.*
 
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-18.04'
 
 stages:
 - stage: JSChecks
@@ -68,7 +68,7 @@ stages:
       
   - job: Windows
     pool:
-      vmImage: 'windows-2019'
+      vmImage: 'vs2017-win2016'
     steps:
     - task: UseNode@1
       inputs:
