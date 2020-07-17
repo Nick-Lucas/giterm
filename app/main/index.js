@@ -62,6 +62,7 @@ app.on('ready', async () => {
       nodeIntegration: true,
     },
   })
+  mainWindow.maximize()
 
   mainWindow.loadFile(
     path.resolve(path.join(__dirname, '../renderer/index.html')),
