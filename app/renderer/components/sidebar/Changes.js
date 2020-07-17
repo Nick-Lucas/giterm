@@ -49,7 +49,9 @@ export function Changes() {
   )
 
   return (
-    <Section title="CHANGES" hasContent={_files.length > 0}>
+    <Section
+      title={`CHANGES (${staged.length}/${_files.length})`}
+      hasContent={_files.length > 0}>
       {staged.map((file) => {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
