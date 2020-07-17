@@ -1,4 +1,4 @@
-import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from './actions'
+import { SHOW_REMOTE_BRANCHES, SHOW_BRANCH_TAGS, CWD_UPDATED } from './actions'
 
 import { INITIAL_CWD } from '../../lib/cwd'
 
@@ -7,6 +7,9 @@ const initialState = {
 
   // Show data from remotes
   showRemoteBranches: true,
+
+  // Show tags on the commits list
+  showBranchTags: true,
 }
 
 export const reducer = (state = initialState, action) => {
@@ -23,6 +26,12 @@ export const reducer = (state = initialState, action) => {
       return {
         ...state,
         showRemoteBranches: action.show,
+      }
+    }
+    case SHOW_BRANCH_TAGS: {
+      return {
+        ...state,
+        showBranchTags: action.show,
       }
     }
     default: {

@@ -2,6 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import { ThumbsUp } from 'react-feather'
 import styled, { css } from 'styled-components'
+import { useSelector } from 'react-redux'
 
 const Wrapper = styled.div`
   display: flex;
@@ -27,6 +28,11 @@ const Wrapper = styled.div`
 `
 
 export function Tag({ label, current, remoteInSync }) {
+  const show = useSelector((state) => state.config.showBranchTags)
+  if (!show) {
+    return null
+  }
+
   return (
     <Wrapper current={current}>
       {label}{' '}

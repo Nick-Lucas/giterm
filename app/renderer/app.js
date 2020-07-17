@@ -9,7 +9,7 @@ import { createMemoryHistory } from 'history'
 import configureStore from './store'
 
 import { Home } from './containers/home'
-import { showRemoteBranches } from './store/config/actions'
+import { showRemoteBranches, showBranchTags } from './store/config/actions'
 import { flipUserTerminalFullscreen } from './store/terminal/actions'
 
 // Store Init
@@ -22,6 +22,7 @@ const history = syncHistoryWithStore(routerHistory, store)
 window.addEventListener(
   'keydown',
   (ev) => {
+    // console.log(ev)
     if (ev.ctrlKey && ev.code === 'Tab') {
       store.dispatch(flipUserTerminalFullscreen())
       ev.stopImmediatePropagation()
@@ -34,8 +35,21 @@ window.addEventListener(
       ev.stopImmediatePropagation()
       return
     }
+    if (ev.key === 'Alt') {
+      store.dispatch(showBranchTags(false))
+    }
   },
-  true,
+  { capture: true, once: false, passive: true },
+)
+window.addEventListener(
+  'keyup',
+  (ev) => {
+    console.log(ev)
+    if (ev.key === 'Alt') {
+      store.dispatch(showBranchTags(true))
+    }
+  },
+  { capture: true, once: false, passive: true },
 )
 
 // DOM Init
