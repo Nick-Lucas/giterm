@@ -1,4 +1,4 @@
-const package = require('./package.json')
+const packageJson = require('./package.json')
 
 module.exports = {
   presets: [
@@ -6,14 +6,12 @@ module.exports = {
       '@babel/preset-env',
       {
         targets: {
-          electron: package.devDependencies.electron,
+          electron: packageJson.devDependencies.electron,
         },
         // "useBuiltIns": 'usage'
       },
     ],
     '@babel/preset-react',
   ],
-  plugins: [
-    '@babel/plugin-proposal-class-properties'
-  ],
+  plugins: ['@babel/plugin-proposal-class-properties'],
 }
