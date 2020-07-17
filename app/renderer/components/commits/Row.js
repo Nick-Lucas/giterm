@@ -2,19 +2,13 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as props from './props'
-import Tag from './tag'
+import { Tag } from './Tag'
 import { PathLine } from '../graph/pathline'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
+import { colours } from '../../lib/theme'
+import _ from 'lodash'
 
-const Colours = [
-  '#058ED9',
-  '#880044',
-  '#875053',
-  '#129490',
-  '#E5A823',
-  '#0055A2',
-  '#96C5F7',
-]
+const Colours = colours.GRAPH_NODES
 
 const RowWrapper = styled.div`
   display: flex;
@@ -26,13 +20,13 @@ const RowWrapper = styled.div`
   align-items: center;
 
   :hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: ${colours.OVERLAY.HINT};
   }
 
-  color: rgba(255, 255, 255, 0.8);
+  color: ${colours.TEXT.DEFAULT};
 `
-const selectedStyle = { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-const headStyle = { fontWeight: 'bold', color: 'rgba(255, 255, 255, 1)' }
+const selectedStyle = { backgroundColor: colours.OVERLAY.FOCUS }
+const headStyle = { fontWeight: 'bold', color: colours.TEXT.FOCUS }
 
 const RowColumn = styled.div`
   display: flex;
@@ -51,7 +45,7 @@ const ColumnText = styled.div`
   text-overflow: ellipsis;
 `
 
-export default class Row extends React.Component {
+export class Row extends React.Component {
   handleSelect = () => {
     const { commit, onSelect } = this.props
     onSelect(commit)
@@ -96,16 +90,42 @@ export default class Row extends React.Component {
   }
 
   renderTags() {
-    const { branches, showRemoteBranches, commit } = this.props
-    return branches
-      .filter(
-        (branch) =>
-          commit.sha === branch.headSHA &&
-          (showRemoteBranches || !branch.isRemote),
+    const { branches } = this.props
+
+    const [upstreamBranches, localBranches] = _.partition(
+      branches,
+      (branch) => branch.isRemote,
+    )
+
+    // If both local and remote heads are on this commit, just display one
+    const pairs = []
+    for (const localBranch of localBranches) {
+      const upstreamBranchIndex = upstreamBranches.findIndex(
+        (other) => other.id === localBranch.upstream.name,
       )
-      .map((branch) => (
-        <Tag key={branch.id} label={branch.name} current={branch.isHead} />
-      ))
+
+      if (upstreamBranchIndex >= 0) {
+        upstreamBranches.splice(upstreamBranchIndex, 1)
+      }
+      pairs.push({
+        branch: localBranch,
+        remoteInSync: upstreamBranchIndex >= 0,
+      })
+    }
+    pairs.push(
+      ...upstreamBranches.map((branch) => ({
+        branch,
+      })),
+    )
+
+    return pairs.map(({ branch, remoteInSync = false }) => (
+      <Tag
+        key={branch.id}
+        label={branch.name}
+        current={branch.isHead}
+        remoteInSync={remoteInSync}
+      />
+    ))
   }
 
   renderGraphItem() {
@@ -181,7 +201,6 @@ Row.propTypes = {
   onDoubleClick: PropTypes.func,
   columns: props.columns,
   branches: props.branches,
-  showRemoteBranches: PropTypes.bool.isRequired,
   commit: props.commit,
   node: PropTypes.object.isRequired,
   linksBefore: PropTypes.array.isRequired,

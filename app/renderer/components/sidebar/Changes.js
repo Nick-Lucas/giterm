@@ -7,6 +7,7 @@ import { clipboard } from 'electron'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
+import { colours } from '../../lib/theme'
 
 export function Changes() {
   const _files = useSelector((state) => state.status.files) || []
@@ -18,11 +19,11 @@ export function Changes() {
       for (const file of _files) {
         let colour = null
         if (file.isNew) {
-          colour = '#149490'
+          colour = colours.TEXT.POSITIVE
         } else if (file.isDeleted) {
-          colour = '#A60053'
+          colour = colours.TEXT.NEGATIVE
         } else if (file.isModified) {
-          colour = '#0086FF'
+          colour = colours.TEXT.ACTION
         }
 
         const item = {
@@ -49,7 +50,9 @@ export function Changes() {
   )
 
   return (
-    <Section title="CHANGES" hasContent={_files.length > 0}>
+    <Section
+      title={`CHANGES (${staged.length}/${_files.length})`}
+      hasContent={_files.length > 0}>
       {staged.map((file) => {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>

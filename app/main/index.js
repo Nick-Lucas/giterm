@@ -3,6 +3,10 @@ import { app, crashReporter, BrowserWindow, Menu } from 'electron'
 import logger from 'electron-log'
 import { autoUpdater } from 'electron-updater'
 import getMenu from './menu'
+import installExtension, {
+  REACT_DEVELOPER_TOOLS,
+  REDUX_DEVTOOLS,
+} from 'electron-devtools-installer'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -12,15 +16,17 @@ let mainWindow = null
 let forceQuit = false
 
 const installExtensions = async () => {
-  const installer = require('electron-devtools-installer')
-  const extensions = ['REACT_DEVELOPER_TOOLS', 'REDUX_DEVTOOLS']
   const forceDownload = !!process.env.UPGRADE_EXTENSIONS
-  for (const name of extensions) {
-    try {
-      await installer.default(installer[name], forceDownload)
-    } catch (e) {
-      logger.log(`Error installing ${name} extension: ${e.message}`)
-    }
+
+  try {
+    logger.log('Installing extensions: Started')
+    await installExtension(
+      [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS],
+      forceDownload,
+    )
+    logger.log('Installing extensions: Done')
+  } catch (e) {
+    logger.warn(`Error installing devtools extension: ${e.message}`)
   }
 }
 
@@ -30,6 +36,8 @@ crashReporter.start({
   submitURL: 'https://your-domain.com/url-to-submit',
   uploadToServer: false,
 })
+
+app.allowRendererProcessReuse = false
 
 app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
@@ -54,6 +62,7 @@ app.on('ready', async () => {
       nodeIntegration: true,
     },
   })
+  mainWindow.maximize()
 
   mainWindow.loadFile(
     path.resolve(path.join(__dirname, '../renderer/index.html')),

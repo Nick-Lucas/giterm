@@ -7,7 +7,7 @@ trigger:
     - v*.*.*
 
 pool:
-  vmImage: 'ubuntu-16.04'
+  vmImage: 'ubuntu-18.04'
 
 stages:
 - stage: JSChecks
@@ -19,6 +19,7 @@ stages:
         version: '10.x'
         checkLatest: true
     - script: |
+        sudo apt install libkrb5-dev
         yarn install
       displayName: Install
     - script: |
@@ -55,6 +56,7 @@ stages:
         version: '10.x'
         checkLatest: true
     - script: |
+        sudo apt install libkrb5-dev
         yarn install
       displayName: Install
     - script: |
@@ -66,7 +68,7 @@ stages:
       
   - job: Windows
     pool:
-      vmImage: 'windows-2019'
+      vmImage: 'vs2017-win2016'
     steps:
     - task: UseNode@1
       inputs:

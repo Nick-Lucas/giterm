@@ -9,3 +9,9 @@ export const showRemoteBranches = (show) => ({
   type: SHOW_REMOTE_BRANCHES,
   show,
 })
+
+export const SHOW_BRANCH_TAGS = 'config/show_branch_tags'
+export const showBranchTags = (show) => ({
+  type: SHOW_BRANCH_TAGS,
+  show,
+})
