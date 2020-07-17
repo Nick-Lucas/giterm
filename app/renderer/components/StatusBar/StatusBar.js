@@ -33,9 +33,7 @@ function mapStateToDisplay(state) {
 export function StatusBar() {
   const dispatch = useDispatch()
 
-  const { state = '', files = [], staged = [] } = useSelector(
-    (state) => state.status,
-  )
+  const { state = '' } = useSelector((state) => state.status)
 
   const branches = useSelector((state) => state.branches)
   const currentBranch = useMemo(

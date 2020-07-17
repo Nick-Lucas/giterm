@@ -38,5 +38,8 @@ const Label = styled.div`
   margin-right: 2px;
 `
 const Body = styled.div`
+  display: flex;
+  align-items: center;
+
   color: ${(props) => props.colour || 'inherit'};
 `
