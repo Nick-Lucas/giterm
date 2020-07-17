@@ -1,10 +1,13 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-
+import { ThumbsUp } from 'react-feather'
 import styled, { css } from 'styled-components'
 
 const Wrapper = styled.div`
-  display: inline;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
   border-radius: 5px;
 
   padding-left: 3px;
@@ -23,14 +26,22 @@ const Wrapper = styled.div`
     `};
 `
 
-export default class Tag extends React.Component {
-  render() {
-    const { current } = this.props
-    return <Wrapper current={current}>{this.props.label}</Wrapper>
-  }
+export function Tag({ label, current, remoteInSync }) {
+  return (
+    <Wrapper current={current}>
+      {label}{' '}
+      {remoteInSync && (
+        <ThumbsUp
+          size="12"
+          style={{ marginLeft: '2px', marginBottom: '-1px' }}
+        />
+      )}
+    </Wrapper>
+  )
 }
 
 Tag.propTypes = {
   label: PropTypes.string.isRequired,
   current: PropTypes.bool.isRequired,
+  remoteInSync: PropTypes.bool.isRequired,
 }

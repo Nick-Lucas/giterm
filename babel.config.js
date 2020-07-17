@@ -1,10 +1,12 @@
+const package = require('./package.json')
+
 module.exports = {
   presets: [
     [
       '@babel/preset-env',
       {
         targets: {
-          electron: '7.1',
+          electron: package.devDependencies.electron,
         },
         // "useBuiltIns": 'usage'
       },
@@ -12,9 +14,6 @@ module.exports = {
     '@babel/preset-react',
   ],
   plugins: [
-    // "transform-decorators-legacy",
-    '@babel/plugin-proposal-class-properties',
-    // "transform-object-rest-spread",
-    // "transform-runtime"
+    '@babel/plugin-proposal-class-properties'
   ],
 }

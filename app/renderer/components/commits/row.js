@@ -2,10 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as props from './props'
-import Tag from './tag'
+import { Tag } from './Tag'
 import { PathLine } from '../graph/pathline'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { colours } from '../../lib/theme'
+import _ from 'lodash'
 
 const Colours = colours.GRAPH_NODES
 
@@ -90,15 +91,48 @@ export class Row extends React.Component {
 
   renderTags() {
     const { branches, showRemoteBranches, commit } = this.props
-    return branches
-      .filter(
-        (branch) =>
-          commit.sha === branch.headSHA &&
-          (showRemoteBranches || !branch.isRemote),
+
+    // TODO: this is very inefficient, build a branchesBySha lookup in redux instead
+    const filtered = branches.filter(
+      (branch) =>
+        commit.sha === branch.headSHA &&
+        (showRemoteBranches ? true : !branch.isRemote),
+    )
+
+    const [upstreamBranches, localBranches] = _.partition(
+      filtered,
+      (branch) => branch.isRemote,
+    )
+
+    // If both local and remote heads are on this commit, just display one
+    const pairs = []
+    for (const localBranch of localBranches) {
+      const upstreamBranchIndex = upstreamBranches.findIndex(
+        (other) => other.id === localBranch.upstream.name,
       )
-      .map((branch) => (
-        <Tag key={branch.id} label={branch.name} current={branch.isHead} />
-      ))
+
+      if (upstreamBranchIndex >= 0) {
+        upstreamBranches.splice(upstreamBranchIndex, 1)
+      }
+      pairs.push({
+        branch: localBranch,
+        remoteInSync: upstreamBranchIndex >= 0,
+      })
+    }
+    pairs.push(
+      ...upstreamBranches.map((branch) => ({
+        branch,
+      })),
+    )
+
+    return pairs.map(({ branch, remoteInSync = false }) => (
+      <Tag
+        key={branch.id}
+        label={branch.name}
+        current={branch.isHead}
+        remoteInSync={remoteInSync}
+      />
+    ))
   }
 
   renderGraphItem() {
