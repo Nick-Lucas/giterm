@@ -273,6 +273,10 @@ export class Git {
 
   getStatus = async () => {
     const repo = await this.getComplex()
+    if (!repo) {
+      return []
+    }
+
     const files = await repo.getStatus()
 
     return files.map((file) => {
