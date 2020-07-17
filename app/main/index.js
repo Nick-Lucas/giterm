@@ -49,6 +49,7 @@ app.on('window-all-closed', () => {
 
 app.on('ready', async () => {
   if (isDevelopment) {
+    logger.log('Development mode detected, installing dev tools')
     await installExtensions()
   }
 
