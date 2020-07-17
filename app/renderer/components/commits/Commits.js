@@ -9,7 +9,7 @@ import debounce from 'debounce'
 
 import * as props from './props'
 import Header from './header'
-import Row from './row'
+import { Row } from './row'
 import { checkoutCommit, reachedEndOfList } from '../../store/commits/actions'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 

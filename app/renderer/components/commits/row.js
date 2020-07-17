@@ -19,13 +19,13 @@ const RowWrapper = styled.div`
   align-items: center;
 
   :hover {
-    background-color: rgba(255, 255, 255, 0.1);
+    background-color: ${colours.OVERLAY.HINT};
   }
 
-  color: rgba(255, 255, 255, 0.8);
+  color: ${colours.TEXT.DEFAULT};
 `
-const selectedStyle = { backgroundColor: 'rgba(255, 255, 255, 0.3)' }
-const headStyle = { fontWeight: 'bold', color: 'rgba(255, 255, 255, 1)' }
+const selectedStyle = { backgroundColor: colours.OVERLAY.FOCUS }
+const headStyle = { fontWeight: 'bold', color: colours.TEXT.FOCUS }
 
 const RowColumn = styled.div`
   display: flex;
@@ -44,7 +44,7 @@ const ColumnText = styled.div`
   text-overflow: ellipsis;
 `
 
-export default class Row extends React.Component {
+export class Row extends React.Component {
   handleSelect = () => {
     const { commit, onSelect } = this.props
     onSelect(commit)
