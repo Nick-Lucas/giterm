@@ -1,7 +1,7 @@
 import { takeEvery, put, select } from 'redux-saga/effects'
 
 import { graphUpdateSkipped, graphUpdated } from './actions'
-import { commitsToGraph } from '../../lib/gitgraph'
+import { commitsToGraph } from '@giterm/gitgraph'
 import { COMMITS_UPDATED } from '../commits/actions'
 
 function* recalculateGraph() {

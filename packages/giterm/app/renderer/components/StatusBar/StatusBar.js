@@ -5,7 +5,7 @@ import { ArrowUp, ArrowDown } from 'react-feather'
 
 import { StatusBarItem } from './StatusBarItem'
 import { showRemoteBranches } from '../../store/config/actions'
-import { STATE } from '../../lib/git'
+import { STATE } from '@giterm/git'
 import { colours } from '../../lib/theme'
 
 function mapStateToDisplay(state) {
@@ -37,21 +37,15 @@ export function StatusBar() {
   const { state = '' } = useSelector((state) => state.status)
 
   const branches = useSelector((state) => state.branches)
-  const currentBranch = useMemo(
-    () => {
-      return branches.find((branch) => branch.isHead)
-    },
-    [branches],
-  )
+  const currentBranch = useMemo(() => {
+    return branches.find((branch) => branch.isHead)
+  }, [branches])
 
   const config = useSelector((state) => state.config)
 
-  const toggleShowRemoteBranches = useCallback(
-    () => {
-      dispatch(showRemoteBranches(!showRemoteBranches))
-    },
-    [dispatch],
-  )
+  const toggleShowRemoteBranches = useCallback(() => {
+    dispatch(showRemoteBranches(!showRemoteBranches))
+  }, [dispatch])
 
   const [stateColour, stateText] = useMemo(() => mapStateToDisplay(state), [
     state,

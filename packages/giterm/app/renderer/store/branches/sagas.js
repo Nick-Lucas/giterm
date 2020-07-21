@@ -2,7 +2,7 @@ import { takeLatest, select, call, put } from 'redux-saga/effects'
 import { branchesUpdated } from './actions'
 import { GIT_REFS_CHANGED, GIT_HEAD_CHANGED } from '../emitters/actions'
 import { CWD_UPDATED } from '../config/actions'
-import { Git } from '../../lib/git'
+import { Git } from '@giterm/git'
 import { CORE_INIT } from '../core/actions'
 
 function* updateBranches() {

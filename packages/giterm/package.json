@@ -33,6 +33,8 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.7.6",
+    "@giterm/git": "1.0.0",
+    "@giterm/gitgraph": "1.0.0",
     "chokidar": "^3.3.1",
     "debounce": "^1.2.0",
     "electron-devtools-installer": "^3.1.1",

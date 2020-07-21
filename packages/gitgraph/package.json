@@ -8,7 +8,13 @@
   "main": "dist/index.js",
   "module": "dist/index.module.js",
   "scripts": {
-    "build": "microbundle -f modern,es,cjs",
+    "build": "microbundle --target node -f modern,es,cjs",
     "dev": "yarn run build -w"
+  },
+  "dependencies": {
+    "lodash": "^4.17.19"
+  },
+  "devDependencies": {
+    "microbundle": "^0.12.3"
   }
 }

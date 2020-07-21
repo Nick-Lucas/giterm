@@ -3,7 +3,7 @@ import { statusUpdated } from './actions'
 import { TERMINAL_CHANGED } from '../terminal/actions'
 import { GIT_REFS_CHANGED } from '../emitters/actions'
 import { CWD_UPDATED } from '../config/actions'
-import { Git } from '../../lib/git'
+import { Git } from '@giterm/git'
 import { CORE_INIT } from '../core/actions'
 
 function* updateStatus() {

@@ -4,6 +4,10 @@
     "packages/*"
   ],
   "scripts": {
-    "dev": "wsrun --stages dev"
+    "build": "wasrun --stages --exclude-missing build",
+    "dev": "wsrun --exclude-missing dev"
+  },
+  "devDependencies": {
+    "wsrun": "^5.2.1"
   }
 }

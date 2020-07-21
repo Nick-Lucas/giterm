@@ -3,7 +3,7 @@ import { commitsUpdated, REACHED_END_OF_LIST, CHECKOUT_COMMIT } from './actions'
 
 import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from '../config/actions'
 import { GIT_REFS_CHANGED } from '../emitters/actions'
-import { Git } from '../../lib/git'
+import { Git } from '@giterm/git'
 import { CORE_INIT } from '../core/actions'
 
 function* reloadCommits(action) {

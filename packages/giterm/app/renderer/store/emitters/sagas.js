@@ -1,7 +1,7 @@
 import { takeEvery, takeLatest, take, put, select } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
 
-import { Git } from '../../lib/git'
+import { Git } from '@giterm/git'
 import { CWD_UPDATED } from '../config/actions'
 import { gitRefsChanged, gitHeadChanged } from './actions'
 import { CORE_INIT } from '../core/actions'

@@ -8,12 +8,11 @@ import { createHash } from 'crypto'
 import Moment from 'moment'
 
 import repoResolver from './repo-resolver'
-import { INITIAL_CWD } from '../cwd'
 
 import { STATE } from './constants'
 
 export class Git {
-  constructor(cwd = INITIAL_CWD) {
+  constructor(cwd) {
     this.rawCwd = cwd
     this.cwd = repoResolver(cwd)
     this._simple = null
