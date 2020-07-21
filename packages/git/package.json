@@ -1,0 +1,14 @@
+{
+  "name": "@giterm/git",
+  "version": "1.0.0",
+  "description": "Wrapper for Git operations",
+  "license": "UNLICENSED",
+  "private": true,
+  "source": "src/index.js",
+  "main": "dist/index.js",
+  "module": "dist/index.module.js",
+  "scripts": {
+    "build": "microbundle -f modern,es,cjs",
+    "dev": "yarn run build -w"
+  }
+}

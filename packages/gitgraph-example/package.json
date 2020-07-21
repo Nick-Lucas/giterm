@@ -1,6 +1,6 @@
 {
-  "name": "giterm-rewrite-test",
-  "version": "0.1.0",
+  "name": "@giterm/gitgraph-example",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "lodash": "^4.17.15",
