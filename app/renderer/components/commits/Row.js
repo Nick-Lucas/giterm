@@ -101,7 +101,7 @@ export class Row extends React.Component {
     const pairs = []
     for (const localBranch of localBranches) {
       const upstreamBranchIndex = upstreamBranches.findIndex(
-        (other) => other.id === localBranch.upstream.name,
+        (other) => other.id === localBranch.upstream?.name,
       )
 
       if (upstreamBranchIndex >= 0) {
