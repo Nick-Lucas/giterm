@@ -5,9 +5,11 @@
   ],
   "scripts": {
     "build": "wasrun --stages --exclude-missing build",
-    "dev": "wsrun --exclude-missing dev"
+    "dev": "wsrun --exclude-missing dev",
+    "test": "jest"
   },
   "devDependencies": {
+    "jest": "^26.1.0",
     "wsrun": "^5.2.1"
   }
 }
