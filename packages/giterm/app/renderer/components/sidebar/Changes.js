@@ -11,43 +11,40 @@ import { colours } from '../../lib/theme'
 
 export function Changes() {
   const _files = useSelector((state) => state.status.files) || []
-  const { staged, unstaged } = useMemo(
-    () => {
-      const staged = []
-      const unstaged = []
+  const { staged, unstaged } = useMemo(() => {
+    const staged = []
+    const unstaged = []
 
-      for (const file of _files) {
-        let colour = null
-        if (file.isNew) {
-          colour = colours.TEXT.POSITIVE
-        } else if (file.isDeleted) {
-          colour = colours.TEXT.NEGATIVE
-        } else if (file.isModified) {
-          colour = colours.TEXT.ACTION
-        }
-
-        const item = {
-          path: file.path,
-          colour,
-          menuItems: [
-            {
-              label: 'Copy Path',
-              click: () => clipboard.writeText(file.path),
-            },
-          ],
-        }
-
-        if (file.staged) {
-          staged.push(item)
-        } else {
-          unstaged.push(item)
-        }
+    for (const file of _files) {
+      let colour = null
+      if (file.isNew) {
+        colour = colours.TEXT.POSITIVE
+      } else if (file.isDeleted) {
+        colour = colours.TEXT.NEGATIVE
+      } else if (file.isModified) {
+        colour = colours.TEXT.ACTION
       }
 
-      return { staged, unstaged }
-    },
-    [_files],
-  )
+      const item = {
+        path: file.path,
+        colour,
+        menuItems: [
+          {
+            label: 'Copy Path',
+            click: () => clipboard.writeText(file.path),
+          },
+        ],
+      }
+
+      if (file.staged) {
+        staged.push(item)
+      } else {
+        unstaged.push(item)
+      }
+    }
+
+    return { staged, unstaged }
+  }, [_files])
 
   return (
     <Section

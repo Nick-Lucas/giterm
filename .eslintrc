@@ -6,7 +6,7 @@
     "prettier/react",
     "prettier/standard",
     "plugin:import/errors",
-    "plugin:import/warnings",
+    "plugin:import/warnings"
   ],
   "parser": "babel-eslint",
   "parserOptions": {
@@ -51,6 +51,7 @@
   "env": {
     "es6": true,
     "node": true,
-    "jest/globals": true
+    "jest/globals": true,
+    "browser": true
   }
 }

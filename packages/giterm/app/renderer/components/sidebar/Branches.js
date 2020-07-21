@@ -20,40 +20,37 @@ import { BranchUpstreamState } from './BranchUpstreamState'
 
 export function Branches() {
   const _branches = useSelector((state) => state.branches) || []
-  const branches = useMemo(
-    () => {
-      const foundRemotes = {}
-      const branches = []
+  const branches = useMemo(() => {
+    const foundRemotes = {}
+    const branches = []
 
-      for (const branch of _branches) {
-        if (branch.isRemote) {
-          continue
-        }
-
-        if (branch.upstream) {
-          foundRemotes[branch.upstream.name] = true
-        }
-
-        if (!foundRemotes[branch.name]) {
-          branches.push({
-            id: branch.id,
-            name: branch.name,
-            upstream: branch.upstream,
-            isHead: branch.isHead,
-            menuItems: [
-              {
-                label: `Copy "${branch.name}"`,
-                click: () => clipboard.writeText(branch.name),
-              },
-            ],
-          })
-        }
+    for (const branch of _branches) {
+      if (branch.isRemote) {
+        continue
       }
 
-      return branches
-    },
-    [_branches],
-  )
+      if (branch.upstream) {
+        foundRemotes[branch.upstream.name] = true
+      }
+
+      if (!foundRemotes[branch.name]) {
+        branches.push({
+          id: branch.id,
+          name: branch.name,
+          upstream: branch.upstream,
+          isHead: branch.isHead,
+          menuItems: [
+            {
+              label: `Copy "${branch.name}"`,
+              click: () => clipboard.writeText(branch.name),
+            },
+          ],
+        })
+      }
+    }
+
+    return branches
+  }, [_branches])
 
   return (
     <Section title="BRANCHES">

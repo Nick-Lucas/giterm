@@ -163,18 +163,20 @@ export class Git {
 
     const refs = await Promise.all(
       await repo.getReferences().then((refs) =>
-        refs.filter((ref) => ref.isTag()).map(async (ref) => {
-          const id = ref.name()
-          const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-          const commit = await repo.getCommit(commitRef)
+        refs
+          .filter((ref) => ref.isTag())
+          .map(async (ref) => {
+            const id = ref.name()
+            const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
+            const commit = await repo.getCommit(commitRef)
 
-          return {
-            id,
-            name: ref.shorthand(),
-            headSHA: ref.target().tostrS(),
-            date: commit.date(),
-          }
-        }),
+            return {
+              id,
+              name: ref.shorthand(),
+              headSHA: ref.target().tostrS(),
+              date: commit.date(),
+            }
+          }),
       ),
     )
 

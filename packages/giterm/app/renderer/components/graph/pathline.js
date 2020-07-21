@@ -25,9 +25,7 @@ export const PathLine = ({ points, r, ...other }) => {
           const after = moveTo(next, p, r)
           return acc.concat({
             point: p,
-            s: `L ${before.x} ${before.y} S ${p.x} ${p.y} ${after.x} ${
-              after.y
-            } `,
+            s: `L ${before.x} ${before.y} S ${p.x} ${p.y} ${after.x} ${after.y} `,
           })
         } else {
           return acc.concat({

@@ -9,27 +9,24 @@ import { Row, Label } from './Row'
 
 export function Remotes() {
   const _remotes = useSelector((state) => state.remotes) || []
-  const remotes = useMemo(
-    () => {
-      const remotes = []
+  const remotes = useMemo(() => {
+    const remotes = []
 
-      for (const remote of _remotes) {
-        remotes.push({
-          id: remote.name,
-          name: remote.name,
-          menuItems: [
-            {
-              label: 'Copy ID',
-              click: () => clipboard.writeText(remote.name),
-            },
-          ],
-        })
-      }
+    for (const remote of _remotes) {
+      remotes.push({
+        id: remote.name,
+        name: remote.name,
+        menuItems: [
+          {
+            label: 'Copy ID',
+            click: () => clipboard.writeText(remote.name),
+          },
+        ],
+      })
+    }
 
-      return remotes
-    },
-    [_remotes],
-  )
+    return remotes
+  }, [_remotes])
 
   return (
     <Section title="REMOTES">

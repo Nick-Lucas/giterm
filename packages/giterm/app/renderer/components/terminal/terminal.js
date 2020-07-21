@@ -76,156 +76,135 @@ export function Terminal({ onAlternateBufferChange }) {
 
     return [terminal, fit]
   }, [])
-  useEffect(
-    () => {
-      terminal.open(container.current)
-    },
-    [terminal],
-  )
+  useEffect(() => {
+    terminal.open(container.current)
+  }, [terminal])
 
-  const handleResizeTerminal = useCallback(
-    () => {
-      terminal.resize(10, 10)
-      fit.fit()
-      terminal.focus()
-    },
-    [fit, terminal],
-  )
-  useLayoutEffect(
-    () => {
-      setTimeout(() => {
-        handleResizeTerminal()
-      }, 0)
-    },
-    [fullscreen, handleResizeTerminal, terminal.element],
-  )
+  const handleResizeTerminal = useCallback(() => {
+    terminal.resize(10, 10)
+    fit.fit()
+    terminal.focus()
+  }, [fit, terminal])
+  useLayoutEffect(() => {
+    setTimeout(() => {
+      handleResizeTerminal()
+    }, 0)
+  }, [fullscreen, handleResizeTerminal, terminal.element])
 
   // Resize terminal based on window size changes
-  useEffect(
-    () => {
-      const handleResize = _.debounce(handleResizeTerminal, 5)
+  useEffect(() => {
+    const handleResize = _.debounce(handleResizeTerminal, 5)
 
-      window.addEventListener('resize', handleResize, false)
+    window.addEventListener('resize', handleResize, false)
 
-      const onResizeDisposable = terminal.onResize(
-        _.throttle(({ cols, rows }) => {
-          ptyProcess.resize(cols, rows)
-        }, 5),
-      )
+    const onResizeDisposable = terminal.onResize(
+      _.throttle(({ cols, rows }) => {
+        ptyProcess.resize(cols, rows)
+      }, 5),
+    )
 
-      return () => {
-        window.removeEventListener('resize', handleResize)
-        onResizeDisposable.dispose()
-      }
-    },
-    [handleResizeTerminal, ptyProcess, terminal],
-  )
+    return () => {
+      window.removeEventListener('resize', handleResize)
+      onResizeDisposable.dispose()
+    }
+  }, [handleResizeTerminal, ptyProcess, terminal])
 
   // Integrate terminal and pty processes
-  useEffect(
-    () => {
-      const updateAlternateBuffer = _.debounce((active) => {
-        // ensure xterm has a few moments to trigger its
-        // own re-render before we trigger a resize
-        setTimeout(() => {
-          setAlternateBuffer(active)
-          onAlternateBufferChange(active)
-        }, 5)
+  useEffect(() => {
+    const updateAlternateBuffer = _.debounce((active) => {
+      // ensure xterm has a few moments to trigger its
+      // own re-render before we trigger a resize
+      setTimeout(() => {
+        setAlternateBuffer(active)
+        onAlternateBufferChange(active)
       }, 5)
+    }, 5)
 
-      const onDataTerminalDisposable = terminal.onData((data) => {
-        ptyProcess.write(data)
-      })
+    const onDataTerminalDisposable = terminal.onData((data) => {
+      ptyProcess.write(data)
+    })
 
-      const onDataPTYDisposable = ptyProcess.onData(function(data) {
-        terminal.write(data)
+    const onDataPTYDisposable = ptyProcess.onData(function(data) {
+      terminal.write(data)
 
-        if (isStartAlternateBuffer(data)) {
-          console.log('Start buffer')
-          updateAlternateBuffer(true)
-        }
-        if (isEndAlternateBuffer(data)) {
-          console.log('End buffer')
-          updateAlternateBuffer(false)
-        }
-      })
-
-      return () => {
-        onDataTerminalDisposable.dispose()
-        onDataPTYDisposable.dispose()
+      if (isStartAlternateBuffer(data)) {
+        console.log('Start buffer')
+        updateAlternateBuffer(true)
       }
-    },
-    [onAlternateBufferChange, ptyProcess, terminal],
-  )
+      if (isEndAlternateBuffer(data)) {
+        console.log('End buffer')
+        updateAlternateBuffer(false)
+      }
+    })
+
+    return () => {
+      onDataTerminalDisposable.dispose()
+      onDataPTYDisposable.dispose()
+    }
+  }, [onAlternateBufferChange, ptyProcess, terminal])
 
   // Trigger app state refreshes based on terminal changes
-  useEffect(
-    () => {
-      // TODO: check if lsof is on system and have alternatives in mind per platform
-      const getCWD = async (pid) =>
-        new Promise((resolve) => {
-          exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
-            if (e) {
-              throw e
-            }
-            resolve(stdout)
-          })
+  useEffect(() => {
+    // TODO: check if lsof is on system and have alternatives in mind per platform
+    const getCWD = async (pid) =>
+      new Promise((resolve) => {
+        exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
+          if (e) {
+            throw e
+          }
+          resolve(stdout)
         })
-
-      const dispatchTerminalChanged = _.throttle(
-        () => {
-          getCWD(ptyProcess.pid).then((cwd) => {
-            if (!alternateBuffer) {
-              dispatch(terminalChanged(cwd))
-            }
-          })
-        },
-        150,
-        { leading: true, trailing: true },
-      )
-
-      const onNewLineDisposable = terminal.onKey((e) => {
-        if (e.domEvent.code === 'Enter') {
-          dispatchTerminalChanged()
-        }
       })
 
-      let lastProcess = ptyProcess.process
-      const onProcessChangedDisposable = ptyProcess.onData(function() {
-        const processChanged = lastProcess !== ptyProcess.process
-        if (processChanged) {
-          lastProcess = ptyProcess.process
-          dispatchTerminalChanged()
-        }
-      })
+    const dispatchTerminalChanged = _.throttle(
+      () => {
+        getCWD(ptyProcess.pid).then((cwd) => {
+          if (!alternateBuffer) {
+            dispatch(terminalChanged(cwd))
+          }
+        })
+      },
+      150,
+      { leading: true, trailing: true },
+    )
 
-      return () => {
-        onNewLineDisposable.dispose()
-        onProcessChangedDisposable.dispose()
+    const onNewLineDisposable = terminal.onKey((e) => {
+      if (e.domEvent.code === 'Enter') {
+        dispatchTerminalChanged()
       }
-    },
-    [alternateBuffer, dispatch, ptyProcess, ptyProcess.pid, terminal],
-  )
+    })
+
+    let lastProcess = ptyProcess.process
+    const onProcessChangedDisposable = ptyProcess.onData(function() {
+      const processChanged = lastProcess !== ptyProcess.process
+      if (processChanged) {
+        lastProcess = ptyProcess.process
+        dispatchTerminalChanged()
+      }
+    })
+
+    return () => {
+      onNewLineDisposable.dispose()
+      onProcessChangedDisposable.dispose()
+    }
+  }, [alternateBuffer, dispatch, ptyProcess, ptyProcess.pid, terminal])
 
   // Ensure typing always gives focus to the terminal
-  useEffect(
-    () => {
-      const handleNotFocused = () => {
-        if (!focused) {
-          terminal.focus()
-        }
+  useEffect(() => {
+    const handleNotFocused = () => {
+      if (!focused) {
+        terminal.focus()
       }
+    }
 
-      terminal.textarea.onblur = () => setFocused(false)
-      terminal.onfocus = () => setFocused(true)
-      window.addEventListener('keydown', handleNotFocused)
+    terminal.textarea.onblur = () => setFocused(false)
+    terminal.onfocus = () => setFocused(true)
+    window.addEventListener('keydown', handleNotFocused)
 
-      return () => {
-        window.removeEventListener('keydown', handleNotFocused)
-      }
-    },
-    [focused, terminal],
-  )
+    return () => {
+      window.removeEventListener('keydown', handleNotFocused)
+    }
+  }, [focused, terminal])
 
   // // TODO: ensure the process can't be exited and restart if need be
   // that.ptyProcess.on('exit', () => {

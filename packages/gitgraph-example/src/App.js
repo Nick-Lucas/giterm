@@ -2,8 +2,7 @@ import React, { useState, useCallback, useMemo } from 'react'
 import './App.css'
 import styled from 'styled-components'
 import { data } from './data'
-import { commitsToGraph } from './GitGraphRenderLib/commitsToGraph'
-import { scenarios } from './GitGraphRenderLib/commitsToGraph.testscenarios'
+import { commitsToGraph, _scenarios } from '@giterm/gitgraph'
 
 const colours = [
   '#058ED9',
@@ -22,52 +21,46 @@ export default function App() {
     setRehydrateFrom(e.target.value)
   }, [])
 
-  const commits = useMemo(
-    () => {
-      let commits = data.commits
-      if (path !== '/') {
-        const dataPath = path.slice(1)
-        commits = scenarios[dataPath]
-        if (!commits) {
-          return (
-            <div>
-              Invalid scenario: `{dataPath}`. Must be in
-              ./GitGraphRenderLib/commitsToGraph.testscenarios
-            </div>
-          )
-        }
-        if (typeof commits === 'function') {
-          commits = commits()
-        }
+  const commits = useMemo(() => {
+    let commits = data.commits
+    if (path !== '/') {
+      const dataPath = path.slice(1)
+      commits = _scenarios[dataPath]
+      if (!commits) {
+        return (
+          <div>
+            Invalid scenario: `{dataPath}`. Must be in
+            ./GitGraphRenderLib/commitsToGraph.testscenarios
+          </div>
+        )
       }
-      return commits
-    },
-    [path],
-  )
+      if (typeof commits === 'function') {
+        commits = commits()
+      }
+    }
+    return commits
+  }, [path])
 
-  const { nodes, links } = useMemo(
-    () => {
-      return !rehydrateFrom
-        ? commitsToGraph(commits)
-        : (function() {
-            // return commitsToGraph(commits.slice(0, rehydrateFrom))
-            const { rehydrationPackage } = commitsToGraph(
-              commits.slice(0, rehydrateFrom),
-            )
-            return commitsToGraph(
-              commits.slice(rehydrateFrom),
-              rehydrationPackage,
-            )
-          })()
-    },
-    [commits, rehydrateFrom],
-  )
+  const { nodes, links } = useMemo(() => {
+    return !rehydrateFrom
+      ? commitsToGraph(commits)
+      : (function() {
+          // return commitsToGraph(commits.slice(0, rehydrateFrom))
+          const { rehydrationPackage } = commitsToGraph(
+            commits.slice(0, rehydrateFrom),
+          )
+          return commitsToGraph(
+            commits.slice(rehydrateFrom),
+            rehydrationPackage,
+          )
+        })()
+  }, [commits, rehydrateFrom])
 
   return (
     <div className="App">
       <div className="sidebar">
         <div>Scenarios:</div>
-        {Object.keys(scenarios).map((scenarioName) => (
+        {Object.keys(_scenarios).map((scenarioName) => (
           <div key={scenarioName}>
             <a href={'/' + scenarioName}>{scenarioName}</a>
           </div>

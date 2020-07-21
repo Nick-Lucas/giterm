@@ -10,27 +10,24 @@ import { Row, Label } from './Row'
 export function Tags() {
   const _tags = useSelector((state) => state.tags) || []
 
-  const tags = useMemo(
-    () => {
-      const tags = []
+  const tags = useMemo(() => {
+    const tags = []
 
-      for (const tag of _tags) {
-        tags.push({
-          id: tag.id,
-          name: tag.name,
-          menuItems: [
-            {
-              label: 'Copy ID',
-              click: () => clipboard.writeText(tag.id),
-            },
-          ],
-        })
-      }
+    for (const tag of _tags) {
+      tags.push({
+        id: tag.id,
+        name: tag.name,
+        menuItems: [
+          {
+            label: 'Copy ID',
+            click: () => clipboard.writeText(tag.id),
+          },
+        ],
+      })
+    }
 
-      return tags
-    },
-    [_tags],
-  )
+    return tags
+  }, [_tags])
 
   return (
     <Section title="TAGS" initialOpenState={false}>
