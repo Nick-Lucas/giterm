@@ -20,13 +20,14 @@ stages:
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
-        yarn install
+        yarn install --network-timeout 100000
+        yarn build-js
       displayName: Install
     - script: |
         yarn lint
       displayName: Lint
     - script: |
-        yarn ci:test
+        yarn test
       displayName: Unit Tests
 
 - stage: Build
@@ -40,13 +41,17 @@ stages:
         version: '10.x'
         checkLatest: true
     - script: |
-        yarn install
+        yarn install --network-timeout 100000
       displayName: Install
     - script: |
+        yarn build-js
+      displayName: Build Packages
+    - script: |
+        cd packages/giterm
         yarn pack:mac
         yarn rimraf dist/mac
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist 
+    - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermMac
 
   - job: Linux
@@ -57,13 +62,17 @@ stages:
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
-        yarn install
+        yarn install --network-timeout 100000
       displayName: Install
     - script: |
+        yarn build-js
+      displayName: Build Packages
+    - script: |
+        cd packages/giterm
         yarn pack:linux
         yarn rimraf dist/linux-unpacked dist/.icon-set
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist 
+    - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermLinux
       
   - job: Windows
@@ -75,11 +84,17 @@ stages:
         version: '10.x'
         checkLatest: true
     - script: |
-        yarn install
+        yarn install --network-timeout 100000
       displayName: Install
     - script: |
+        yarn build-js
+      displayName: Build Packages
+    - script: |
+        cd packages/giterm
         yarn pack:win
-        yarn rimraf dist/win-unpacked
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist
+    - script: |
+        yarn rimraf dist/win-unpacked
+      displayName: Clean Artifacts
+    - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermWindows

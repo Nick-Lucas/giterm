@@ -1,10 +1,12 @@
+const packageJson = require('./package.json')
+
 module.exports = {
   presets: [
     [
       '@babel/preset-env',
       {
         targets: {
-          node: true,
+          electron: packageJson.devDependencies.electron,
         },
       },
     ],
