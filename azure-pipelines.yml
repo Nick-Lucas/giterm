@@ -92,7 +92,9 @@ stages:
     - script: |
         cd packages/giterm
         yarn pack:win
-        yarn rimraf dist/win-unpacked
       displayName: Build
+    - script: |
+        yarn rimraf dist/win-unpacked
+      displayName: Clean Artifacts
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermWindows

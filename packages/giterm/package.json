@@ -23,7 +23,7 @@
     "private:build:linux": "electron-builder --linux --publish=never",
     "private:watch": "npm run private:compile -- --source-maps true --watch --skip-initial-build",
     "private:serve": "babel-node scripts/serve.js",
-    "private:compile": "babel app/ --ignore **/gitgraph/node_modules --copy-files --out-dir build",
+    "private:compile": "babel app/ --copy-files --out-dir build",
     "private:clean": "rimraf build",
     "private:format": "prettier \"scripts/*.js\" \"app/**/*.js\" \"test/**/*.js\""
   },
