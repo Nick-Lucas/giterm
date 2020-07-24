@@ -13,7 +13,7 @@ export function Commit({ index, style, onSelect, isSelected }) {
   const commits = useSelector((state) => state.commits?.commits) ?? []
   const commit = commits[index] // TODO: is this not passed in directly?
   const { nodes, links } = useSelector((state) => state.graph)
-  const branches = useSelector((state) => state.branches.list)
+  const branchesBySha = useSelector((state) => state.branches.bySha)
   const status = useSelector((state) => state.status)
   const { showRemoteBranches } = useSelector((state) => state.config)
 
@@ -43,15 +43,15 @@ export function Commit({ index, style, onSelect, isSelected }) {
     [dispatch],
   )
 
-  // TODO: this is very inefficient, build a branchesBySha lookup in redux instead
   const branchesForCommit = useMemo(
     () =>
-      branches.filter(
-        (branch) =>
-          commit.sha === branch.headSHA &&
-          (showRemoteBranches ? true : !branch.isRemote),
-      ),
-    [branches, commit.sha, showRemoteBranches],
+      branchesBySha[commit.sha]?.filter((branch) => {
+        if (!showRemoteBranches) {
+          return !branch.isRemote
+        }
+        return true
+      }) ?? [],
+    [branchesBySha, commit.sha, showRemoteBranches],
   )
 
   const menuItems = useMemo(

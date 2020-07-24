@@ -1,4 +1,5 @@
 import { BRANCHES_UPDATED } from './actions'
+import _ from 'lodash'
 
 const initialState = {
   list: [],
@@ -12,7 +13,7 @@ export function reducer(state = initialState, action) {
 
       return {
         list: branches,
-        bySha: {},
+        bySha: _.groupBy(branches, (branch) => branch.headSHA),
       }
     }
 
