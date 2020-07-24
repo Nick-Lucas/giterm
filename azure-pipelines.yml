@@ -21,6 +21,7 @@ stages:
     - script: |
         sudo apt install libkrb5-dev
         yarn install --network-timeout 100000
+        yarn build-js
       displayName: Install
     - script: |
         yarn lint
@@ -43,6 +44,7 @@ stages:
         yarn install --network-timeout 100000
       displayName: Install
     - script: |
+        yarn build-js
         cd packages/giterm
         yarn pack:mac
         yarn rimraf dist/mac
@@ -61,6 +63,7 @@ stages:
         yarn install --network-timeout 100000
       displayName: Install
     - script: |
+        yarn build-js
         cd packages/giterm
         yarn pack:linux
         yarn rimraf dist/linux-unpacked dist/.icon-set
@@ -80,6 +83,7 @@ stages:
         yarn install --network-timeout 100000
       displayName: Install
     - script: |
+        yarn build-js
         cd packages/giterm
         yarn pack:win
         yarn rimraf dist/win-unpacked

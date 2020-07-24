@@ -4,7 +4,7 @@
     "packages/*"
   ],
   "scripts": {
-    "build": "wsrun --stages --exclude-missing build",
+    "build-js": "wsrun --stages --exclude-missing build",
     "dev": "wsrun --exclude-missing dev",
     "lint": "eslint .",
     "test": "jest",
