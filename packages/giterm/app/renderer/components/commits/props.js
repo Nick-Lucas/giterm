@@ -20,10 +20,12 @@ export const commit = PropTypes.shape({
 
 export const commits = PropTypes.arrayOf(commit)
 
-export const branch = PropTypes.shape({
+export const refTypes = PropTypes.oneOf(['branch', 'tag'])
+export const ref = PropTypes.shape({
   id: PropTypes.string,
   name: PropTypes.string,
   isRemote: PropTypes.bool,
   isHead: PropTypes.bool,
+  type: refTypes.isRequired,
 })
-export const branches = PropTypes.arrayOf(branch)
+export const refs = PropTypes.arrayOf(ref)

@@ -2,7 +2,7 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as props from './props'
-import { Tag } from './Tag'
+import { GitRef } from './GitRef'
 import { PathLine } from '../graph/pathline'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { colours } from '../../lib/theme'
@@ -76,7 +76,7 @@ export class Row extends React.Component {
         onDoubleClick={this.handleDoubleClick}>
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
-            {column.showTags && this.renderTags()}
+            {column.showTags && this.renderRefs()}
 
             {column.key === 'graph' ? (
               this.renderGraphItem()
@@ -89,16 +89,17 @@ export class Row extends React.Component {
     )
   }
 
-  renderTags() {
-    const { branches } = this.props
+  renderRefs() {
+    const { refs } = this.props
 
+    const [branches, tags] = _.partition(refs, (ref) => ref.type === 'branch')
     const [upstreamBranches, localBranches] = _.partition(
       branches,
       (branch) => branch.isRemote,
     )
 
     // If both local and remote heads are on this commit, just display one
-    const pairs = []
+    const pairedRefs = []
     for (const localBranch of localBranches) {
       const upstreamBranchIndex = upstreamBranches.findIndex(
         (other) => other.id === localBranch.upstream?.name,
@@ -107,23 +108,29 @@ export class Row extends React.Component {
       if (upstreamBranchIndex >= 0) {
         upstreamBranches.splice(upstreamBranchIndex, 1)
       }
-      pairs.push({
-        branch: localBranch,
+      pairedRefs.push({
+        ref: localBranch,
         remoteInSync: upstreamBranchIndex >= 0,
       })
     }
-    pairs.push(
-      ...upstreamBranches.map((branch) => ({
-        branch,
+    pairedRefs.push(
+      ...upstreamBranches.map((ref) => ({
+        ref,
+      })),
+    )
+    pairedRefs.push(
+      ...tags.map((tag) => ({
+        ref: tag,
       })),
     )
 
-    return pairs.map(({ branch, remoteInSync = false }) => (
-      <Tag
-        key={branch.id}
-        label={branch.name}
-        current={branch.isHead}
+    return pairedRefs.map(({ ref, remoteInSync = false }) => (
+      <GitRef
+        key={ref.id}
+        label={ref.name}
+        current={ref.isHead}
         remoteInSync={remoteInSync}
+        type={ref.type}
       />
     ))
   }
@@ -206,7 +213,7 @@ Row.propTypes = {
   onSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
   columns: props.columns,
-  branches: props.branches,
+  refs: props.refs,
   commit: props.commit,
   node: PropTypes.object.isRequired,
   linksBefore: PropTypes.array.isRequired,

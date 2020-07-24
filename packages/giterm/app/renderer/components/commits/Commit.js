@@ -10,10 +10,13 @@ import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 
 export function Commit({ index, style, onSelect, isSelected }) {
   const dispatch = useDispatch()
-  const commits = useSelector((state) => state.commits?.commits) ?? []
-  const commit = commits[index] // TODO: is this not passed in directly?
-  const { nodes, links } = useSelector((state) => state.graph)
+
   const branchesBySha = useSelector((state) => state.branches.bySha)
+  const tagsBySha = useSelector((state) => state.tags.bySha)
+  const { nodes, links } = useSelector((state) => state.graph)
+  const commits = useSelector((state) => state.commits?.commits) ?? []
+  const commit = commits[index]
+
   const status = useSelector((state) => state.status)
   const { showRemoteBranches } = useSelector((state) => state.config)
 
@@ -43,15 +46,22 @@ export function Commit({ index, style, onSelect, isSelected }) {
     [dispatch],
   )
 
-  const branchesForCommit = useMemo(
-    () =>
-      branchesBySha[commit.sha]?.filter((branch) => {
-        if (!showRemoteBranches) {
-          return !branch.isRemote
-        }
-        return true
-      }) ?? [],
-    [branchesBySha, commit.sha, showRemoteBranches],
+  const refsForCommit = useMemo(
+    () => [
+      ...(tagsBySha[commit.sha]?.map((tag) => ({
+        ...tag,
+        type: 'tag',
+      })) ?? []),
+      ...(branchesBySha[commit.sha]
+        ?.filter((branch) => {
+          if (!showRemoteBranches) {
+            return !branch.isRemote
+          }
+          return true
+        })
+        ?.map((branch) => ({ ...branch, type: 'branch' })) ?? []),
+    ],
+    [branchesBySha, commit.sha, showRemoteBranches, tagsBySha],
   )
 
   const menuItems = useMemo(
@@ -60,12 +70,12 @@ export function Commit({ index, style, onSelect, isSelected }) {
         label: 'Copy SHA',
         click: () => clipboard.writeText(commit.sha),
       },
-      ...branchesForCommit.map((branch) => ({
+      ...refsForCommit.map((branch) => ({
         label: `Copy "${branch.name}"`,
         click: () => clipboard.writeText(branch.name),
       })),
     ],
-    [branchesForCommit, commit.sha],
+    [refsForCommit, commit.sha],
   )
 
   if (commits.length !== nodes.length) {
@@ -81,7 +91,7 @@ export function Commit({ index, style, onSelect, isSelected }) {
       <Row
         commit={commit}
         columns={columns}
-        branches={branchesForCommit}
+        refs={refsForCommit}
         selected={isSelected}
         onSelect={onSelect}
         onDoubleClick={handleCheckoutCommit}
