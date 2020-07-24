@@ -8,6 +8,7 @@ import Header from './header'
 import { reachedEndOfList } from '../../store/commits/actions'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { Commit } from './Commit'
+import { useValueEffect } from '../../lib/hooks'
 
 export function Commits() {
   const dispatch = useDispatch()
@@ -44,13 +45,13 @@ export function Commits() {
     setSelectedSHA(commit.sha)
   }, [])
 
-  useEffect(() => {
+  useValueEffect(headSHA, () => {
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
       setSelectedSHA(headSHA)
       listRef.current.scrollToRow(index)
     }
-  }, [commits, headSHA])
+  })
 
   const handleScroll = useMemo(
     () =>
@@ -73,9 +74,6 @@ export function Commits() {
       ),
     [commits.length, dispatch],
   )
-
-  // TODO:
-  // scrollToSha impl
 
   return (
     <Wrapper>
