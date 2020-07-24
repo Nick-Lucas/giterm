@@ -1,182 +1,111 @@
-import React from 'react'
-import { connect } from 'react-redux'
-import PropTypes from 'prop-types'
-import RightClickArea from 'react-electron-contextmenu'
-import { clipboard } from 'electron'
+import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { List, AutoSizer } from 'react-virtualized'
 import debounce from 'debounce'
 
-import * as props from './props'
 import Header from './header'
-import { Row } from './Row'
-import { checkoutCommit, reachedEndOfList } from '../../store/commits/actions'
+import { reachedEndOfList } from '../../store/commits/actions'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
+import { Commit } from './Commit'
 
-class Commits extends React.Component {
-  constructor(props) {
-    super(props)
-    this.list = React.createRef()
-    this.state = {
-      selectedSHA: '',
-      columns: [],
-    }
-  }
+export function Commits() {
+  const dispatch = useDispatch()
+  const commits = useSelector((state) => state.commits?.commits) ?? []
+  const { nodes } = useSelector((state) => state.graph)
+  const headSHA = useSelector((state) => state.status.headSHA)
 
-  static getDerivedStateFromProps(props, state) {
-    const { nodes } = props
+  const listRef = useRef()
+  useEffect(() => {
+    listRef.current.forceUpdateGrid()
+  })
 
+  const columns = useMemo(() => {
     const graphCols = Math.min(
       8,
       nodes.reduce((max, node) => Math.max(node.column + 1, max), 3),
     )
 
-    return {
-      ...state,
-      columns: [
-        {
-          name: '',
-          key: 'graph',
-          width: `${GraphIndent + GraphColumnWidth * graphCols}px`,
-        },
-        { name: 'SHA', key: 'sha7', width: '50px' },
-        { name: 'Message', key: 'message', width: '500px', showTags: true },
-        { name: 'Author', key: 'authorStr', width: '150px' },
-        { name: 'Date', key: 'dateStr', width: '150px' },
-      ],
-    }
-  }
+    return [
+      {
+        name: '',
+        key: 'graph',
+        width: `${GraphIndent + GraphColumnWidth * graphCols}px`,
+      },
+      { name: 'SHA', key: 'sha7', width: '50px' },
+      { name: 'Message', key: 'message', width: '500px', showTags: true },
+      { name: 'Author', key: 'authorStr', width: '150px' },
+      { name: 'Date', key: 'dateStr', width: '150px' },
+    ]
+  }, [nodes])
 
-  handleSelect = (commit) => {
-    this.setState({ selectedSHA: commit.sha })
-  }
+  const [selectedSHA, setSelectedSHA] = useState('')
+  const handleSelect = useCallback((commit) => {
+    setSelectedSHA(commit.sha)
+  }, [])
 
-  getMenuItems = (commit, branchesForCommit) => [
-    {
-      label: 'Copy SHA',
-      click: () => clipboard.writeText(commit.sha),
-    },
-    ...branchesForCommit.map((branch) => ({
-      label: `Copy "${branch.name}"`,
-      click: () => clipboard.writeText(branch.name),
-    })),
-  ]
-
-  considerLoadMoreItems = ({ clientHeight, scrollHeight, scrollTop }) => {
-    const { commits } = this.props
-    if (commits.length === 0) {
-      return
-    }
-
-    const scrollBottom = scrollTop + clientHeight
-    const remainingRows = Math.trunc((scrollHeight - scrollBottom) / RowHeight)
-    if (remainingRows < 20) {
-      this.loadMoreItems()
-    }
-  }
-
-  loadMoreItems = debounce(() => this.props.reachedEndOfList(), 1000, true)
-
-  scrollToSha = (sha) => {
-    const index = this.props.commits.findIndex((c) => c.sha === sha)
+  useEffect(() => {
+    const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
-      this.setState({ selectedSHA: sha }, () =>
-        this.list.current.scrollToRow(index),
-      )
+      setSelectedSHA(headSHA)
+      listRef.current.scrollToRow(index)
     }
-  }
+  }, [commits, headSHA])
 
-  componentDidUpdate(prevProps) {
-    this.list.current.forceUpdateGrid()
+  const handleScroll = useMemo(
+    () =>
+      debounce(
+        ({ clientHeight, scrollHeight, scrollTop }) => {
+          if (commits.length === 0) {
+            return
+          }
 
-    if (this.props.status.headSHA !== prevProps.status.headSHA) {
-      this.scrollToSha(this.props.status.headSHA)
-    }
-  }
+          const scrollBottom = scrollTop + clientHeight
+          const remainingRows = Math.trunc(
+            (scrollHeight - scrollBottom) / RowHeight,
+          )
+          if (remainingRows < 20) {
+            dispatch(reachedEndOfList())
+          }
+        },
+        1000,
+        true,
+      ),
+    [commits.length, dispatch],
+  )
 
-  render() {
-    const { commits } = this.props
-    const { columns } = this.state
+  // TODO:
+  // scrollToSha impl
 
-    return (
-      <Wrapper>
-        <Header columns={columns} />
-        <TableWrapper>
-          <AutoSizer>
-            {({ width, height }) => (
-              <VirtualList
-                ref={this.list}
-                width={width}
-                height={height}
-                rowHeight={RowHeight}
-                rowCount={commits.length}
-                overscanRowCount={50}
-                rowRenderer={this.renderRow}
-                onScroll={this.considerLoadMoreItems}
-              />
-            )}
-          </AutoSizer>
-        </TableWrapper>
-      </Wrapper>
-    )
-  }
-
-  renderRow = ({ index, style }) => {
-    const {
-      commits,
-      nodes,
-      links,
-      branches,
-      showRemoteBranches,
-      checkoutCommit,
-      status: { headSHA },
-    } = this.props
-    const { columns } = this.state
-    const { selectedSHA } = this.state
-
-    if (commits.length !== nodes.length) {
-      return
-    }
-
-    const node = nodes[index]
-    const linksBefore = links[index] || []
-    const linksAfter = links[index + 1] || []
-    const commit = commits[index]
-
-    // TODO: this is very inefficient, build a branchesBySha lookup in redux instead
-    const branchesForCommit = branches.filter(
-      (branch) =>
-        commit.sha === branch.headSHA &&
-        (showRemoteBranches ? true : !branch.isRemote),
-    )
-
-    return (
-      <RightClickArea
-        key={commit.sha}
-        menuItems={this.getMenuItems(commit, branchesForCommit)}
-        style={style}>
-        <Row
-          commit={commit}
-          columns={columns}
-          branches={branchesForCommit}
-          selected={selectedSHA === commit.sha}
-          onSelect={this.handleSelect}
-          onDoubleClick={(commit) => checkoutCommit(commit.sha)}
-          isHead={headSHA === commit.sha}
-          height={RowHeight}
-          node={node}
-          linksBefore={linksBefore}
-          linksAfter={linksAfter}
-        />
-      </RightClickArea>
-    )
-  }
-}
-
-Commits.propTypes = {
-  commits: props.commits,
-  branches: props.branches,
-  showRemoteBranches: PropTypes.bool.isRequired,
+  return (
+    <Wrapper>
+      <Header columns={columns} />
+      <TableWrapper>
+        <AutoSizer>
+          {({ width, height }) => (
+            <VirtualList
+              ref={listRef}
+              width={width}
+              height={height}
+              rowHeight={RowHeight}
+              rowCount={commits.length}
+              overscanRowCount={50}
+              rowRenderer={({ index, style }) => (
+                <Commit
+                  key={commits[index].sha}
+                  index={index}
+                  style={style}
+                  isSelected={selectedSHA === commits[index].sha}
+                  onSelect={handleSelect}
+                />
+              )}
+              onScroll={handleScroll}
+            />
+          )}
+        </AutoSizer>
+      </TableWrapper>
+    </Wrapper>
+  )
 }
 
 const Wrapper = styled.div`
@@ -192,29 +121,3 @@ const TableWrapper = styled.div`
 const VirtualList = styled(List)`
   outline: none;
 `
-
-const Connected = connect(
-  ({
-    commits: { commits = [] } = {},
-    graph: { nodes, links },
-    branches,
-    status,
-    config: { showRemoteBranches },
-  }) => ({
-    commits,
-    nodes,
-    links,
-    branches,
-    showRemoteBranches,
-    status,
-  }),
-  // TODO: not sure why but the condensed form isn't working here...
-  (dispatch) => {
-    return {
-      checkoutCommit: (...args) => dispatch(checkoutCommit(...args)),
-      reachedEndOfList: () => dispatch(reachedEndOfList()),
-    }
-  },
-)(Commits)
-
-export { Connected as Commits }

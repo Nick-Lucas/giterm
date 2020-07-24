@@ -38,7 +38,7 @@
     "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
 
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": "error" ,
+    "react-hooks/exhaustive-deps": ["error", { "enableDangerousAutofixThisMayCauseInfiniteLoops": true }],
     "redux-saga/yield-effects": "error",
     "redux-saga/no-yield-in-race": "error"
   },
