@@ -3,7 +3,7 @@ import PropTypes from 'prop-types'
 import { Cloud, Target, GitBranch } from 'react-feather'
 import styled, { css } from 'styled-components'
 import { useSelector } from 'react-redux'
-import * as props from './props'
+import * as propTypes from './props'
 
 const Pill = styled.div`
   display: flex;
@@ -43,6 +43,19 @@ const iconProps = {
   style: { marginBottom: '-1px' },
 }
 
+function iconFromType(type) {
+  switch (type) {
+    case propTypes.REF_TYPE_BRANCH:
+      return <GitBranch {...iconProps} />
+
+    case propTypes.REF_TYPE_REMOTE_BRANCH:
+      return <Cloud {...iconProps} />
+
+    case propTypes.REF_TYPE_TAG:
+      return <Target {...iconProps} />
+  }
+}
+
 export function GitRef({ type, label, current, remoteInSync }) {
   const show = useSelector((state) => state.config.showBranchTags)
   if (!show) {
@@ -51,14 +64,11 @@ export function GitRef({ type, label, current, remoteInSync }) {
 
   return (
     <Pill current={current}>
-      {type === 'branch' ? (
-        <GitBranch {...iconProps} />
-      ) : (
-        <Target {...iconProps} />
-      )}
-      {remoteInSync && (
+      {iconFromType(type)}
+      {type === propTypes.REF_TYPE_BRANCH && remoteInSync && (
         <>
-          <Bar /> <Cloud {...iconProps} />
+          <Bar />
+          <Cloud {...iconProps} />
         </>
       )}
 
@@ -73,5 +83,5 @@ GitRef.propTypes = {
   label: PropTypes.string.isRequired,
   current: PropTypes.bool,
   remoteInSync: PropTypes.bool,
-  type: props.refTypes.isRequired,
+  type: propTypes.refTypes.isRequired,
 }

@@ -7,6 +7,7 @@ import { clipboard } from 'electron'
 import { Row } from './Row'
 import { checkoutCommit } from '../../store/commits/actions'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
+import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 
 export function Commit({ index, style, onSelect, isSelected }) {
   const dispatch = useDispatch()
@@ -50,7 +51,7 @@ export function Commit({ index, style, onSelect, isSelected }) {
     () => [
       ...(tagsBySha[commit.sha]?.map((tag) => ({
         ...tag,
-        type: 'tag',
+        type: REF_TYPE_TAG,
       })) ?? []),
       ...(branchesBySha[commit.sha]
         ?.filter((branch) => {
@@ -59,7 +60,10 @@ export function Commit({ index, style, onSelect, isSelected }) {
           }
           return true
         })
-        ?.map((branch) => ({ ...branch, type: 'branch' })) ?? []),
+        ?.map((branch) => ({
+          ...branch,
+          type: branch.isRemote ? REF_TYPE_REMOTE_BRANCH : REF_TYPE_BRANCH,
+        })) ?? []),
     ],
     [branchesBySha, commit.sha, showRemoteBranches, tagsBySha],
   )

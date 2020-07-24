@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import * as props from './props'
+import * as propTypes from './props'
 import { GitRef } from './GitRef'
 import { PathLine } from '../graph/pathline'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
@@ -92,7 +92,10 @@ export class Row extends React.Component {
   renderRefs() {
     const { refs } = this.props
 
-    const [branches, tags] = _.partition(refs, (ref) => ref.type === 'branch')
+    const [tags, branches] = _.partition(
+      refs,
+      (ref) => ref.type === propTypes.REF_TYPE_TAG,
+    )
     const [upstreamBranches, localBranches] = _.partition(
       branches,
       (branch) => branch.isRemote,
@@ -212,9 +215,9 @@ Row.propTypes = {
   selected: PropTypes.bool,
   onSelect: PropTypes.func,
   onDoubleClick: PropTypes.func,
-  columns: props.columns,
-  refs: props.refs,
-  commit: props.commit,
+  columns: propTypes.columns,
+  refs: propTypes.refs,
+  commit: propTypes.commit,
   node: PropTypes.object.isRequired,
   linksBefore: PropTypes.array.isRequired,
   linksAfter: PropTypes.array.isRequired,
