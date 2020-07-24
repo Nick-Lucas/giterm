@@ -13,7 +13,7 @@ export function Commit({ index, style, onSelect, isSelected }) {
   const commits = useSelector((state) => state.commits?.commits) ?? []
   const commit = commits[index] // TODO: is this not passed in directly?
   const { nodes, links } = useSelector((state) => state.graph)
-  const branches = useSelector((state) => state.branches)
+  const branches = useSelector((state) => state.branches.list)
   const status = useSelector((state) => state.status)
   const { showRemoteBranches } = useSelector((state) => state.config)
 
