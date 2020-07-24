@@ -36,7 +36,7 @@ export function StatusBar() {
 
   const { state = '' } = useSelector((state) => state.status)
 
-  const branches = useSelector((state) => state.branches)
+  const branches = useSelector((state) => state.branches.list)
   const currentBranch = useMemo(() => {
     return branches.find((branch) => branch.isHead)
   }, [branches])

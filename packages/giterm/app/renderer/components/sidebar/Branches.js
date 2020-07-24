@@ -19,7 +19,7 @@ import { BranchUpstreamState } from './BranchUpstreamState'
 */
 
 export function Branches() {
-  const _branches = useSelector((state) => state.branches) || []
+  const _branches = useSelector((state) => state.branches.list) || []
   const branches = useMemo(() => {
     const foundRemotes = {}
     const branches = []

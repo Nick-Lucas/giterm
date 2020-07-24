@@ -8,7 +8,7 @@ import { Section } from './Section'
 import { Row, Label } from './Row'
 
 export function Tags() {
-  const _tags = useSelector((state) => state.tags) || []
+  const _tags = useSelector((state) => state.tags.list) || []
 
   const tags = useMemo(() => {
     const tags = []
