@@ -74,7 +74,6 @@
     "browser-sync": "^2.23.6",
     "electron": "8.4.0",
     "electron-builder": "^22.7.0",
-    "jest": "^24.9.0",
     "npm-run-all": "^4.0.1",
     "prettier": "^1.13.7",
     "redux-mock-store": "^1.2.2",
