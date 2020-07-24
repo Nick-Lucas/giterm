@@ -2,11 +2,11 @@ import React, { useEffect } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled, { css } from 'styled-components'
 
-import { Commits } from '../components/commits'
-import Terminal from '../components/terminal'
-import { StatusBar } from '../components/StatusBar'
-import { init } from '../store/core/actions'
-import * as Sidebar from '../components/sidebar'
+import { Commits } from 'app/components/commits'
+import Terminal from 'app/components/terminal'
+import { StatusBar } from 'app/components/StatusBar'
+import { init } from 'app/store/core/actions'
+import * as Sidebar from 'app/components/sidebar'
 
 export function Home() {
   const terminalFullscreen = useSelector((state) => state.terminal.fullscreen)

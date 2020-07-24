@@ -1,10 +1,10 @@
 import { takeLatest, select, call, put } from 'redux-saga/effects'
 import { statusUpdated } from './actions'
-import { TERMINAL_CHANGED } from '../terminal/actions'
-import { GIT_REFS_CHANGED } from '../emitters/actions'
-import { CWD_UPDATED } from '../config/actions'
+import { TERMINAL_CHANGED } from 'app/store/terminal/actions'
+import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
+import { CWD_UPDATED } from 'app/store/config/actions'
 import { Git } from '@giterm/git'
-import { CORE_INIT } from '../core/actions'
+import { CORE_INIT } from 'app/store/core/actions'
 
 function* updateStatus() {
   const cwd = yield select((state) => state.config.cwd)

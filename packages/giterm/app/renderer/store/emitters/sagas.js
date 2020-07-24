@@ -2,10 +2,10 @@ import { takeEvery, takeLatest, take, put, select } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
 
 import { Git } from '@giterm/git'
-import { CWD_UPDATED } from '../config/actions'
+import { CWD_UPDATED } from 'app/store/config/actions'
 import { gitRefsChanged, gitHeadChanged } from './actions'
-import { CORE_INIT } from '../core/actions'
-import { STATUS_UPDATED } from '../status/actions'
+import { CORE_INIT } from 'app/store/core/actions'
+import { STATUS_UPDATED } from 'app/store/status/actions'
 
 function* listenForRefChanges() {
   const cwd = yield select((state) => state.config.cwd)

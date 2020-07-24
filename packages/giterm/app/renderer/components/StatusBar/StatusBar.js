@@ -4,9 +4,9 @@ import styled, { css } from 'styled-components'
 import { ArrowUp, ArrowDown } from 'react-feather'
 
 import { StatusBarItem } from './StatusBarItem'
-import { showRemoteBranches } from '../../store/config/actions'
+import { showRemoteBranches } from 'app/store/config/actions'
 import { STATE } from '@giterm/git'
-import { colours } from '../../lib/theme'
+import { colours } from 'app/lib/theme'
 
 function mapStateToDisplay(state) {
   switch (state) {

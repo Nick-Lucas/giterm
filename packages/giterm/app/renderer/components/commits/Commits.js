@@ -5,10 +5,10 @@ import { List, AutoSizer } from 'react-virtualized'
 import debounce from 'debounce'
 
 import Header from './header'
-import { reachedEndOfList } from '../../store/commits/actions'
+import { reachedEndOfList } from 'app/store/commits/actions'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { Commit } from './Commit'
-import { useValueEffect } from '../../lib/hooks'
+import { useValueEffect } from 'app/lib/hooks'
 
 export function Commits() {
   const dispatch = useDispatch()

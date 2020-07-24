@@ -19,8 +19,8 @@ import { spawn } from 'node-pty'
 import { shell } from 'electron'
 import { exec } from 'child_process'
 
-import { terminalChanged } from '../../store/terminal/actions'
-import { INITIAL_CWD } from '../../lib/cwd'
+import { terminalChanged } from 'app/store/terminal/actions'
+import { INITIAL_CWD } from 'app/lib/cwd'
 import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 

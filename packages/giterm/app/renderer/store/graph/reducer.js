@@ -1,4 +1,4 @@
-import { updateReducer } from '../helpers'
+import { updateReducer } from 'app/store/helpers'
 import { GRAPH_UPDATED } from './actions'
 
 const initialState = {
