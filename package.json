@@ -8,7 +8,8 @@
     "dev": "wsrun --exclude-missing dev",
     "lint": "eslint .",
     "test": "jest",
-    "test:dev": "yarn run test --watch"
+    "test:dev": "yarn run test --watch",
+    "clean": "rimraf **/node_modules/ **/dist/"
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
@@ -20,6 +21,7 @@
     "eslint-plugin-react-hooks": "^4.0.8",
     "eslint-plugin-redux-saga": "^1.1.3",
     "jest": "^26.1.0",
+    "rimraf": "^3.0.2",
     "wsrun": "^5.2.1"
   }
 }
