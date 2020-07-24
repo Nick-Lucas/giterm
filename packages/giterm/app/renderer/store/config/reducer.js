@@ -1,6 +1,6 @@
 import { SHOW_REMOTE_BRANCHES, SHOW_BRANCH_TAGS, CWD_UPDATED } from './actions'
 
-import { INITIAL_CWD } from '../../lib/cwd'
+import { INITIAL_CWD } from 'app/lib/cwd'
 
 const initialState = {
   cwd: INITIAL_CWD,

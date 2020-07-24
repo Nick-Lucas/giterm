@@ -3,7 +3,7 @@
   "compilerOptions": {
     "baseUrl": ".",
     "paths": {
-      "app/*": ["./app/*"],
+      "app/*": ["./app/renderer/*"],
       "@qflow/*": ["../*/src"]
     }
   }

@@ -2,7 +2,7 @@ import { takeEvery, put, select } from 'redux-saga/effects'
 
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '@giterm/gitgraph'
-import { COMMITS_UPDATED } from '../commits/actions'
+import { COMMITS_UPDATED } from 'app/store/commits/actions'
 
 function* recalculateGraph() {
   // const { cwd, showRemoteBranches } = yield select((state) => state.config)

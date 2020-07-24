@@ -1,7 +1,7 @@
 import { takeLatest, put, select } from 'redux-saga/effects'
 
 import { cwdUpdated } from './actions'
-import { TERMINAL_CHANGED } from '../terminal/actions'
+import { TERMINAL_CHANGED } from 'app/store/terminal/actions'
 
 function* checkCwd(action) {
   const { cwd } = action

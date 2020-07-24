@@ -4,8 +4,8 @@ import PropTypes from 'prop-types'
 import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 
+import { checkoutCommit } from 'app/store/commits/actions'
 import { Row } from './Row'
-import { checkoutCommit } from '../../store/commits/actions'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 

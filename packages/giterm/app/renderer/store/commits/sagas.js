@@ -1,10 +1,10 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects'
 import { commitsUpdated, REACHED_END_OF_LIST, CHECKOUT_COMMIT } from './actions'
 
-import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from '../config/actions'
-import { GIT_REFS_CHANGED } from '../emitters/actions'
+import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from 'app/store/config/actions'
+import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
 import { Git } from '@giterm/git'
-import { CORE_INIT } from '../core/actions'
+import { CORE_INIT } from 'app/store/core/actions'
 
 function* reloadCommits(action) {
   const cwd = yield select((state) => state.config.cwd)

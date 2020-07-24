@@ -7,7 +7,7 @@ import { clipboard } from 'electron'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
-import { colours } from '../../lib/theme'
+import { colours } from 'app/lib/theme'
 
 export function Changes() {
   const _files = useSelector((state) => state.status.files) || []

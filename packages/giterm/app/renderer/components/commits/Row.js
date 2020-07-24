@@ -3,9 +3,9 @@ import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as propTypes from './props'
 import { GitRef } from './GitRef'
-import { PathLine } from '../graph/pathline'
+import { PathLine } from 'app/components/graph/pathline'
 import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
-import { colours } from '../../lib/theme'
+import { colours } from 'app/lib/theme'
 import _ from 'lodash'
 
 const Colours = colours.GRAPH_NODES

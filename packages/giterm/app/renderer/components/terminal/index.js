@@ -8,7 +8,7 @@ import { Minimize2, Maximize2 } from 'react-feather'
 import {
   autoTerminalFullscreen,
   flipUserTerminalFullscreen,
-} from '../../store/terminal/actions'
+} from 'app/store/terminal/actions'
 
 const Wrapper = styled.div`
   display: flex;

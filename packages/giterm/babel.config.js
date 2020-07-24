@@ -12,5 +12,16 @@ module.exports = {
     ],
     '@babel/preset-react',
   ],
-  plugins: ['@babel/plugin-proposal-class-properties'],
+  plugins: [
+    '@babel/plugin-proposal-class-properties',
+    [
+      'module-resolver',
+      {
+        root: ['.'],
+        alias: {
+          '^app/(.+)': './app/renderer/\\1',
+        },
+      },
+    ],
+  ],
 }
