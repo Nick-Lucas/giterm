@@ -49,7 +49,7 @@ stages:
         yarn pack:mac
         yarn rimraf dist/mac
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist 
+    - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermMac
 
   - job: Linux
@@ -68,7 +68,7 @@ stages:
         yarn pack:linux
         yarn rimraf dist/linux-unpacked dist/.icon-set
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist 
+    - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermLinux
       
   - job: Windows
@@ -88,5 +88,5 @@ stages:
         yarn pack:win
         yarn rimraf dist/win-unpacked
       displayName: Build
-    - publish: $(Build.SourcesDirectory)/dist
+    - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermWindows
