@@ -45,6 +45,8 @@ stages:
       displayName: Install
     - script: |
         yarn build-js
+      displayName: Build Packages
+    - script: |
         cd packages/giterm
         yarn pack:mac
         yarn rimraf dist/mac
@@ -64,6 +66,8 @@ stages:
       displayName: Install
     - script: |
         yarn build-js
+      displayName: Build Packages
+    - script: |
         cd packages/giterm
         yarn pack:linux
         yarn rimraf dist/linux-unpacked dist/.icon-set
@@ -84,6 +88,8 @@ stages:
       displayName: Install
     - script: |
         yarn build-js
+      displayName: Build Packages
+    - script: |
         cd packages/giterm
         yarn pack:win
         yarn rimraf dist/win-unpacked
