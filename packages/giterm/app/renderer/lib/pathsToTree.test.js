@@ -13,7 +13,7 @@ describe('pathsToTree', () => {
       pathsToTree(['hello']),
     ).toEqual(
       //
-      __root([__leaf('hello', 'hello')]),
+      __root([__leaf(0, 'hello', 'hello')]),
     )
   })
 
@@ -24,11 +24,14 @@ describe('pathsToTree', () => {
     ).toEqual(
       //
       __root([
-        __node('hello', [
-          __leaf('world', 'hello/world'),
-          __leaf('london', 'hello/london'),
+        __node(0, 'hello', [
+          __leaf(1, 'world', 'hello/world'),
+          __leaf(1, 'london', 'hello/london'),
         ]),
-        __node('goodbye', [__leaf('ny', 'goodbye/ny')]),
+        __node(0, 'goodbye', [
+          //
+          __leaf(1, 'ny', 'goodbye/ny'),
+        ]),
       ]),
     )
   })
@@ -40,8 +43,11 @@ describe('pathsToTree', () => {
     ).toEqual(
       //
       __root([
-        __leaf('hello', 'hello'),
-        __node('hello', [__leaf('london', 'hello/london')]),
+        __leaf(0, 'hello', 'hello'),
+        __node(0, 'hello', [
+          //
+          __leaf(1, 'london', 'hello/london'),
+        ]),
       ]),
     )
   })
