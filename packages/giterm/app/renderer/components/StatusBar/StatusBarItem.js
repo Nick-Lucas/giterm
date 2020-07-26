@@ -41,5 +41,7 @@ const Body = styled.div`
   display: flex;
   align-items: center;
 
+  overflow: hidden;
+
   color: ${(props) => props.colour || 'inherit'};
 `
