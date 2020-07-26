@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 
 import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
+import { Target } from 'react-feather'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
@@ -30,7 +31,7 @@ export function Tags() {
   }, [_tags])
 
   return (
-    <Section title="TAGS" initialOpenState={false}>
+    <Section title="TAGS" initialOpenState={false} icon={<Target size={15} />}>
       {tags.map((tag) => {
         return (
           <RightClickArea key={tag.id} menuItems={tag.menuItems}>

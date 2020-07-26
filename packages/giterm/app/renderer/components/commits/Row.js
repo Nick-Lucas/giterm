@@ -134,6 +134,8 @@ export class Row extends React.Component {
         current={ref.isHead}
         remoteInSync={remoteInSync}
         type={ref.type}
+        ahead={ref.upstream?.ahead}
+        behind={ref.upstream?.behind}
       />
     ))
   }

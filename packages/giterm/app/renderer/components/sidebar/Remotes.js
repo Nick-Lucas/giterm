@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 
 import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
+import { Cloud } from 'react-feather'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
@@ -29,7 +30,7 @@ export function Remotes() {
   }, [_remotes])
 
   return (
-    <Section title="REMOTES">
+    <Section title="REMOTES" icon={<Cloud size={15} />}>
       {remotes.map((remote) => {
         return (
           <RightClickArea key={remote.id} menuItems={remote.menuItems}>
