@@ -21,7 +21,12 @@ import { exec } from 'child_process'
 
 import { terminalChanged } from 'app/store/terminal/actions'
 import { INITIAL_CWD } from 'app/lib/cwd'
-import { isStartAlternateBuffer, isEndAlternateBuffer } from './xterm-control'
+import {
+  isStartAlternateBuffer,
+  isEndAlternateBuffer,
+  isStartAppKeysMode,
+  isEndAppKeysMode,
+} from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
 const terminalOpts = {
@@ -127,11 +132,11 @@ export function Terminal({ onAlternateBufferChange }) {
     const onDataPTYDisposable = ptyProcess.onData(function(data) {
       terminal.write(data)
 
-      if (isStartAlternateBuffer(data)) {
+      if (isStartAlternateBuffer(data) || isStartAppKeysMode(data)) {
         console.log('Start buffer')
         updateAlternateBuffer(true)
       }
-      if (isEndAlternateBuffer(data)) {
+      if (isEndAlternateBuffer(data) || isEndAppKeysMode(data)) {
         console.log('End buffer')
         updateAlternateBuffer(false)
       }
