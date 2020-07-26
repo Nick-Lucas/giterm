@@ -21,12 +21,6 @@ import { exec } from 'child_process'
 
 import { terminalChanged } from 'app/store/terminal/actions'
 import { INITIAL_CWD } from 'app/lib/cwd'
-import {
-  isStartAlternateBuffer,
-  isEndAlternateBuffer,
-  isStartAppKeysMode,
-  isEndAppKeysMode,
-} from './xterm-control'
 import { BASHRC_PATH } from './bash-config'
 
 const terminalOpts = {
