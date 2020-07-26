@@ -1,6 +1,6 @@
 {
   "name": "giterm",
-  "version": "0.7.0",
+  "version": "0.7.1",
   "description": "A git gui for terminal lovers",
   "homepage": "https://github.com/Nick-Lucas/giterm",
   "main": "init.js",
@@ -59,9 +59,9 @@
     "simple-git": "^1.129.0",
     "styled-components": "^4.4.1",
     "tslib": "^1.9.3",
-    "xterm": "^4.3.0",
-    "xterm-addon-fit": "^0.3.0",
-    "xterm-addon-web-links": "^0.2.1"
+    "xterm": "^4.8.1",
+    "xterm-addon-fit": "^0.4.0",
+    "xterm-addon-web-links": "^0.4.0"
   },
   "devDependencies": {
     "@babel/cli": "^7.10.5",
