@@ -1,10 +1,9 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import styled, { css } from 'styled-components'
 import { useSelector } from 'react-redux'
 import { Cloud, Target, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
 
-import { colours } from 'app/lib/theme'
+import { Pill } from 'app/lib/primitives'
 import * as propTypes from './props'
 
 const iconProps = {
@@ -39,26 +38,21 @@ export function GitRef({
   }
 
   return (
-    <PillFill>
-      <Pill current={current}>{iconFromType(type)}</Pill>
+    <Pill.Container>
+      <Pill.Segment current={current}>{iconFromType(type)}</Pill.Segment>
 
       {type === propTypes.REF_TYPE_BRANCH && remoteInSync && (
-        <Pill current={current}>
-          {/* <Bar /> */}
+        <Pill.Segment current={current}>
           <Cloud {...iconProps} />
-        </Pill>
+        </Pill.Segment>
       )}
 
-      {/* <Bar /> */}
-
-      <Pill current={current}>
-        <Content>{label}</Content>
-      </Pill>
+      <Pill.Segment current={current}>
+        <Pill.Content>{label}</Pill.Content>
+      </Pill.Segment>
 
       {ahead + behind > 0 && (
-        <Pill current={current} warning>
-          {/* <Bar /> */}
-
+        <Pill.Segment current={current} warning>
           {ahead > 0 && (
             <>
               <ArrowUp {...iconProps} size={14} />
@@ -72,9 +66,9 @@ export function GitRef({
               {behind}
             </>
           )}
-        </Pill>
+        </Pill.Segment>
       )}
-    </PillFill>
+    </Pill.Container>
   )
 }
 
@@ -86,55 +80,3 @@ GitRef.propTypes = {
   ahead: PropTypes.number,
   behind: PropTypes.number,
 }
-
-const PillFill = styled.div`
-  display: flex;
-  flex-direction: row;
-  flex: 0;
-
-  margin-right: 5px;
-`
-
-const Pill = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  padding-left: 3px;
-  padding-right: 3px;
-
-  border-left: solid 1px;
-  border-left-color: currentColor;
-
-  :first-child {
-    border-left: none;
-    border-bottom-left-radius: 5px;
-    border-top-left-radius: 5px;
-  }
-  :last-child {
-    border-bottom-right-radius: 5px;
-    border-top-right-radius: 5px;
-  }
-
-  color: ${colours.PILL.FG};
-  white-space: nowrap;
-
-  background-color: ${colours.PILL.BG};
-  ${({ current }) =>
-    current &&
-    css`
-      background-color: ${colours.PILL.BG_ACTIVE};
-    `};
-  ${({ warning }) =>
-    warning &&
-    css`
-      background-color: ${colours.PILL.BG_WARNING};
-    `};
-`
-
-const Content = styled.div`
-  padding-bottom: 2px;
-
-  padding-left: 0.15rem;
-  padding-right: 0.15rem;
-`

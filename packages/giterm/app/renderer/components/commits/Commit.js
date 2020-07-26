@@ -91,21 +91,21 @@ export function Commit({ index, style, onSelect, isSelected }) {
   const linksAfter = links[index + 1] || []
 
   return (
-    // <RightClickArea key={commit.sha} menuItems={menuItems} style={style}>
-    <Row
-      commit={commit}
-      columns={columns}
-      refs={refsForCommit}
-      selected={isSelected}
-      onSelect={onSelect}
-      onDoubleClick={handleCheckoutCommit}
-      isHead={status.headSHA === commit.sha}
-      height={RowHeight}
-      node={node}
-      linksBefore={linksBefore}
-      linksAfter={linksAfter}
-    />
-    // </RightClickArea>
+    <RightClickArea key={commit.sha} menuItems={menuItems} style={style}>
+      <Row
+        commit={commit}
+        columns={columns}
+        refs={refsForCommit}
+        selected={isSelected}
+        onSelect={onSelect}
+        onDoubleClick={handleCheckoutCommit}
+        isHead={status.headSHA === commit.sha}
+        height={RowHeight}
+        node={node}
+        linksBefore={linksBefore}
+        linksAfter={linksAfter}
+      />
+    </RightClickArea>
   )
 }
 

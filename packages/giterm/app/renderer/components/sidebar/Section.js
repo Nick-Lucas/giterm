@@ -8,6 +8,7 @@ export function Section({
   children,
   hasContent = true,
   initialOpenState = true,
+  icon = null,
 }) {
   const [open, setOpen] = useState(initialOpenState)
   const toggleOpen = useCallback(() => {
@@ -24,6 +25,9 @@ export function Section({
         )}
 
         <h2>{title}</h2>
+
+        <Fill />
+        <IconContainer>{icon}</IconContainer>
       </Button>
 
       {/* TODO: make transition on this pretty */}
@@ -37,6 +41,7 @@ Section.propTypes = {
   children: PropTypes.node,
   hasContent: PropTypes.bool,
   initialOpenState: PropTypes.bool,
+  icon: PropTypes.node,
 }
 
 const Container = styled.div`
@@ -48,6 +53,7 @@ const Button = styled.button`
   flex-direction: row;
   flex: 1;
   height: 1.5rem;
+  width: stretch;
 
   align-items: center;
   justify-content: flex-start;
@@ -76,4 +82,17 @@ const Button = styled.button`
 const Chevron = styled(ChevronDown)`
   transition: transform ease-in-out 0.3s;
   transform: ${({ open }) => (open ? 'rotate(0deg)' : 'rotate(-180deg)')};
+`
+
+const Fill = styled.div`
+  display: flex;
+  flex: 1;
+`
+
+const IconContainer = styled.div`
+  display: grid;
+  grid-auto-flow: column;
+  grid-column-gap: 2px;
+
+  padding-right: 0.25rem;
 `

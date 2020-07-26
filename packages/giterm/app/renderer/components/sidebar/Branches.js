@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux'
 
 import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
+import { Cloud, GitBranch } from 'react-feather'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
@@ -53,7 +54,14 @@ export function Branches() {
   }, [_branches])
 
   return (
-    <Section title="BRANCHES">
+    <Section
+      title="BRANCHES"
+      icon={
+        <>
+          <GitBranch size={15} />
+          <Cloud size={15} />
+        </>
+      }>
       {branches.map((branch) => {
         return (
           <RightClickArea key={branch.id} menuItems={branch.menuItems}>
