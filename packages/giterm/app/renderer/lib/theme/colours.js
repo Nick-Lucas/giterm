@@ -21,3 +21,10 @@ export const OVERLAY = {
   HINT: 'rgba(255, 255, 255, 0.2)',
   FOCUS: 'rgba(255, 255, 255, 0.3)',
 }
+
+export const PILL = {
+  BG: 'rgba(255, 255, 255, 0.6)',
+  BG_ACTIVE: 'rgba(200, 255, 200, 0.8)',
+  BG_WARNING: '#E5A823',
+  FG: 'rgba(0, 0, 0, 0.5)',
+}

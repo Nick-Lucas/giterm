@@ -1,42 +1,11 @@
 import React from 'react'
 import PropTypes from 'prop-types'
-import { Cloud, Target, GitBranch } from 'react-feather'
 import styled, { css } from 'styled-components'
 import { useSelector } from 'react-redux'
+import { Cloud, Target, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
+
+import { colours } from 'app/lib/theme'
 import * as propTypes from './props'
-
-const Pill = styled.div`
-  display: flex;
-  align-items: center;
-  justify-content: center;
-
-  border-radius: 5px;
-
-  padding-left: 3px;
-  padding-right: 3px;
-  margin-right: 5px;
-
-  color: rgba(0, 0, 0, 0.5);
-  white-space: nowrap;
-
-  background-color: rgba(255, 255, 255, 0.6);
-  ${(props) =>
-    props.current &&
-    css`
-      background-color: rgba(200, 255, 200, 0.8);
-    `};
-`
-
-const Content = styled.div`
-  padding-bottom: 2px;
-`
-
-const Bar = styled.div`
-  border-left: solid 1px;
-  border-left-color: currentColor;
-  margin: 0 2px;
-  height: 100%;
-`
 
 const iconProps = {
   size: '12',
@@ -56,26 +25,56 @@ function iconFromType(type) {
   }
 }
 
-export function GitRef({ type, label, current, remoteInSync }) {
+export function GitRef({
+  type,
+  label,
+  current,
+  remoteInSync,
+  ahead = 0,
+  behind = 0,
+}) {
   const show = useSelector((state) => state.config.showBranchTags)
   if (!show) {
     return null
   }
 
   return (
-    <Pill current={current}>
-      {iconFromType(type)}
+    <PillFill>
+      <Pill current={current}>{iconFromType(type)}</Pill>
+
       {type === propTypes.REF_TYPE_BRANCH && remoteInSync && (
-        <>
-          <Bar />
+        <Pill current={current}>
+          {/* <Bar /> */}
           <Cloud {...iconProps} />
-        </>
+        </Pill>
       )}
 
-      <Bar />
+      {/* <Bar /> */}
 
-      <Content>{label}</Content>
-    </Pill>
+      <Pill current={current}>
+        <Content>{label}</Content>
+      </Pill>
+
+      {ahead + behind > 0 && (
+        <Pill current={current} warning>
+          {/* <Bar /> */}
+
+          {ahead > 0 && (
+            <>
+              <ArrowUp {...iconProps} size={14} />
+              {ahead}
+            </>
+          )}
+
+          {behind > 0 && (
+            <>
+              <ArrowDown {...iconProps} size={14} />
+              {behind}
+            </>
+          )}
+        </Pill>
+      )}
+    </PillFill>
   )
 }
 
@@ -84,4 +83,58 @@ GitRef.propTypes = {
   current: PropTypes.bool,
   remoteInSync: PropTypes.bool,
   type: propTypes.refTypes.isRequired,
+  ahead: PropTypes.number,
+  behind: PropTypes.number,
 }
+
+const PillFill = styled.div`
+  display: flex;
+  flex-direction: row;
+  flex: 0;
+
+  margin-right: 5px;
+`
+
+const Pill = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  padding-left: 3px;
+  padding-right: 3px;
+
+  border-left: solid 1px;
+  border-left-color: currentColor;
+
+  :first-child {
+    border-left: none;
+    border-bottom-left-radius: 5px;
+    border-top-left-radius: 5px;
+  }
+  :last-child {
+    border-bottom-right-radius: 5px;
+    border-top-right-radius: 5px;
+  }
+
+  color: ${colours.PILL.FG};
+  white-space: nowrap;
+
+  background-color: ${colours.PILL.BG};
+  ${({ current }) =>
+    current &&
+    css`
+      background-color: ${colours.PILL.BG_ACTIVE};
+    `};
+  ${({ warning }) =>
+    warning &&
+    css`
+      background-color: ${colours.PILL.BG_WARNING};
+    `};
+`
+
+const Content = styled.div`
+  padding-bottom: 2px;
+
+  padding-left: 0.15rem;
+  padding-right: 0.15rem;
+`
