@@ -131,20 +131,16 @@ export function Terminal({ onAlternateBufferChange }) {
 
     const onDataPTYDisposable = ptyProcess.onData(function(data) {
       terminal.write(data)
+    })
 
-      if (isStartAlternateBuffer(data) || isStartAppKeysMode(data)) {
-        console.log('Start buffer')
-        updateAlternateBuffer(true)
-      }
-      if (isEndAlternateBuffer(data) || isEndAppKeysMode(data)) {
-        console.log('End buffer')
-        updateAlternateBuffer(false)
-      }
+    const bufferChangeDetector = terminal.buffer.onBufferChange((buffer) => {
+      updateAlternateBuffer(buffer.type == 'alternate')
     })
 
     return () => {
       onDataTerminalDisposable.dispose()
       onDataPTYDisposable.dispose()
+      bufferChangeDetector.dispose()
     }
   }, [onAlternateBufferChange, ptyProcess, terminal])
 
