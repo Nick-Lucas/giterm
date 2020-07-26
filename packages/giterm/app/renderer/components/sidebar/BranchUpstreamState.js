@@ -4,12 +4,16 @@ import { ArrowUp, ArrowDown, Cloud } from 'react-feather'
 
 import { Pill } from 'app/lib/primitives'
 
-export function BranchUpstreamState({ ahead, behind, selected = false }) {
+export function BranchUpstreamState({
+  ahead = null,
+  behind = null,
+  selected = false,
+}) {
   const inSync = ahead === 0 && behind === 0
 
   return (
     <Pill.Container marginRight={0}>
-      <Pill.Segment current={selected}>
+      <Pill.Segment current={selected} warning={false}>
         {inSync && (
           <>
             <Cloud size={15} />
@@ -29,13 +33,15 @@ export function BranchUpstreamState({ ahead, behind, selected = false }) {
             {behind}
           </>
         )}
+
+        {!inSync && ahead == null && behind == null && <>Head</>}
       </Pill.Segment>
     </Pill.Container>
   )
 }
 
 BranchUpstreamState.propTypes = {
-  ahead: PropTypes.number.isRequired,
-  behind: PropTypes.number.isRequired,
+  ahead: PropTypes.number,
+  behind: PropTypes.number,
   selected: PropTypes.bool,
 }

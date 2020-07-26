@@ -68,10 +68,10 @@ export function Branches() {
             <Row active={branch.isHead}>
               <Label>{branch.name}</Label>
 
-              {branch.upstream && (
+              {(branch.isHead || branch.upstream) && (
                 <BranchUpstreamState
-                  ahead={branch.upstream.ahead}
-                  behind={branch.upstream.behind}
+                  ahead={branch.upstream?.ahead}
+                  behind={branch.upstream?.behind}
                   selected={branch.isHead}
                 />
               )}
