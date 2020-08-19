@@ -4,6 +4,7 @@ import TSParticles from 'react-tsparticles'
 export const Particles = (props) => (
   <TSParticles
     {...props}
+    style={{ zIndex: -100 }}
     options={{
       background: {
         color: {

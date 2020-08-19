@@ -32,10 +32,7 @@ const IndexPage = () => {
           <TextLoop interval={2000} adjustingSpeed={300} springConfig={{ stiffness: 100, damping: 15 }}>
             <span>GUI Lovers</span>
             <span>Terminal Lovers</span>
-            <span>Git Lovers</span>
-            {/* <span>Power Users</span>
-            <span>Collaborators</span>
-            <span>Visualizers</span> */}
+            <span>Power Users</span>
           </TextLoop>
         </pre>
 
