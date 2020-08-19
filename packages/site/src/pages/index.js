@@ -25,7 +25,7 @@ const IndexPage = () => {
   return (
     <Layout>
       <div className="body">
-        {/* <Particles className="home-particles" /> */}
+        <Particles className="home-particles" />
 
         <pre className="text">
           <span>Git for </span>
