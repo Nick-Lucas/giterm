@@ -1,0 +1,45 @@
+.body {
+  display: flex;
+  width: 100vw;
+  height: 100vh;
+
+  flex-direction: column;
+  align-items: center;
+
+  background-color: #001825;
+
+  background: linear-gradient(180deg, rgba(2,0,36,1) 0%, rgba(2,0,36,1) 40%, rgb(0, 21, 49) 100%);
+  
+}
+
+.text {
+  display: flex;
+
+  color: white;
+  background: none;
+
+  font-size: 5vw;
+  margin-top: 15vw;
+}
+@media screen and (min-width: 70rem) {
+  .text {
+     font-size: 3vw;
+     margin-top: 10vw;
+  }
+}
+
+
+.home-particles {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  right: 0;
+}
+
+.home-appimage {
+  display: flex;
+  flex: 1 1 auto;
+
+  width: 80%;
+}

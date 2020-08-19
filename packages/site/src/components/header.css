@@ -1,0 +1,37 @@
+.header-logo {
+  height: 2rem;
+  width: 2rem;
+}
+
+.flex-fill {
+  flex: 1 1 auto;
+}
+
+.header-container {
+  position: fixed;
+  top: 0;
+  width: 100vw;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+}
+
+.header-link {
+  padding: 1rem 1rem;
+
+  text-decoration: none;
+  color: white;
+  background-color: transparent;
+
+  display: flex;
+  align-items: center;
+}
+
+.header-link:hover {
+  background-color: rgb(255, 255, 255, 0.1);
+}
+
+.header-link > svg {
+  margin-right: 0.5rem;
+}

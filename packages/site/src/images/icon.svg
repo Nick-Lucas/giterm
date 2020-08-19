@@ -1,0 +1,22 @@
+<svg width="500" height="500" xmlns="http://www.w3.org/2000/svg">
+ <!-- Created with Method Draw - http://github.com/duopixel/Method-Draw/ -->
+ <defs>
+  <filter height="200%" width="200%" y="-50%" x="-50%" id="svg_1_blur">
+   <feGaussianBlur stdDeviation="0" in="SourceGraphic"/>
+  </filter>
+ </defs>
+ <g>
+  <title>background</title>
+  <rect fill="#ffffff" id="canvas_background" height="502" width="502" y="-1" x="-1"/>
+ </g>
+ <g>
+  <title>Layer 1</title>
+  <rect filter="url(#svg_1_blur)" stroke="#000" rx="50" id="svg_1" height="470" width="470" y="15" x="15" stroke-width="0" fill="#2655ff"/>
+  <ellipse ry="40" rx="40" id="svg_3" cy="150" cx="150" stroke-opacity="null" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <ellipse ry="40" rx="40" id="svg_10" cy="350" cx="150" stroke-opacity="null" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <line stroke-linecap="null" stroke-linejoin="null" id="svg_5" y2="500" x2="150" y1="15" x1="150" stroke-width="35" stroke="#ffffff" fill="none"/>
+  <ellipse ry="40" rx="40" id="svg_11" cy="150" cx="350" stroke-opacity="null" stroke-width="0" stroke="#000" fill="#ffffff"/>
+  <line stroke-linecap="null" stroke-linejoin="null" id="svg_12" y2="150" x2="350" y1="15" x1="350" stroke-width="35" stroke="#ffffff" fill="none"/>
+  <line stroke-linecap="null" stroke-linejoin="null" id="svg_13" y2="350" x2="150" y1="150" x1="350" stroke-width="35" stroke="#ffffff" fill="none"/>
+ </g>
+</svg>
