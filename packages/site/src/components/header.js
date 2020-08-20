@@ -1,7 +1,7 @@
 import React from 'react'
 import { Link } from 'gatsby'
 
-import { GitHub, Download, Heart } from 'react-feather'
+import { GitHub, Download } from 'react-feather'
 
 import './header.css'
 import GitermIcon from '../images/icon.svg'
@@ -9,7 +9,6 @@ import GitermIcon from '../images/icon.svg'
 export const Header = () => (
   <header className="header-container">
     <div className="header-item ">Giterm</div>
-    <div className="header-item header-cull"><Heart className="icon-space" size="1rem" fill="red" stroke="red" /> Git</div>
     {/* <Link className="header-logo" to="/">
       <img src={GitermIcon} />
     </Link> */}

@@ -4,7 +4,7 @@ import TSParticles from 'react-tsparticles'
 export const Particles = (props) => (
   <TSParticles
     {...props}
-    style={{ zIndex: -100 }}
+    style={{ zIndex: -100, pointerEvents: 'none' }}
     options={{
       background: {
         color: {
@@ -23,6 +23,12 @@ export const Particles = (props) => (
           //   enable: true,
           //   mode: 'repulse',
           // },
+          // onDiv: {
+          //   enable: true,
+          //   mode: 'repulse',
+          //   type: 'rectangle',
+          //   ids: ['particle-repulse']
+          // },
           resize: true,
         },
         modes: {
@@ -36,8 +42,8 @@ export const Particles = (props) => (
             quantity: 4,
           },
           repulse: {
-            distance: 200,
-            duration: 0.4,
+            distance: 5000,
+            duration: 5,
           },
         },
       },
@@ -55,7 +61,7 @@ export const Particles = (props) => (
         },
         links: {
           color: '#ffffff',
-          distance: 200,
+          distance: 100,
           enable: true,
           opacity: 0.3,
           width: 1,
@@ -64,7 +70,7 @@ export const Particles = (props) => (
           enable: true,
         },
         move: {
-          direction: 'bottom',
+          direction: 'none',
           enable: true,
           outMode: 'bounce',
           random: false,
@@ -79,14 +85,14 @@ export const Particles = (props) => (
           value: 30,
         },
         opacity: {
-          value: 1,
+          value: 0.3,
         },
         shape: {
           type: 'circle',
         },
         size: {
           random: false,
-          value: 5,
+          value: 4,
         },
       },
       detectRetina: true,

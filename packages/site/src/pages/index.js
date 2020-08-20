@@ -8,6 +8,7 @@ import SEO from '../components/seo'
 import TextLoop from 'react-text-loop'
 import './index.css'
 import { Particles } from '../components/particles'
+import { Heart } from 'react-feather'
 
 const IndexPage = () => {
   const appImage = useStaticQuery(graphql`
@@ -28,21 +29,21 @@ const IndexPage = () => {
         <Particles className="home-particles" />
 
         <pre className="text">
-          <span>Git for </span>
-          <TextLoop interval={2000} adjustingSpeed={300} springConfig={{ stiffness: 100, damping: 15 }}>
-            <span>GUI Lovers</span>
-            <span>Terminal Lovers</span>
-            <span>Power Users</span>
+          <span>Giterm <Heart size="0.6em" fill="red" stroke="red" /> </span>
+          <TextLoop interval={2000} adjustingSpeed={300} springConfig={{ stiffness: 200, damping: 20 }}>
+            <span>Terminal</span>
+            <span>GUI</span>
+            <span>Git</span>
           </TextLoop>
         </pre>
 
-        <Img
+        {/* <Img
           className="home-appimage"
           imgStyle={{ objectFit: 'contain' }}
           objectFit="contain"
           objectPosition="50% 100%"
           fluid={appImage.placeholderImage.childImageSharp.fluid}
-        />
+        /> */}
       </div>
     </Layout>
   )
