@@ -63,7 +63,7 @@ export const Particles = (props) => (
           color: '#ffffff',
           distance: 100,
           enable: true,
-          opacity: 0.3,
+          opacity: 0.7,
           width: 1,
         },
         collisions: {
@@ -85,7 +85,7 @@ export const Particles = (props) => (
           value: 30,
         },
         opacity: {
-          value: 0.3,
+          value: 1,
         },
         shape: {
           type: 'circle',
