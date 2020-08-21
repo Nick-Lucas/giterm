@@ -1,6 +1,9 @@
 .header-logo {
   height: 2rem;
   width: 2rem;
+
+  margin-left: 0.5rem;
+  margin-right: -0.5rem;
 }
 
 .flex-fill {
