@@ -1,6 +1,6 @@
-import React from "react"
-import { useStaticQuery, graphql } from "gatsby"
-import Img from "gatsby-image"
+import React from 'react'
+import { useStaticQuery, graphql } from 'gatsby'
+import Img from 'gatsby-image'
 
 /*
  * This component is built using `gatsby-image` to automatically serve optimized
@@ -28,4 +28,3 @@ export const AppIcon = (props) => {
 
   return <Img {...props} fluid={data.placeholderImage.childImageSharp.fluid} />
 }
-

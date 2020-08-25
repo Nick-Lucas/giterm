@@ -1,10 +1,9 @@
 import React from 'react'
-import { Link } from 'gatsby'
 
 import { GitHub, Download } from 'react-feather'
 
 import './header.css'
-import { AppIcon } from "./AppIcon";
+import { AppIcon } from './AppIcon'
 
 export const Header = () => (
   <header className="header-container">
@@ -16,7 +15,9 @@ export const Header = () => (
 
     <div className="flex-fill" />
 
-    <a className="header-item header-link" href="https://github.com/Nick-Lucas/giterm">
+    <a
+      className="header-item header-link"
+      href="https://github.com/Nick-Lucas/giterm">
       <GitHub size="1rem" /> GitHub
     </a>
     <a
