@@ -15,7 +15,7 @@ const IndexPage = () => {
     query {
       placeholderImage: file(relativePath: { eq: "app.png" }) {
         childImageSharp {
-          fluid(maxWidth: 300) {
+          fluid(maxWidth: 3000) {
             ...GatsbyImageSharpFluid
           }
         }
@@ -28,22 +28,25 @@ const IndexPage = () => {
       <div className="body">
         <Particles className="home-particles" />
 
-        <pre className="text">
-          <span>Giterm <Heart size="0.6em" fill="red" stroke="red" /> </span>
-          <TextLoop interval={2000} adjustingSpeed={300} springConfig={{ stiffness: 200, damping: 20 }}>
-            <span>Terminal</span>
-            <span>GUI</span>
-            <span>Git</span>
-          </TextLoop>
-        </pre>
+        <div className="home-content">
 
-        {/* <Img
-          className="home-appimage"
-          imgStyle={{ objectFit: 'contain' }}
-          objectFit="contain"
-          objectPosition="50% 100%"
-          fluid={appImage.placeholderImage.childImageSharp.fluid}
-        /> */}
+          <pre className="text">
+            <span>Giterm <Heart size="0.6em" fill="red" stroke="red" /> </span>
+            <TextLoop interval={2000} adjustingSpeed={300} springConfig={{ stiffness: 200, damping: 20 }}>
+              <span>Terminal</span>
+              <span>GUI</span>
+              <span>Git</span>
+            </TextLoop>
+          </pre>
+
+          <Img
+            className="home-appimage"
+            imgStyle={{ objectFit: 'contain' }}
+            objectFit="contain"
+            objectPosition="50% 100%"
+            fluid={appImage.placeholderImage.childImageSharp.fluid}
+          />
+        </div>
       </div>
     </Layout>
   )
