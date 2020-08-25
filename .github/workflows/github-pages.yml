@@ -25,15 +25,15 @@ jobs:
 
     # Runs a set of commands using the runners shell
     - name: Build Gatsby
-      run: |
-        cd ./packages/site
-        yarn build
+      working-directory: packages/site
+      run: yarn build
     
     - name: Deploy
       uses: crazy-max/ghaction-github-pages@v2.1.2
       with:
         target_branch: gh-pages
-        build_dir: ./public
+        build_dir: packages/site/public
+        
 
     
         
