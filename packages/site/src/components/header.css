@@ -1,0 +1,58 @@
+.header-logo {
+  height: 2rem;
+  width: 2rem;
+
+  margin-left: 0.5rem;
+  margin-right: -0.5rem;
+}
+
+.flex-fill {
+  flex: 1 1 auto;
+}
+
+.header-container {
+  position: fixed;
+  top: 0;
+  width: 100vw;
+
+  z-index: 1000;
+
+  display: flex;
+  justify-content: flex-start;
+  align-items: center;
+
+  color:white;
+}
+
+.header-item {
+  display: flex;
+  align-items: center;
+
+  padding-left: 1rem;
+}
+
+@media screen and (max-width: 450px) {
+  .header-cull {
+    display: none;
+  }
+}
+
+.header-link {
+  padding: 1rem 1rem;
+
+  color:white;
+  text-decoration: none;
+  background-color: transparent;
+}
+
+.icon-space {
+  margin-right: 0.5rem;
+}
+
+.header-link:hover {
+  background-color: rgb(255, 255, 255, 0.1);
+}
+
+.header-link > svg {
+  margin-right: 0.5rem;
+}
