@@ -2,6 +2,7 @@ import React from 'react'
 import { graphql, useStaticQuery } from 'gatsby'
 
 import Layout from '../components/layout'
+import { SEO } from '../components/seo'
 import Img from 'gatsby-image'
 
 import TextLoop from 'react-text-loop'
@@ -24,6 +25,8 @@ const IndexPage = () => {
 
   return (
     <Layout>
+      <SEO />
+
       <div className="body">
         <Particles className="home-particles" />
 
