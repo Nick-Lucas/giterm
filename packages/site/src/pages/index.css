@@ -1,7 +1,8 @@
 .body {
   display: flex;
-  width: 100vw;
-  height: 100vh;
+  height: 100%;
+  
+  position: relative;
 
   flex-direction: column;
   align-items: center;
@@ -34,15 +35,18 @@
 .home-content {
   position: absolute;
   top: 0;
-  bottom: 0;
   left: 0;
-  right: 0;
+
+  height: 100%;
+  width: 100%;
 
   display: flex;
   flex-direction: column;
 
   align-items: center;
   justify-content: space-evenly;
+
+  overflow: hidden;
 }
 
 .home-particles {
