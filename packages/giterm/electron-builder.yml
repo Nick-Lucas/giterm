@@ -21,7 +21,7 @@ files:
   - build/
   - node_modules/
 
-extraFiles:
+extraResources:
   - from: app/renderer/components/terminal/bashrc
     to: bashrc
 
@@ -40,7 +40,6 @@ dmg:
 mac:
   target: 
     - dmg
-    - zip
   category: public.app-category.tools
   icon: icon.icns
 

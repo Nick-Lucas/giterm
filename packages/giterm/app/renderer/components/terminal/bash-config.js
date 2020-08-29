@@ -6,7 +6,11 @@ let bashPath = ''
 if (process.env.NODE_ENV === 'development') {
   bashPath = path.resolve(__dirname, './bashrc')
 } else {
-  bashPath = path.resolve(remote.app.getPath('exe'), '../../bashrc')
+  const path =
+    process.platform === 'darwin'
+      ? '../../Resources/bashrc'
+      : '../../resources/bashrc'
+  bashPath = path.resolve(remote.app.getPath('exe'), path)
 }
 
 export const BASHRC_PATH = bashPath
