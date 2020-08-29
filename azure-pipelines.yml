@@ -6,6 +6,9 @@ trigger:
     include:
     - v*.*.*
 
+variables:
+- group: GITERM_CERT_GROUP
+
 pool:
   vmImage: 'ubuntu-18.04'
 
@@ -40,6 +43,16 @@ stages:
       inputs:
         version: '10.x'
         checkLatest: true
+    - task: DownloadSecureFile@1
+      displayName: Download Application Signing Certificate
+      name: certApp
+      inputs:
+        secureFile: 'DevIdApplication.p12'
+    - task: DownloadSecureFile@1
+      displayName: Download Installer Signing Certificate
+      name: certInstaller
+      inputs:
+        secureFile: 'DevIdInstaller.p12'
     - script: |
         yarn install --network-timeout 100000
       displayName: Install
@@ -51,6 +64,10 @@ stages:
         yarn pack:mac
         yarn rimraf dist/mac
       displayName: Build
+      env:
+        CSC_LINK: $(certApp.secureFilePath)
+        CSC_KEY_PASSWORD: $(GITERM_CERT_PW)
+        
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermMac
 
