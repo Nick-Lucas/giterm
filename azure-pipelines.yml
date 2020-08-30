@@ -48,11 +48,6 @@ stages:
       name: certApp
       inputs:
         secureFile: 'DevIdApplication.p12'
-    - task: DownloadSecureFile@1
-      displayName: Download Installer Signing Certificate
-      name: certInstaller
-      inputs:
-        secureFile: 'DevIdInstaller.p12'
     - script: |
         yarn install --network-timeout 100000
       displayName: Install
@@ -65,9 +60,10 @@ stages:
         yarn rimraf dist/mac
       displayName: Build
       env:
+        APPLEID: $(GITERM_APPLEID_UN)
+        APPLEIDPASS: $(GITERM_APPLEID_PW)
         CSC_LINK: $(certApp.secureFilePath)
         CSC_KEY_PASSWORD: $(GITERM_CERT_PW)
-        
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermMac
 
