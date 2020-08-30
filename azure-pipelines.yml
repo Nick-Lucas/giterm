@@ -23,7 +23,7 @@ stages:
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
         yarn build-js
       displayName: Install
     - script: |
@@ -49,7 +49,7 @@ stages:
       inputs:
         secureFile: 'DevIdApplication.p12'
     - script: |
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
       displayName: Install
     - script: |
         yarn build-js
@@ -75,7 +75,7 @@ stages:
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
       displayName: Install
     - script: |
         yarn build-js
@@ -97,7 +97,7 @@ stages:
         version: '10.x'
         checkLatest: true
     - script: |
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
       displayName: Install
     - script: |
         yarn build-js
