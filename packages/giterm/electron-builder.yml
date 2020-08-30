@@ -8,6 +8,8 @@ directories:
   buildResources: dist-assets/
   output: dist/
 
+afterSign: build-config/afterSign.js
+
 publish:
   provider: github
   owner: nick-lucas
@@ -19,7 +21,7 @@ files:
   - build/
   - node_modules/
 
-extraFiles:
+extraResources:
   - from: app/renderer/components/terminal/bashrc
     to: bashrc
 
@@ -33,13 +35,18 @@ dmg:
       x: 130
       y: 150
   icon: icon.icns
+  sign: false
 
 mac:
   target: 
     - dmg
-    - zip
   category: public.app-category.tools
   icon: icon.icns
+
+  # https://kilianvalkhof.com/2019/electron/notarizing-your-electron-application/
+  hardenedRuntime: true
+  entitlements: build-config/mac/entitlements.mac.inherit.plist
+  entitlementsInherit: build-config/mac/entitlements.mac.inherit.plist
 
 win:
   target: nsis

@@ -7326,6 +7326,14 @@ electron-log@^4.0.6:
   resolved "https://registry.yarnpkg.com/electron-log/-/electron-log-4.2.2.tgz#b358dc6d1e4772465609ee3d8ad9f594d9e742c8"
   integrity sha512-lBpLh1Q8qayrTxFIrTPcNjSHsosvUfOYyZ8glhiLcx7zCNPDGuj8+nXlEaaSS6LRiQQbLgLG+wKpuvztNzBIrA==
 
+electron-notarize@^1.0.0:
+  version "1.0.0"
+  resolved "https://registry.yarnpkg.com/electron-notarize/-/electron-notarize-1.0.0.tgz#bc925b1ccc3f79e58e029e8c4706572b01a9fd8f"
+  integrity sha512-dsib1IAquMn0onCrNMJ6gtEIZn/azG8hZMCYOuZIMVMUeRMgBYHK1s5TK9P8xAcrAjh/2aN5WYHzgVSWX314og==
+  dependencies:
+    debug "^4.1.1"
+    fs-extra "^9.0.1"
+
 electron-publish@22.7.0:
   version "22.7.0"
   resolved "https://registry.yarnpkg.com/electron-publish/-/electron-publish-22.7.0.tgz#d92ba7c4007c9ac1dd070593e48028184fb2dc19"
@@ -8883,7 +8891,7 @@ fs-extra@^4.0.2:
     jsonfile "^4.0.0"
     universalify "^0.1.0"
 
-fs-extra@^9.0.0:
+fs-extra@^9.0.0, fs-extra@^9.0.1:
   version "9.0.1"
   resolved "https://registry.yarnpkg.com/fs-extra/-/fs-extra-9.0.1.tgz#910da0062437ba4c39fedd863f1675ccfefcb9fc"
   integrity sha512-h2iAoN838FqAFJY2/qVpzFXy+EBxfVE220PalAqQLDVsFOHLJrZvut5puAbCdNv6WJk+B8ihI+k0c7JK5erwqQ==
@@ -17590,6 +17598,11 @@ run-queue@^1.0.0, run-queue@^1.0.3:
   integrity sha1-6Eg5bwV9Ij8kOGkkYY4laUFh7Ec=
   dependencies:
     aproba "^1.1.1"
+
+run-script-os@^1.1.1:
+  version "1.1.1"
+  resolved "https://registry.yarnpkg.com/run-script-os/-/run-script-os-1.1.1.tgz#4b4c5fd212b52fe8d9a1bca23f118764ee423c6c"
+  integrity sha512-tM3mfchUIpo9WOFioO3eO/lTgRbtqcqBmSkkqfkjXmxn7vvhwykOXxOOKIXFP+ZConvLsS5KskM3yX+XBfDD4g==
 
 rx-lite-aggregates@^4.0.8:
   version "4.0.8"

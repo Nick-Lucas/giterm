@@ -1,12 +1,11 @@
 import fs from 'fs'
 import path from 'path'
-import { remote } from 'electron'
 
 let bashPath = ''
 if (process.env.NODE_ENV === 'development') {
   bashPath = path.resolve(__dirname, './bashrc')
 } else {
-  bashPath = path.resolve(remote.app.getPath('exe'), '../../bashrc')
+  bashPath = path.resolve(process.resourcesPath, 'bashrc')
 }
 
 export const BASHRC_PATH = bashPath

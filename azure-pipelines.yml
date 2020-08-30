@@ -6,6 +6,9 @@ trigger:
     include:
     - v*.*.*
 
+variables:
+- group: GITERM_CERT_GROUP
+
 pool:
   vmImage: 'ubuntu-18.04'
 
@@ -20,7 +23,7 @@ stages:
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
         yarn build-js
       displayName: Install
     - script: |
@@ -40,8 +43,13 @@ stages:
       inputs:
         version: '10.x'
         checkLatest: true
+    - task: DownloadSecureFile@1
+      displayName: Download Application Signing Certificate
+      name: certApp
+      inputs:
+        secureFile: 'DevIdApplication.p12'
     - script: |
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
       displayName: Install
     - script: |
         yarn build-js
@@ -51,6 +59,11 @@ stages:
         yarn pack:mac
         yarn rimraf dist/mac
       displayName: Build
+      env:
+        APPLEID: $(GITERM_APPLEID_UN)
+        APPLEIDPASS: $(GITERM_APPLEID_PW)
+        CSC_LINK: $(certApp.secureFilePath)
+        CSC_KEY_PASSWORD: $(GITERM_CERT_PW)
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermMac
 
@@ -62,7 +75,7 @@ stages:
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
       displayName: Install
     - script: |
         yarn build-js
@@ -84,7 +97,7 @@ stages:
         version: '10.x'
         checkLatest: true
     - script: |
-        yarn install --network-timeout 100000
+        yarn install --network-timeout=100000
       displayName: Install
     - script: |
         yarn build-js
