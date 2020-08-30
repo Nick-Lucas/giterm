@@ -40,6 +40,7 @@ dmg:
 mac:
   target: 
     - dmg
+    - zip
   category: public.app-category.tools
   icon: icon.icns
 
