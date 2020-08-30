@@ -1,3 +1,4 @@
+[![GitHub release (latest by date)](https://img.shields.io/badge/Giterm%20Website-0055A2)](https://nick-lucas.github.io/giterm/)
 [![Build Status](https://dev.azure.com/Nick-Lucas/Giterm/_apis/build/status/Giterm?branchName=master)](https://dev.azure.com/Nick-Lucas/Giterm/_build/latest?definitionId=1&branchName=master)
 [![GitHub release (latest by date)](https://img.shields.io/github/v/release/nick-lucas/giterm)](https://github.com/Nick-Lucas/giterm/releases/latest)
 
