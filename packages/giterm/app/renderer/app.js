@@ -12,6 +12,9 @@ import { Home } from './containers/home'
 import { showRemoteBranches, showBranchTags } from './store/config/actions'
 import { flipUserTerminalFullscreen } from './store/terminal/actions'
 
+import '../sentry'
+import { ErrorBoundary } from '@sentry/react'
+
 // Store Init
 const initialState = {}
 const routerHistory = createMemoryHistory()
@@ -55,12 +58,14 @@ const rootElement = document.querySelector(
   document.currentScript.getAttribute('data-container'),
 )
 ReactDOM.render(
-  <Provider store={store}>
-    <Router history={history}>
-      <Switch>
-        <Route exact path="/" component={Home} />
-      </Switch>
-    </Router>
-  </Provider>,
+  <ErrorBoundary fallback="An error occurred and has been reported. Please restart the app">
+    <Provider store={store}>
+      <Router history={history}>
+        <Switch>
+          <Route exact path="/" component={Home} />
+        </Switch>
+      </Router>
+    </Provider>
+  </ErrorBoundary>,
   rootElement,
 )

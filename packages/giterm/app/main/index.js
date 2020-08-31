@@ -1,5 +1,5 @@
 import path from 'path'
-import { app, crashReporter, BrowserWindow, Menu } from 'electron'
+import { app, BrowserWindow, Menu } from 'electron'
 import logger from 'electron-log'
 import { autoUpdater } from 'electron-updater'
 import getMenu from './menu'
@@ -7,6 +7,8 @@ import installExtension, {
   REACT_DEVELOPER_TOOLS,
   REDUX_DEVTOOLS,
 } from 'electron-devtools-installer'
+
+import '../sentry'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
@@ -30,12 +32,12 @@ const installExtensions = async () => {
   }
 }
 
-crashReporter.start({
-  productName: 'YourName',
-  companyName: 'YourCompany',
-  submitURL: 'https://your-domain.com/url-to-submit',
-  uploadToServer: false,
-})
+// crashReporter.start({
+//   productName: 'YourName',
+//   companyName: 'YourCompany',
+//   submitURL: 'https://your-domain.com/url-to-submit',
+//   uploadToServer: false,
+// })
 
 app.allowRendererProcessReuse = false
 
@@ -61,6 +63,7 @@ app.on('ready', async () => {
     show: false,
     webPreferences: {
       nodeIntegration: true,
+      preload: path.join(__dirname, '../sentry.js'),
     },
   })
   mainWindow.maximize()

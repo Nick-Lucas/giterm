@@ -1,6 +1,6 @@
 import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import createSagaMiddleware from 'redux-saga'
-// import persistState from 'redux-localstorage'
+import * as Sentry from '@sentry/electron'
 
 // Reducers
 import * as reducers from './reducers'
@@ -20,13 +20,28 @@ export default function configureStore(initialState) {
 
   // Side effect middlewares
   const sagaMiddleware = createSagaMiddleware({
-    onError: (error, info) => console.error('Error in saga: ', error, info),
+    onError: (error, info) => {
+      Sentry.captureException(error)
+      console.error('Error in saga: ', error, info)
+    },
   })
+
+  const sentryMiddleware = () => (next) => (action) => {
+    Sentry.addBreadcrumb({
+      category: 'redux',
+      message: action.type,
+    })
+    try {
+      return next(action)
+    } catch (err) {
+      console.error(err)
+      Sentry.captureException(err)
+    }
+  }
 
   // Store composition
   const enhancer = composeEnhancers(
-    applyMiddleware(sagaMiddleware),
-    // persistState(),
+    applyMiddleware(sagaMiddleware, sentryMiddleware),
   )
   const store = createStore(rootReducer, initialState, enhancer)
 

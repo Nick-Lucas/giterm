@@ -21,6 +21,9 @@ stages:
       inputs:
         version: '10.x'
         checkLatest: true
+    - publish: $(Build.SourcesDirectory)
+      artifact: SourceCode
+      displayName: Publish Source Code
     - script: |
         sudo apt install libkrb5-dev
         yarn install --network-timeout=100000
@@ -66,6 +69,7 @@ stages:
         CSC_KEY_PASSWORD: $(GITERM_CERT_PW)
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermMac
+      displayName: Publish Mac Build
 
   - job: Linux
     steps:
@@ -87,6 +91,7 @@ stages:
       displayName: Build
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermLinux
+      displayName: Publish Linux Build
       
   - job: Windows
     pool:
@@ -111,3 +116,4 @@ stages:
       displayName: Clean Artifacts
     - publish: $(Build.SourcesDirectory)/packages/giterm/dist 
       artifact: GitermWindows
+      displayName: Publish Windows Build
