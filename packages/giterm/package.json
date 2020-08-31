@@ -33,6 +33,7 @@
     "@babel/runtime": "^7.7.6",
     "@giterm/git": "1.0.0",
     "@giterm/gitgraph": "1.0.0",
+    "@sentry/cli": "^1.55.2",
     "@sentry/electron": "^2.0.0",
     "@sentry/react": "^5.22.3",
     "chokidar": "^3.3.1",
