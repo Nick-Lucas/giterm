@@ -142,39 +142,39 @@ export function Terminal({ onAlternateBufferChange }) {
   useEffect(() => {
     // TODO: check if lsof is on system and have alternatives in mind per platform
     const getCWD = async (pid) =>
-      new Promise((resolve) => {
+      new Promise((resolve, reject) => {
         exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
           if (e) {
-            throw e
+            reject(e)
+          } else {
+            resolve(stdout)
           }
-          resolve(stdout)
         })
       })
 
     const dispatchTerminalChanged = _.throttle(
-      () => {
-        getCWD(ptyProcess.pid).then((cwd) => {
-          if (!alternateBuffer) {
-            dispatch(terminalChanged(cwd))
-          }
-        })
+      async () => {
+        const cwd = await getCWD(ptyProcess.pid)
+        if (!alternateBuffer) {
+          dispatch(terminalChanged(cwd))
+        }
       },
       150,
       { leading: true, trailing: true },
     )
 
-    const onNewLineDisposable = terminal.onKey((e) => {
+    const onNewLineDisposable = terminal.onKey(async (e) => {
       if (e.domEvent.code === 'Enter') {
-        dispatchTerminalChanged()
+        await dispatchTerminalChanged()
       }
     })
 
     let lastProcess = ptyProcess.process
-    const onProcessChangedDisposable = ptyProcess.onData(function() {
+    const onProcessChangedDisposable = ptyProcess.onData(async () => {
       const processChanged = lastProcess !== ptyProcess.process
       if (processChanged) {
         lastProcess = ptyProcess.process
-        dispatchTerminalChanged()
+        await dispatchTerminalChanged()
       }
     })
 
