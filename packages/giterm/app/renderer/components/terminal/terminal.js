@@ -15,13 +15,12 @@ import * as XTerm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { spawn } from 'node-pty'
-
 import { shell } from 'electron'
-import { exec } from 'child_process'
 
 import { terminalChanged } from 'app/store/terminal/actions'
 import { INITIAL_CWD } from 'app/lib/cwd'
 import { BASHRC_PATH } from './bash-config'
+import { getCWD } from './getCWD'
 
 const terminalOpts = {
   allowTransparency: true,
@@ -162,19 +161,6 @@ export function Terminal({ onAlternateBufferChange }) {
 
   // Trigger app state refreshes based on terminal changes
   useEffect(() => {
-    // TODO: platform specific queries
-    // See hypercwd for examples: https://github.com/hharnisc/hypercwd
-    const getCWD = async (pid) =>
-      new Promise((resolve, reject) => {
-        exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
-          if (e) {
-            reject(e)
-          } else {
-            resolve(stdout)
-          }
-        })
-      })
-
     const handleTerminalUpdates = _.debounce(
       async () => {
         if (alternateBuffer) {
@@ -182,8 +168,6 @@ export function Terminal({ onAlternateBufferChange }) {
           // Actually the user might be lost in there forever...
           return
         }
-
-        console.log('Check CWD')
 
         const cwd = await getCWD(ptyProcess.pid)
         dispatch(terminalChanged(cwd))
