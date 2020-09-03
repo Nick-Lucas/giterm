@@ -15,13 +15,12 @@ import * as XTerm from 'xterm'
 import { FitAddon } from 'xterm-addon-fit'
 import { WebLinksAddon } from 'xterm-addon-web-links'
 import { spawn } from 'node-pty'
-
 import { shell } from 'electron'
-import { exec } from 'child_process'
 
 import { terminalChanged } from 'app/store/terminal/actions'
 import { INITIAL_CWD } from 'app/lib/cwd'
 import { BASHRC_PATH } from './bash-config'
+import { getCWD } from './getCWD'
 
 const terminalOpts = {
   allowTransparency: true,
@@ -45,6 +44,9 @@ export function Terminal({ onAlternateBufferChange }) {
   const [alternateBuffer, setAlternateBuffer] = useState(false)
   const [focused, setFocused] = useState(false)
 
+  //
+  // PTY Instance
+
   const ptyProcess = useMemo(() => {
     // TODO: integrate user preferences into this. Allow for (or bundle?) git-bash on windows
     const shell = '/bin/bash' //process.env[os.platform() === 'win32' ? 'COMSPEC' : 'SHELL']
@@ -59,6 +61,9 @@ export function Terminal({ onAlternateBufferChange }) {
 
     return ptyProcess
   }, [])
+
+  //
+  // Terminal Instance
 
   const [terminal, fit] = useMemo(() => {
     const terminal = new XTerm.Terminal(terminalOpts)
@@ -75,22 +80,26 @@ export function Terminal({ onAlternateBufferChange }) {
 
     return [terminal, fit]
   }, [])
+
   useEffect(() => {
     terminal.open(container.current)
   }, [terminal])
+
+  //
+  // Resize Events
 
   const handleResizeTerminal = useCallback(() => {
     terminal.resize(10, 10)
     fit.fit()
     terminal.focus()
   }, [fit, terminal])
+
   useLayoutEffect(() => {
     setTimeout(() => {
       handleResizeTerminal()
     }, 0)
   }, [fullscreen, handleResizeTerminal, terminal.element])
 
-  // Resize terminal based on window size changes
   useEffect(() => {
     const handleResize = _.debounce(handleResizeTerminal, 5)
 
@@ -108,7 +117,9 @@ export function Terminal({ onAlternateBufferChange }) {
     }
   }, [handleResizeTerminal, ptyProcess, terminal])
 
-  // Integrate terminal and pty processes
+  //
+  // Integrate Terminal and PTY
+
   useEffect(() => {
     const updateAlternateBuffer = _.debounce((active) => {
       // ensure xterm has a few moments to trigger its
@@ -138,53 +149,65 @@ export function Terminal({ onAlternateBufferChange }) {
     }
   }, [onAlternateBufferChange, ptyProcess, terminal])
 
+  // // TODO: ensure the process can't be exited and restart if need be
+  // that.ptyProcess.on('exit', () => {
+  //   console.log('recreating')
+  //   that.setupXTerm()
+  //   that.setupTerminalEvents()
+  // })
+
+  //
+  // Observe CWD and Other state
+
   // Trigger app state refreshes based on terminal changes
   useEffect(() => {
-    // TODO: check if lsof is on system and have alternatives in mind per platform
-    const getCWD = async (pid) =>
-      new Promise((resolve) => {
-        exec(`lsof -p ${pid} | grep cwd | awk '{print $NF}'`, (e, stdout) => {
-          if (e) {
-            throw e
-          }
-          resolve(stdout)
-        })
-      })
+    const handleTerminalUpdates = _.debounce(
+      async () => {
+        if (alternateBuffer) {
+          // State won't change while in VI
+          // Actually the user might be lost in there forever...
+          return
+        }
 
-    const dispatchTerminalChanged = _.throttle(
-      () => {
-        getCWD(ptyProcess.pid).then((cwd) => {
-          if (!alternateBuffer) {
-            dispatch(terminalChanged(cwd))
-          }
-        })
+        const cwd = await getCWD(ptyProcess.pid)
+        dispatch(terminalChanged(cwd))
       },
       150,
       { leading: true, trailing: true },
     )
 
-    const onNewLineDisposable = terminal.onKey((e) => {
+    // Refresh immediately after input
+    const onNewLineDisposable = terminal.onKey(async (e) => {
       if (e.domEvent.code === 'Enter') {
-        dispatchTerminalChanged()
+        await handleTerminalUpdates()
       }
     })
 
+    // Refresh after new lines received
+    const onLineFeedDisposable = terminal.onLineFeed(async () => {
+      await handleTerminalUpdates()
+    })
+
+    // Refresh after long running processes finish
     let lastProcess = ptyProcess.process
-    const onProcessChangedDisposable = ptyProcess.onData(function() {
+    const onProcessChangedDisposable = ptyProcess.onData(async () => {
       const processChanged = lastProcess !== ptyProcess.process
       if (processChanged) {
         lastProcess = ptyProcess.process
-        dispatchTerminalChanged()
+        await handleTerminalUpdates()
       }
     })
 
     return () => {
       onNewLineDisposable.dispose()
       onProcessChangedDisposable.dispose()
+      onLineFeedDisposable.dispose()
     }
   }, [alternateBuffer, dispatch, ptyProcess, ptyProcess.pid, terminal])
 
-  // Ensure typing always gives focus to the terminal
+  //
+  // Autofocus Terminal on keys
+
   useEffect(() => {
     const handleNotFocused = () => {
       if (!focused) {
@@ -200,13 +223,6 @@ export function Terminal({ onAlternateBufferChange }) {
       window.removeEventListener('keydown', handleNotFocused)
     }
   }, [focused, terminal])
-
-  // // TODO: ensure the process can't be exited and restart if need be
-  // that.ptyProcess.on('exit', () => {
-  //   console.log('recreating')
-  //   that.setupXTerm()
-  //   that.setupTerminalEvents()
-  // })
 
   return <TerminalContainer ref={container} />
 }
