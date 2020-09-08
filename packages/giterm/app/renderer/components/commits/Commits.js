@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { List, AutoSizer } from 'react-virtualized'
-import debounce from 'debounce'
+import _ from 'lodash'
 
 import Header from './header'
 import { reachedEndOfList } from 'app/store/commits/actions'
@@ -53,9 +53,21 @@ export function Commits() {
     }
   })
 
+  const handleReachedEndOfList = useMemo(
+    () =>
+      _.debounce(
+        () => {
+          dispatch(reachedEndOfList())
+        },
+        1000,
+        { leading: true, trailing: false },
+      ),
+    [dispatch],
+  )
+
   const handleScroll = useMemo(
     () =>
-      debounce(
+      _.throttle(
         ({ clientHeight, scrollHeight, scrollTop }) => {
           if (commits.length === 0) {
             return
@@ -66,13 +78,13 @@ export function Commits() {
             (scrollHeight - scrollBottom) / RowHeight,
           )
           if (remainingRows < 20) {
-            dispatch(reachedEndOfList())
+            handleReachedEndOfList()
           }
         },
-        1000,
-        true,
+        50,
+        { leading: true, trailing: true },
       ),
-    [commits.length, dispatch],
+    [commits.length, handleReachedEndOfList],
   )
 
   return (
