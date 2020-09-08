@@ -1,43 +1,25 @@
 import React, { useCallback, useMemo } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
-import RightClickArea from 'react-electron-contextmenu'
+import { RightClickArea } from 'app/lib/primitives'
 import { clipboard } from 'electron'
 
 import { checkoutCommit } from 'app/store/commits/actions'
 import { Row } from './Row'
-import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
+import { RowHeight } from './constants'
 import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 
-export function Commit({ index, style, onSelect, isSelected }) {
+export function Commit({ index, style, onSelect, isSelected, columns }) {
   const dispatch = useDispatch()
 
   const branchesBySha = useSelector((state) => state.branches.bySha)
   const tagsBySha = useSelector((state) => state.tags.bySha)
-  const { nodes, links, width: graphWidth } = useSelector(
-    (state) => state.graph,
-  )
+  const { nodes, links } = useSelector((state) => state.graph)
   const commits = useSelector((state) => state.commits?.commits) ?? []
   const commit = commits[index]
 
   const status = useSelector((state) => state.status)
   const { showRemoteBranches } = useSelector((state) => state.config)
-
-  const columns = useMemo(() => {
-    const graphCols = Math.min(8, graphWidth)
-
-    return [
-      {
-        name: '',
-        key: 'graph',
-        width: `${GraphIndent + GraphColumnWidth * graphCols}px`,
-      },
-      { name: 'SHA', key: 'sha7', width: '50px' },
-      { name: 'Message', key: 'message', width: '500px', showTags: true },
-      { name: 'Author', key: 'authorStr', width: '150px' },
-      { name: 'Date', key: 'dateStr', width: '150px' },
-    ]
-  }, [graphWidth])
 
   const handleCheckoutCommit = useCallback(
     (commit) => {

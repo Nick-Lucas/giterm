@@ -2,12 +2,12 @@ import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 import styled from 'styled-components'
 
-import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
 import { colours } from 'app/lib/theme'
+import { RightClickArea } from 'app/lib/primitives'
 
 export function Changes() {
   const _files = useSelector((state) => state.status.files) || []

@@ -1,12 +1,12 @@
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
-import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 import { Target } from 'react-feather'
 
 import { Section } from './Section'
 import { Row, Label } from './Row'
+import { RightClickArea } from 'app/lib/primitives'
 
 export function Tags() {
   const _tags = useSelector((state) => state.tags.list) || []

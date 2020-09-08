@@ -13,7 +13,7 @@ import { useValueEffect } from 'app/lib/hooks'
 export function Commits() {
   const dispatch = useDispatch()
   const commits = useSelector((state) => state.commits?.commits) ?? []
-  const { nodes } = useSelector((state) => state.graph)
+  const graphWidth = useSelector((state) => state.graph.width)
   const headSHA = useSelector((state) => state.status.headSHA)
 
   const listRef = useRef()
@@ -22,10 +22,7 @@ export function Commits() {
   })
 
   const columns = useMemo(() => {
-    const graphCols = Math.min(
-      8,
-      nodes.reduce((max, node) => Math.max(node.column + 1, max), 3),
-    )
+    const graphCols = Math.min(8, graphWidth)
 
     return [
       {
@@ -38,7 +35,7 @@ export function Commits() {
       { name: 'Author', key: 'authorStr', width: '150px' },
       { name: 'Date', key: 'dateStr', width: '150px' },
     ]
-  }, [nodes])
+  }, [graphWidth])
 
   const [selectedSHA, setSelectedSHA] = useState('')
   const handleSelect = useCallback((commit) => {
@@ -99,7 +96,7 @@ export function Commits() {
               height={height}
               rowHeight={RowHeight}
               rowCount={commits.length}
-              overscanRowCount={50}
+              overscanRowCount={20}
               rowRenderer={({ index, style }) => (
                 <Commit
                   key={commits[index].sha}
@@ -107,6 +104,7 @@ export function Commits() {
                   style={style}
                   isSelected={selectedSHA === commits[index].sha}
                   onSelect={handleSelect}
+                  columns={columns}
                 />
               )}
               onScroll={handleScroll}
