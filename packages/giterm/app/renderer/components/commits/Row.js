@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useCallback, useMemo, memo } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import * as propTypes from './props'
@@ -45,41 +45,160 @@ const ColumnText = styled.div`
   text-overflow: ellipsis;
 `
 
-export class Row extends React.Component {
-  handleSelect = () => {
-    const { commit, onSelect } = this.props
-    onSelect(commit)
-  }
+function getPathLinePoints(link, indexOffset = 0) {
+  const x1 = link.x1 * GraphColumnWidth + GraphIndent
+  const y1 = -RowHeight / 2 + indexOffset * RowHeight
+  const x2 = link.x2 * GraphColumnWidth + GraphIndent
+  const y2 = RowHeight / 2 + indexOffset * RowHeight
 
-  handleDoubleClick = () => {
-    const { commit, onDoubleClick } = this.props
-    onDoubleClick(commit)
-  }
+  return [
+    ...(link.nodeAtStart
+      ? [{ x: x1, y: y1 }]
+      : [
+          { x: x1, y: y1 },
+          { x: x1, y: y1 + 3 },
+        ]),
+    x1 < x2
+      ? { x: x2, y: y1 + RowHeight / 2 }
+      : { x: x1, y: y2 - RowHeight / 2 },
+    ...(link.nodeAtEnd
+      ? [{ x: x2, y: y2 }]
+      : [
+          { x: x2, y: y2 - 3 },
+          { x: x2, y: y2 },
+        ]),
+  ]
+}
 
-  getWrapperStyle() {
-    const { height, selected, isHead } = this.props
+export const Row = memo(
+  ({
+    columns,
+    commit,
+    refs,
+    isHead,
+    node,
+    linksBefore,
+    linksAfter,
+    height,
+    selected,
+    onSelect,
+    onDoubleClick,
+  }) => {
+    const handleSelect = useCallback(() => {
+      onSelect(commit)
+    }, [commit, onSelect])
 
-    return {
-      height,
-      ...(selected ? selectedStyle : {}),
-      ...(isHead ? headStyle : {}),
-    }
-  }
+    const handleDoubleClick = useCallback(() => {
+      onDoubleClick(commit)
+    }, [commit, onDoubleClick])
 
-  render() {
-    const { columns, commit } = this.props
+    const pairedRefs = useMemo(() => {
+      const [tags, branches] = _.partition(
+        refs,
+        (ref) => ref.type === propTypes.REF_TYPE_TAG,
+      )
+      const [upstreamBranches, localBranches] = _.partition(
+        branches,
+        (branch) => branch.isRemote,
+      )
+
+      // If both local and remote heads are on this commit, just display one
+      const pairedRefs = []
+      for (const localBranch of localBranches) {
+        const upstreamBranchIndex = upstreamBranches.findIndex(
+          (other) => other.id === localBranch.upstream?.name,
+        )
+
+        if (upstreamBranchIndex >= 0) {
+          upstreamBranches.splice(upstreamBranchIndex, 1)
+        }
+        pairedRefs.push({
+          ref: localBranch,
+          remoteInSync: upstreamBranchIndex >= 0,
+        })
+      }
+      pairedRefs.push(
+        ...upstreamBranches.map((ref) => ({
+          ref,
+        })),
+      )
+      pairedRefs.push(
+        ...tags.map((tag) => ({
+          ref: tag,
+        })),
+      )
+
+      return pairedRefs
+    }, [refs])
+
+    const wrapperStyle = useMemo(() => {
+      return {
+        height,
+        ...(selected ? selectedStyle : {}),
+        ...(isHead ? headStyle : {}),
+      }
+    }, [height, isHead, selected])
 
     return (
       <RowWrapper
-        style={this.getWrapperStyle()}
-        onClick={this.handleSelect}
-        onDoubleClick={this.handleDoubleClick}>
+        style={wrapperStyle}
+        onClick={handleSelect}
+        onDoubleClick={handleDoubleClick}>
         {columns.map((column) => (
           <RowColumn key={column.key} style={{ width: column.width }}>
-            {column.showTags && this.renderRefs()}
+            {column.showTags &&
+              pairedRefs.map(({ ref, remoteInSync = false }) => (
+                <GitRef
+                  key={ref.id}
+                  label={ref.name}
+                  current={ref.isHead}
+                  remoteInSync={remoteInSync}
+                  type={ref.type}
+                  ahead={ref.upstream?.ahead}
+                  behind={ref.upstream?.behind}
+                />
+              ))}
 
             {column.key === 'graph' ? (
-              this.renderGraphItem()
+              !!node && (
+                <svg>
+                  {linksBefore.map((link) => (
+                    <PathLine
+                      key={JSON.stringify(link)}
+                      points={getPathLinePoints(link, 0)}
+                      stroke={Colours[link.colour % Colours.length]}
+                      strokeWidth={3}
+                      fill="none"
+                      r={2}
+                    />
+                  ))}
+                  {linksAfter.map((link) => (
+                    <PathLine
+                      key={JSON.stringify(link)}
+                      points={getPathLinePoints(link, 1)}
+                      stroke={Colours[link.colour % Colours.length]}
+                      strokeWidth={3}
+                      fill="none"
+                      r={2}
+                    />
+                  ))}
+                  <circle
+                    key={node.sha}
+                    cx={GraphIndent + node.column * GraphColumnWidth}
+                    cy={RowHeight / 2}
+                    r={5}
+                    fill={
+                      Colours[
+                        (node.secondaryColour
+                          ? node.secondaryColour
+                          : node.primaryColour) % Colours.length
+                      ]
+                    }
+                    strokeWidth={3}
+                    stroke={Colours[node.primaryColour % Colours.length]}
+                  />
+                </svg>
+              )
             ) : (
               <ColumnText>{commit[column.key]}</ColumnText>
             )}
@@ -87,131 +206,10 @@ export class Row extends React.Component {
         ))}
       </RowWrapper>
     )
-  }
+  },
+)
 
-  renderRefs() {
-    const { refs } = this.props
-
-    const [tags, branches] = _.partition(
-      refs,
-      (ref) => ref.type === propTypes.REF_TYPE_TAG,
-    )
-    const [upstreamBranches, localBranches] = _.partition(
-      branches,
-      (branch) => branch.isRemote,
-    )
-
-    // If both local and remote heads are on this commit, just display one
-    const pairedRefs = []
-    for (const localBranch of localBranches) {
-      const upstreamBranchIndex = upstreamBranches.findIndex(
-        (other) => other.id === localBranch.upstream?.name,
-      )
-
-      if (upstreamBranchIndex >= 0) {
-        upstreamBranches.splice(upstreamBranchIndex, 1)
-      }
-      pairedRefs.push({
-        ref: localBranch,
-        remoteInSync: upstreamBranchIndex >= 0,
-      })
-    }
-    pairedRefs.push(
-      ...upstreamBranches.map((ref) => ({
-        ref,
-      })),
-    )
-    pairedRefs.push(
-      ...tags.map((tag) => ({
-        ref: tag,
-      })),
-    )
-
-    return pairedRefs.map(({ ref, remoteInSync = false }) => (
-      <GitRef
-        key={ref.id}
-        label={ref.name}
-        current={ref.isHead}
-        remoteInSync={remoteInSync}
-        type={ref.type}
-        ahead={ref.upstream?.ahead}
-        behind={ref.upstream?.behind}
-      />
-    ))
-  }
-
-  renderGraphItem() {
-    const { node, linksBefore, linksAfter } = this.props
-    if (!node) {
-      return null
-    }
-
-    return (
-      <svg>
-        {linksBefore.map((link) => (
-          <PathLine
-            key={JSON.stringify(link)}
-            points={this.getPathLinePoints(link, 0)}
-            stroke={Colours[link.colour % Colours.length]}
-            strokeWidth={3}
-            fill="none"
-            r={2}
-          />
-        ))}
-        {linksAfter.map((link) => (
-          <PathLine
-            key={JSON.stringify(link)}
-            points={this.getPathLinePoints(link, 1)}
-            stroke={Colours[link.colour % Colours.length]}
-            strokeWidth={3}
-            fill="none"
-            r={2}
-          />
-        ))}
-        <circle
-          key={node.sha}
-          cx={GraphIndent + node.column * GraphColumnWidth}
-          cy={RowHeight / 2}
-          r={5}
-          fill={
-            Colours[
-              (node.secondaryColour
-                ? node.secondaryColour
-                : node.primaryColour) % Colours.length
-            ]
-          }
-          strokeWidth={3}
-          stroke={Colours[node.primaryColour % Colours.length]}
-        />
-      </svg>
-    )
-  }
-
-  getPathLinePoints(link, indexOffset = 0) {
-    const x1 = link.x1 * GraphColumnWidth + GraphIndent
-    const y1 = -RowHeight / 2 + indexOffset * RowHeight
-    const x2 = link.x2 * GraphColumnWidth + GraphIndent
-    const y2 = RowHeight / 2 + indexOffset * RowHeight
-
-    return [
-      ...(link.nodeAtStart
-        ? [{ x: x1, y: y1 }]
-        : [
-            { x: x1, y: y1 },
-            { x: x1, y: y1 + 3 },
-          ]),
-      x1 < x2
-        ? { x: x2, y: y1 + RowHeight / 2 }
-        : { x: x1, y: y2 - RowHeight / 2 },
-      ...(link.nodeAtEnd
-        ? [{ x: x2, y: y2 }]
-        : [
-            { x: x2, y: y2 - 3 },
-            { x: x2, y: y2 },
-          ]),
-    ]
-  }
-}
+Row.displayName = 'Row'
 
 Row.propTypes = {
   selected: PropTypes.bool,
