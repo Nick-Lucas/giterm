@@ -6,6 +6,7 @@ import { CWD_UPDATED } from 'app/store/config/actions'
 import { gitRefsChanged, gitHeadChanged } from './actions'
 import { CORE_INIT } from 'app/store/core/actions'
 import { STATUS_UPDATED } from 'app/store/status/actions'
+import { sentrySafeWrapper } from 'app/store/helpers'
 
 function* listenForRefChanges() {
   const cwd = yield select((state) => state.config.cwd)
@@ -44,6 +45,12 @@ function* listenForHeadChanges() {
 }
 
 export function* watch() {
-  yield takeLatest([CORE_INIT, CWD_UPDATED], listenForRefChanges)
-  yield takeEvery([CORE_INIT], listenForHeadChanges)
+  yield takeLatest(
+    [CORE_INIT, CWD_UPDATED],
+    sentrySafeWrapper(listenForRefChanges, { restartOnError: true }),
+  )
+  yield takeEvery(
+    [CORE_INIT],
+    sentrySafeWrapper(listenForHeadChanges, { restartOnError: true }),
+  )
 }

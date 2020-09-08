@@ -2,6 +2,7 @@ import { takeLatest, put, select } from 'redux-saga/effects'
 
 import { cwdUpdated } from './actions'
 import { TERMINAL_CHANGED } from 'app/store/terminal/actions'
+import { sentrySafeWrapper } from 'app/store/helpers'
 
 function* checkCwd(action) {
   const { cwd } = action
@@ -13,5 +14,5 @@ function* checkCwd(action) {
 }
 
 export function* watch() {
-  yield takeLatest([TERMINAL_CHANGED], checkCwd)
+  yield takeLatest([TERMINAL_CHANGED], sentrySafeWrapper(checkCwd))
 }
