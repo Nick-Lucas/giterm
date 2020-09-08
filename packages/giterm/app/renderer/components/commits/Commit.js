@@ -14,7 +14,9 @@ export function Commit({ index, style, onSelect, isSelected }) {
 
   const branchesBySha = useSelector((state) => state.branches.bySha)
   const tagsBySha = useSelector((state) => state.tags.bySha)
-  const { nodes, links } = useSelector((state) => state.graph)
+  const { nodes, links, width: graphWidth } = useSelector(
+    (state) => state.graph,
+  )
   const commits = useSelector((state) => state.commits?.commits) ?? []
   const commit = commits[index]
 
@@ -22,10 +24,7 @@ export function Commit({ index, style, onSelect, isSelected }) {
   const { showRemoteBranches } = useSelector((state) => state.config)
 
   const columns = useMemo(() => {
-    const graphCols = Math.min(
-      8,
-      nodes.reduce((max, node) => Math.max(node.column + 1, max), 3),
-    )
+    const graphCols = Math.min(8, graphWidth)
 
     return [
       {
@@ -38,7 +37,7 @@ export function Commit({ index, style, onSelect, isSelected }) {
       { name: 'Author', key: 'authorStr', width: '150px' },
       { name: 'Date', key: 'dateStr', width: '150px' },
     ]
-  }, [nodes])
+  }, [graphWidth])
 
   const handleCheckoutCommit = useCallback(
     (commit) => {

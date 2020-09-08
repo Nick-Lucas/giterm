@@ -1,4 +1,3 @@
-import { updateReducer } from 'app/store/helpers'
 import { GRAPH_UPDATED } from './actions'
 
 const initialState = {
@@ -7,4 +6,20 @@ const initialState = {
   links: [],
   rehydrationPackage: undefined,
 }
-export const reducer = updateReducer(GRAPH_UPDATED, initialState)
+
+export function reducer(state = initialState, action) {
+  switch (action.type) {
+    case GRAPH_UPDATED: {
+      const { type, nodes, ...payload } = action
+
+      return {
+        nodes,
+        ...payload,
+        width: nodes.reduce((max, node) => Math.max(node.column + 1, max), 3),
+      }
+    }
+
+    default:
+      return state
+  }
+}
