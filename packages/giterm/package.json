@@ -1,6 +1,6 @@
 {
   "name": "giterm",
-  "version": "0.9.1",
+  "version": "0.10.0",
   "description": "A git gui for terminal lovers",
   "homepage": "https://github.com/Nick-Lucas/giterm",
   "main": "init.js",
@@ -50,7 +50,6 @@
     "prop-types": "^15.7.2",
     "react": "^16.12.0",
     "react-dom": "^16.12.0",
-    "react-electron-contextmenu": "^1.0.0",
     "react-feather": "^1.1.1",
     "react-redux": "^7.1.3",
     "react-router": "^5.1.2",

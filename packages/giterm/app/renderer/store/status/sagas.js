@@ -5,6 +5,7 @@ import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
 import { CWD_UPDATED } from 'app/store/config/actions'
 import { Git } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
+import { sentrySafeWrapper } from 'app/store/helpers'
 
 function* updateStatus() {
   const cwd = yield select((state) => state.config.cwd)
@@ -20,6 +21,6 @@ function* updateStatus() {
 export function* watch() {
   yield takeLatest(
     [CORE_INIT, CWD_UPDATED, TERMINAL_CHANGED, GIT_REFS_CHANGED],
-    updateStatus,
+    sentrySafeWrapper(updateStatus),
   )
 }

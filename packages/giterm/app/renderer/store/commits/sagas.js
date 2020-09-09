@@ -5,6 +5,7 @@ import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from 'app/store/config/actions'
 import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
 import { Git } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
+import { sentrySafeWrapper } from 'app/store/helpers'
 
 function* reloadCommits(action) {
   const cwd = yield select((state) => state.config.cwd)
@@ -51,7 +52,7 @@ export function* watch() {
       REACHED_END_OF_LIST,
       SHOW_REMOTE_BRANCHES,
     ],
-    reloadCommits,
+    sentrySafeWrapper(reloadCommits),
   )
-  yield takeLatest([CHECKOUT_COMMIT], checkoutCommit)
+  yield takeLatest([CHECKOUT_COMMIT], sentrySafeWrapper(checkoutCommit))
 }

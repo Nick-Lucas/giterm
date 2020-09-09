@@ -1,10 +1,10 @@
 import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
-import RightClickArea from 'react-electron-contextmenu'
 import { clipboard } from 'electron'
 import { Cloud, GitBranch } from 'react-feather'
 
+import { RightClickArea } from 'app/lib/primitives'
 import { Section } from './Section'
 import { Row, Label } from './Row'
 import { BranchUpstreamState } from './BranchUpstreamState'

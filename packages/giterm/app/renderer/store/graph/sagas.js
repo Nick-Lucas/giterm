@@ -3,6 +3,7 @@ import { takeEvery, put, select } from 'redux-saga/effects'
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '@giterm/gitgraph'
 import { COMMITS_UPDATED } from 'app/store/commits/actions'
+import { sentrySafeWrapper } from 'app/store/helpers'
 
 function* recalculateGraph() {
   // const { cwd, showRemoteBranches } = yield select((state) => state.config)
@@ -45,5 +46,5 @@ function* recalculateGraph() {
 }
 
 export function* watch() {
-  yield takeEvery([COMMITS_UPDATED], recalculateGraph)
+  yield takeEvery([COMMITS_UPDATED], sentrySafeWrapper(recalculateGraph))
 }
