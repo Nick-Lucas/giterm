@@ -11,6 +11,15 @@ import repoResolver from './repo-resolver'
 
 import { STATE } from './constants'
 
+function perfStart(name) {
+  performance.mark(name + '/start')
+}
+
+function perfEnd(name) {
+  performance.mark(name + '/end')
+  performance.measure(name, name + '/start', name + '/end')
+}
+
 export class Git {
   constructor(cwd) {
     this.rawCwd = cwd
@@ -27,7 +36,9 @@ export class Git {
       }
 
       try {
+        perfStart('GIT/open-simple')
         this._simple = new SimpleGit(this.cwd)
+        perfEnd('GIT/open-simple')
       } catch (err) {
         console.error(err)
         this._simple = null
@@ -43,7 +54,9 @@ export class Git {
       }
 
       try {
+        perfStart('GIT/open-complex')
         this._complex = await NodeGit.Repository.open(this.cwd)
+        perfEnd('GIT/open-complex')
       } catch (err) {
         console.error(err)
         this._complex = null
@@ -209,21 +222,34 @@ export class Git {
       return []
     }
 
+    perfStart('GIT/walk')
+
+    perfStart('GIT/walk-create')
     const walker = NodeGit.Revwalk.create(repo)
     walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
     walker.pushGlob('refs/heads/*')
     if (showRemote) walker.pushGlob('refs/remotes/*')
+    perfEnd('GIT/walk-create')
 
     if (startIndex > 0) {
+      perfStart('GIT/walk-fastwalk')
       await walker.fastWalk(startIndex)
+      perfEnd('GIT/walk-fastwalk')
     }
-    const foundCommits = await walker.getCommits(number)
 
+    perfStart('GIT/walk-getcommits')
+    const foundCommits = await walker.getCommits(number)
+    perfEnd('GIT/walk-getcommits')
+
+    perfStart('GIT/walk-iterate')
     const hash = createHash('sha1')
     const commits = new Array(foundCommits.length)
     for (let i = 0; i < foundCommits.length; i++) {
       const c = foundCommits[i]
+
+      perfStart('GIT/digest-update')
       hash.update(c.sha())
+      perfEnd('GIT/digest-update')
 
       const date = Moment(c.date())
 
@@ -247,7 +273,15 @@ export class Git {
         isHead: headSha === c.sha(),
       }
     }
-    return [commits, hash.digest('hex')]
+    perfEnd('GIT/walk-iterate')
+
+    perfEnd('GIT/walk')
+
+    perfStart('GIT/digest-finalise')
+    const digest = hash.digest('hex')
+    perfEnd('GIT/digest-finalise')
+
+    return [commits, digest]
   }
 
   checkout = async (sha) => {
