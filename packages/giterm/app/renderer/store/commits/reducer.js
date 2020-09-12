@@ -1,7 +1,7 @@
 import { COMMITS_UPDATED, REACHED_END_OF_LIST } from './actions'
 
 const initialState = {
-  numberToLoad: 200,
+  numberToLoad: 100,
   commits: [],
 }
 

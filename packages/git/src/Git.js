@@ -5,21 +5,24 @@ import SimpleGit from 'simple-git'
 import chokidar from 'chokidar'
 import path from 'path'
 import { createHash } from 'crypto'
-import moment from 'moment'
-window.nodegit = NodeGit
+
 import { spawn } from 'child_process'
 
 import repoResolver from './repo-resolver'
 
 import { STATE } from './constants'
 
+const PROFILING = true
 function perfStart(name) {
   performance.mark(name + '/start')
 }
-
 function perfEnd(name) {
   performance.mark(name + '/end')
   performance.measure(name, name + '/start', name + '/end')
+}
+if (process.env.NODE_ENV !== 'development' || !PROFILING) {
+  perfStart = function() {}
+  perfEnd = function() {}
 }
 
 export class Git {
@@ -291,7 +294,6 @@ export class Git {
         throw `Separator ${SEP} in output, cannot parse git history. ${formatSegments.length} segments found, ${FORMAT_SEGMENTS_COUNT} expected. Values: ${formatSegments}`
       }
 
-      perfStart('GIT/log/deserialise/parse-segments')
       const [
         sha,
         parentShasStr,
@@ -302,21 +304,18 @@ export class Git {
       ] = formatSegments
       const parentShas = parentShasStr.split(' ')
       const author = `${authorName} <${authorEmail}>`
-      perfEnd('GIT/log/deserialise/parse-segments')
 
-      perfStart('GIT/log/deserialise/allocate-commit')
       commits[i] = {
         sha: sha,
         sha7: sha.substring(0, 6),
         message: subject,
-        dateISO = authorDateISO,
+        dateISO: authorDateISO,
         email: authorEmail,
         author: authorName,
         authorStr: author,
         parents: parentShas,
         isHead: headSha === sha,
       }
-      perfEnd('GIT/log/deserialise/allocate-commit')
 
       hash.update(sha)
     }

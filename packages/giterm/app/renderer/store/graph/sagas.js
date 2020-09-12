@@ -1,4 +1,4 @@
-import { takeEvery, put, select, call } from 'redux-saga/effects'
+import { takeEvery, put, select } from 'redux-saga/effects'
 
 import { graphUpdateSkipped, graphUpdated } from './actions'
 import { commitsToGraph } from '@giterm/gitgraph'
