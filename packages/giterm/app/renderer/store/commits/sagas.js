@@ -6,6 +6,7 @@ import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
 import { Git } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
+import { measure } from 'app/lib/profiling'
 
 function* reloadCommits(action) {
   const cwd = yield select((state) => state.config.cwd)
@@ -23,10 +24,12 @@ function* reloadCommits(action) {
   ].includes(action.type)
 
   const [commits, digest] = yield call(() =>
-    git.loadAllCommits(
-      showRemoteBranches,
-      reloadAll ? 0 : existingCommits.length,
-      reloadAll ? numberToLoad : numberToLoad - existingCommits.length,
+    measure('load-commits', () =>
+      git.loadAllCommits(
+        showRemoteBranches,
+        reloadAll ? 0 : existingCommits.length,
+        reloadAll ? numberToLoad : numberToLoad - existingCommits.length,
+      ),
     ),
   )
 
