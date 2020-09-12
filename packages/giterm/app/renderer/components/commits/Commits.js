@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { List, AutoSizer } from 'react-virtualized'
 import _ from 'lodash'
+import moment from 'moment'
 
 import Header from './header'
 import { reachedEndOfList } from 'app/store/commits/actions'
@@ -33,7 +34,12 @@ export function Commits() {
       { name: 'SHA', key: 'sha7', width: '50px' },
       { name: 'Message', key: 'message', width: '500px', showTags: true },
       { name: 'Author', key: 'authorStr', width: '150px' },
-      { name: 'Date', key: 'dateStr', width: '150px' },
+      {
+        name: 'Date',
+        key: 'dateISO',
+        width: '150px',
+        format: (value) => moment(value).format('YYYY/MM/DD HH:mm'),
+      },
     ]
   }, [graphWidth])
 

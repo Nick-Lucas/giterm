@@ -5,7 +5,9 @@ import SimpleGit from 'simple-git'
 import chokidar from 'chokidar'
 import path from 'path'
 import { createHash } from 'crypto'
-import Moment from 'moment'
+import moment from 'moment'
+window.nodegit = NodeGit
+import { spawn } from 'child_process'
 
 import repoResolver from './repo-resolver'
 
@@ -63,6 +65,35 @@ export class Git {
       }
     }
     return this._complex
+  }
+
+  getSpawn = async () => {
+    if (this.cwd === '/') {
+      return null
+    }
+
+    return async (args) => {
+      const buffers = []
+      const child = spawn('git', args, { cwd: this.cwd })
+
+      return new Promise((resolve, reject) => {
+        child.stdout.on('data', (data) => {
+          buffers.push(data)
+        })
+
+        child.stderr.on('data', (data) => {
+          console.error('STDERR', String(data))
+        })
+
+        child.on('close', (code) => {
+          if (code == 0) {
+            resolve(String(Buffer.concat(buffers)))
+          } else {
+            reject()
+          }
+        })
+      })
+    }
   }
 
   // methods
@@ -219,63 +250,77 @@ export class Git {
 
     const headSha = this.getHeadSHA()
     if (!headSha) {
-      return []
+      return [[], '']
     }
 
-    perfStart('GIT/walk')
-
-    perfStart('GIT/walk-create')
-    const walker = NodeGit.Revwalk.create(repo)
-    walker.sorting(NodeGit.Revwalk.SORT.TOPOLOGICAL, NodeGit.Revwalk.SORT.TIME)
-    walker.pushGlob('refs/heads/*')
-    if (showRemote) walker.pushGlob('refs/remotes/*')
-    perfEnd('GIT/walk-create')
-
-    if (startIndex > 0) {
-      perfStart('GIT/walk-fastwalk')
-      await walker.fastWalk(startIndex)
-      perfEnd('GIT/walk-fastwalk')
+    const spawn = await this.getSpawn()
+    if (!spawn) {
+      return [[], '']
     }
 
-    perfStart('GIT/walk-getcommits')
-    const foundCommits = await walker.getCommits(number)
-    perfEnd('GIT/walk-getcommits')
+    const SEP = ' ----e16409c0-8a85-4a6c-891d-8701f48612d8---- '
+    const FORMAT_SEGMENTS_COUNT = 6
+    const cmd = [
+      '--no-pager',
+      'log',
+      `--format="%H${SEP}%P${SEP}%aN${SEP}%aE${SEP}%aI${SEP}%s"`,
+      '--branches=*',
+      '--tags=*',
+      showRemote && '--remotes=*',
+      `--skip=${startIndex}`,
+      `--max-count=${number}`,
+    ].filter(Boolean)
 
-    perfStart('GIT/walk-iterate')
+    perfStart('GIT/log/spawn')
+    const result = await spawn(cmd)
+    perfEnd('GIT/log/spawn')
+
+    perfStart('GIT/log/sanitise-result')
+    const tuples = result
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((str) => str.match(/"?(.*)"?/)[1].split(SEP))
+    perfEnd('GIT/log/sanitise-result')
+
+    perfStart('GIT/log/deserialise')
+    const commits = new Array(tuples.length)
     const hash = createHash('sha1')
-    const commits = new Array(foundCommits.length)
-    for (let i = 0; i < foundCommits.length; i++) {
-      const c = foundCommits[i]
-
-      perfStart('GIT/digest-update')
-      hash.update(c.sha())
-      perfEnd('GIT/digest-update')
-
-      const date = Moment(c.date())
-
-      commits[i] = {
-        sha: c.sha(),
-        sha7: c.sha().substring(0, 6),
-        message: c.message().split('\n')[0],
-        detail: c
-          .message()
-          .split('\n')
-          .splice(1, c.message().split('\n').length)
-          .join('\n'),
-        date: date.toDate(),
-        dateStr: date.format('YYYY/MM/DD HH:mm'),
-        time: c.time(),
-        committer: c.committer(),
-        email: c.author().email(),
-        author: c.author().name(),
-        authorStr: `${c.author().name()} <${c.author().email()}>`,
-        parents: c.parents().map((p) => p.toString()),
-        isHead: headSha === c.sha(),
+    for (let i = 0; i < tuples.length; i++) {
+      const formatSegments = tuples[i]
+      if (formatSegments.length !== FORMAT_SEGMENTS_COUNT) {
+        throw `Separator ${SEP} in output, cannot parse git history. ${formatSegments.length} segments found, ${FORMAT_SEGMENTS_COUNT} expected. Values: ${formatSegments}`
       }
-    }
-    perfEnd('GIT/walk-iterate')
 
-    perfEnd('GIT/walk')
+      perfStart('GIT/log/deserialise/parse-segments')
+      const [
+        sha,
+        parentShasStr,
+        authorName,
+        authorEmail,
+        authorDateISO,
+        subject,
+      ] = formatSegments
+      const parentShas = parentShasStr.split(' ')
+      const author = `${authorName} <${authorEmail}>`
+      perfEnd('GIT/log/deserialise/parse-segments')
+
+      perfStart('GIT/log/deserialise/allocate-commit')
+      commits[i] = {
+        sha: sha,
+        sha7: sha.substring(0, 6),
+        message: subject,
+        dateISO = authorDateISO,
+        email: authorEmail,
+        author: authorName,
+        authorStr: author,
+        parents: parentShas,
+        isHead: headSha === sha,
+      }
+      perfEnd('GIT/log/deserialise/allocate-commit')
+
+      hash.update(sha)
+    }
+    perfEnd('GIT/log/deserialise')
 
     perfStart('GIT/digest-finalise')
     const digest = hash.digest('hex')

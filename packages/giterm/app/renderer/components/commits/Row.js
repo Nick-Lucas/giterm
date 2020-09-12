@@ -200,7 +200,11 @@ export const Row = memo(
                 </svg>
               )
             ) : (
-              <ColumnText>{commit[column.key]}</ColumnText>
+              <ColumnText>
+                {column.format
+                  ? column.format(commit[column.key])
+                  : commit[column.key]}
+              </ColumnText>
             )}
           </RowColumn>
         ))}
