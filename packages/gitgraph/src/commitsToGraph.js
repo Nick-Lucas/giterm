@@ -196,6 +196,13 @@ class GraphState {
       if (link.parentSha === destinationNode.sha) {
         link.nodeAtEnd = true
         link.x2 = destinationNode.column
+
+        // TODO:
+        // Is the commit we're linking back to still looking for its parents?
+        // -True: re-write links directly into that commit's column
+        // -False: just complete the link
+        // Also, look at rewriting link columns to be nearer to the columns they eventually go from and to
+        // -- links should have 3 rewrite phases: from, intermediate, to, just always rewrite the intermediate into a sensible column?
       }
     }
   }
@@ -323,6 +330,9 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       return node
     }
 
+    if (commit.sha === 'b1') {
+      debugger
+    }
     const [childColumn, child] = branchTracker.findFirstChild(commit.sha)
     if (child == null) {
       const node = trackNewBranch()
