@@ -65,6 +65,7 @@ app.on('ready', async () => {
       nodeIntegration: true,
       preload: path.join(__dirname, '../sentry.js'),
     },
+    title: `Giterm ${app.getVersion()}`,
   })
 
   // Show on currently active screen
