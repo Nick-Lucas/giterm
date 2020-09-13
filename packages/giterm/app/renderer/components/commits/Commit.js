@@ -6,7 +6,6 @@ import { clipboard } from 'electron'
 
 import { checkoutCommit } from 'app/store/commits/actions'
 import { Row } from './Row'
-import { RowHeight } from './constants'
 import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 
 export function Commit({ index, style, onSelect, isSelected, columns }) {
@@ -81,7 +80,6 @@ export function Commit({ index, style, onSelect, isSelected, columns }) {
         onSelect={onSelect}
         onDoubleClick={handleCheckoutCommit}
         isHead={status.headSHA === commit.sha}
-        height={RowHeight}
         node={node}
         linksBefore={linksBefore}
         linksAfter={linksAfter}
