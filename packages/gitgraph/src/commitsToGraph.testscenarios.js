@@ -227,6 +227,36 @@ export const scenarios = {
       parents: [],
     },
   ],
+  'data-driven.f': [
+    {
+      sha: 'a1',
+      parents: ['a2'],
+    },
+    {
+      sha: 'c1',
+      parents: ['c2'],
+    },
+    {
+      sha: 'b0',
+      parents: ['b1'],
+    },
+    {
+      sha: 'a2',
+      parents: [],
+    },
+    {
+      sha: 'b1',
+      parents: ['b2', 'c3'],
+    },
+    {
+      sha: 'c2',
+      parents: ['c3'],
+    },
+    {
+      sha: 'c3',
+      parents: ['c4'],
+    },
+  ],
 
   'rehydration.a': (function() {
     const git = new TestGitBuilder()
