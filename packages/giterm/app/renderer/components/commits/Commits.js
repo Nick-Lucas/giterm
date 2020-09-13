@@ -1,7 +1,9 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { List, AutoSizer } from 'react-virtualized'
+import { FixedSizeList } from 'react-window'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import InfiniteLoader from 'react-window-infinite-loader'
 import _ from 'lodash'
 import moment from 'moment'
 
@@ -16,11 +18,6 @@ export function Commits() {
   const commits = useSelector((state) => state.commits?.commits) ?? []
   const graphWidth = useSelector((state) => state.graph.width)
   const headSHA = useSelector((state) => state.status.headSHA)
-
-  const listRef = useRef()
-  useEffect(() => {
-    listRef.current.forceUpdateGrid()
-  })
 
   const columns = useMemo(() => {
     const graphCols = Math.min(8, graphWidth)
@@ -48,11 +45,16 @@ export function Commits() {
     setSelectedSHA(commit.sha)
   }, [])
 
+  /**
+   * @type {React.MutableRefObject<FixedSizeList>}
+   */
+  const listRef = useRef()
   useValueEffect(headSHA, () => {
+    // TODO: improve this logic to find the index asynchronously and pre-load if possible
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
       setSelectedSHA(headSHA)
-      listRef.current.scrollToRow(index)
+      listRef.current?.scrollToItem(index, 'smart')
     }
   })
 
@@ -62,62 +64,31 @@ export function Commits() {
         () => {
           dispatch(reachedEndOfList())
         },
-        1000,
+        50,
         { leading: true, trailing: false },
       ),
     [dispatch],
   )
 
-  const handleScroll = useMemo(
-    () =>
-      _.throttle(
-        ({ clientHeight, scrollHeight, scrollTop }) => {
-          if (commits.length === 0) {
-            return
-          }
-
-          const scrollBottom = scrollTop + clientHeight
-          const remainingRows = Math.trunc(
-            (scrollHeight - scrollBottom) / RowHeight,
-          )
-          if (remainingRows < 20) {
-            handleReachedEndOfList()
-          }
-        },
-        50,
-        { leading: true, trailing: true },
-      ),
-    [commits.length, handleReachedEndOfList],
-  )
-
   return (
     <Wrapper>
       <Header columns={columns} />
-      <TableWrapper>
-        <AutoSizer>
-          {({ width, height }) => (
-            <VirtualList
-              ref={listRef}
-              width={width}
-              height={height}
-              rowHeight={RowHeight}
-              rowCount={commits.length}
-              overscanRowCount={20}
-              rowRenderer={({ index, style }) => (
-                <Commit
-                  key={commits[index].sha}
-                  index={index}
-                  style={style}
-                  isSelected={selectedSHA === commits[index].sha}
-                  onSelect={handleSelect}
-                  columns={columns}
-                />
-              )}
-              onScroll={handleScroll}
-            />
-          )}
-        </AutoSizer>
-      </TableWrapper>
+
+      <VirtualList
+        numberOfItems={commits.length}
+        onLoadMoreItems={handleReachedEndOfList}
+        listRef={listRef}>
+        {({ index, style }) => (
+          <Commit
+            key={commits[index].sha}
+            index={index}
+            style={style}
+            isSelected={selectedSHA === commits[index].sha}
+            onSelect={handleSelect}
+            columns={columns}
+          />
+        )}
+      </VirtualList>
     </Wrapper>
   )
 }
@@ -132,6 +103,35 @@ const TableWrapper = styled.div`
   flex: 1;
 `
 
-const VirtualList = styled(List)`
-  outline: none;
-`
+const VirtualList = ({ numberOfItems, onLoadMoreItems, children, listRef }) => {
+  return (
+    <TableWrapper>
+      <AutoSizer>
+        {({ width, height }) => (
+          <InfiniteLoader
+            isItemLoaded={(num) => num < numberOfItems}
+            itemCount={numberOfItems + 100}
+            loadMoreItems={onLoadMoreItems}>
+            {({ onItemsRendered, ref }) => (
+              <FixedSizeList
+                ref={(el) => {
+                  ref(el)
+                  if (listRef) {
+                    listRef.current = el
+                  }
+                }}
+                width={width}
+                height={height}
+                itemSize={RowHeight}
+                itemCount={numberOfItems}
+                onItemsRendered={onItemsRendered}
+                overscanCount={10}>
+                {children}
+              </FixedSizeList>
+            )}
+          </InfiniteLoader>
+        )}
+      </AutoSizer>
+    </TableWrapper>
+  )
+}

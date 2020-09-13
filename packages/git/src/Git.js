@@ -302,7 +302,7 @@ export class Git {
         authorDateISO,
         subject,
       ] = formatSegments
-      const parentShas = parentShasStr.split(' ')
+      const parentShas = parentShasStr.split(' ').filter(Boolean)
       const author = `${authorName} <${authorEmail}>`
 
       commits[i] = {

@@ -1,5 +1,5 @@
 import path from 'path'
-import { app, BrowserWindow, Menu } from 'electron'
+import { app, BrowserWindow, Menu, screen } from 'electron'
 import logger from 'electron-log'
 import { autoUpdater } from 'electron-updater'
 import getMenu from './menu'
@@ -65,7 +65,15 @@ app.on('ready', async () => {
       nodeIntegration: true,
       preload: path.join(__dirname, '../sentry.js'),
     },
+    title: `Giterm ${app.getVersion()}`,
   })
+
+  // Show on currently active screen
+  const currentScreen = screen.getDisplayNearestPoint(
+    screen.getCursorScreenPoint(),
+  )
+  mainWindow.setBounds(currentScreen.workArea)
+
   mainWindow.maximize()
 
   mainWindow.loadFile(
