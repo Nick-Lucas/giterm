@@ -1,7 +1,10 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { List, AutoSizer } from 'react-virtualized'
+// import { List, AutoSizer } from 'react-virtualized'
+import { FixedSizeList } from 'react-window'
+import AutoSizer from 'react-virtualized-auto-sizer'
+import InfiniteLoader from 'react-window-infinite-loader'
 import _ from 'lodash'
 import moment from 'moment'
 
@@ -19,7 +22,7 @@ export function Commits() {
 
   const listRef = useRef()
   useEffect(() => {
-    listRef.current.forceUpdateGrid()
+    // listRef.current.forceUpdateGrid()
   })
 
   const columns = useMemo(() => {
@@ -52,7 +55,7 @@ export function Commits() {
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
       setSelectedSHA(headSHA)
-      listRef.current.scrollToRow(index)
+      // listRef.current.scrollToRow(index)
     }
   })
 
@@ -68,27 +71,27 @@ export function Commits() {
     [dispatch],
   )
 
-  const handleScroll = useMemo(
-    () =>
-      _.throttle(
-        ({ clientHeight, scrollHeight, scrollTop }) => {
-          if (commits.length === 0) {
-            return
-          }
+  // const handleScroll = useMemo(
+  //   () =>
+  //     _.throttle(
+  //       ({ clientHeight, scrollHeight, scrollTop }) => {
+  //         if (commits.length === 0) {
+  //           return
+  //         }
 
-          const scrollBottom = scrollTop + clientHeight
-          const remainingRows = Math.trunc(
-            (scrollHeight - scrollBottom) / RowHeight,
-          )
-          if (remainingRows < 20) {
-            handleReachedEndOfList()
-          }
-        },
-        50,
-        { leading: true, trailing: true },
-      ),
-    [commits.length, handleReachedEndOfList],
-  )
+  //         const scrollBottom = scrollTop + clientHeight
+  //         const remainingRows = Math.trunc(
+  //           (scrollHeight - scrollBottom) / RowHeight,
+  //         )
+  //         if (remainingRows < 20) {
+  //           handleReachedEndOfList()
+  //         }
+  //       },
+  //       50,
+  //       { leading: true, trailing: true },
+  //     ),
+  //   [commits.length, handleReachedEndOfList],
+  // )
 
   return (
     <Wrapper>
@@ -96,25 +99,35 @@ export function Commits() {
       <TableWrapper>
         <AutoSizer>
           {({ width, height }) => (
-            <VirtualList
-              ref={listRef}
-              width={width}
-              height={height}
-              rowHeight={RowHeight}
-              rowCount={commits.length}
-              overscanRowCount={20}
-              rowRenderer={({ index, style }) => (
-                <Commit
-                  key={commits[index].sha}
-                  index={index}
-                  style={style}
-                  isSelected={selectedSHA === commits[index].sha}
-                  onSelect={handleSelect}
-                  columns={columns}
-                />
+            <InfiniteLoader
+              isItemLoaded={(num) => num >= commits.length}
+              itemCount={commits.length + 100}
+              loadMoreItems={handleReachedEndOfList}>
+              {({ onItemsRendered, ref }) => (
+                <FixedSizeList
+                  ref={ref}
+                  width={width}
+                  height={height}
+                  itemSize={RowHeight}
+                  itemCount={commits.length}
+                  // overscanRowCount={20}
+
+                  onItemsRendered={onItemsRendered}
+                  // onScroll={handleScroll}
+                >
+                  {({ index, style }) => (
+                    <Commit
+                      key={commits[index].sha}
+                      index={index}
+                      style={style}
+                      isSelected={selectedSHA === commits[index].sha}
+                      onSelect={handleSelect}
+                      columns={columns}
+                    />
+                  )}
+                </FixedSizeList>
               )}
-              onScroll={handleScroll}
-            />
+            </InfiniteLoader>
           )}
         </AutoSizer>
       </TableWrapper>
@@ -132,6 +145,6 @@ const TableWrapper = styled.div`
   flex: 1;
 `
 
-const VirtualList = styled(List)`
-  outline: none;
-`
+// const VirtualList = styled(List)`
+//   outline: none;
+// `
