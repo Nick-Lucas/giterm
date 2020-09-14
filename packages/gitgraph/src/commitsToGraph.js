@@ -197,6 +197,28 @@ class GraphState {
         link.nodeAtEnd = true
         link.x2 = destinationNode.column
 
+        // Find all child links of this link
+        const chain = [link]
+        for (let i = this.links.length - 1; i > 0; i--) {
+          const row = this.links[i]
+          for (const potentialChildLink of row) {
+            let foundWholeChain = false
+            if (potentialChildLink.childSha === link.childSha) {
+              chain.push(potentialChildLink)
+
+              if (potentialChildLink.nodeAtStart) {
+                foundWholeChain = true
+              }
+            }
+
+            if (foundWholeChain) break
+          }
+        }
+
+        const childX = chain[chain.length - 1].x1
+        const intermediateX = chain[chain.length - 1].x1
+        const parentX = chain[chain.length - 1].x2
+
         // TODO:
         // Is the commit we're linking back to still looking for its parents?
         // -True: re-write links directly into that commit's column
