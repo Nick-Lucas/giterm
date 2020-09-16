@@ -261,12 +261,12 @@ export class Git {
       return [[], '']
     }
 
-    const SEP = ' ----e16409c0-8a85-4a6c-891d-8701f48612d8---- '
+    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
     const FORMAT_SEGMENTS_COUNT = 6
     const cmd = [
       '--no-pager',
       'log',
-      `--format="%H${SEP}%P${SEP}%aN${SEP}%aE${SEP}%aI${SEP}%s"`,
+      `--format=%H${SEP}%P${SEP}%aN${SEP}%aE${SEP}%aI${SEP}%s`,
       '--branches=*',
       '--tags=*',
       showRemote && '--remotes=*',
@@ -282,7 +282,7 @@ export class Git {
     const tuples = result
       .split(/\r\n|\r|\n/g)
       .filter(Boolean)
-      .map((str) => str.replace(/(^")|("$)/g, '').split(SEP))
+      .map((str) => str.split(SEP))
     perfEnd('GIT/log/sanitise-result')
 
     perfStart('GIT/log/deserialise')
