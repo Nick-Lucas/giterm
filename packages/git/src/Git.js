@@ -282,7 +282,7 @@ export class Git {
     const tuples = result
       .split(/\r\n|\r|\n/g)
       .filter(Boolean)
-      .map((str) => str.match(/"?(.*)"?/)[1].split(SEP))
+      .map((str) => str.replace(/(^")|("$)/g, '').split(SEP))
     perfEnd('GIT/log/sanitise-result')
 
     perfStart('GIT/log/deserialise')
