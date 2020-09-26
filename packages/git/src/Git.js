@@ -419,4 +419,10 @@ export class Git {
       watcher.close()
     }
   }
+
+  // TODO:
+
+  diffIndexItem = () => {}
+
+  diffCommits = (sha1, sha2) => {}
 }
