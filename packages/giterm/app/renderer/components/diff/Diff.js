@@ -1,87 +1,44 @@
 import React, { useMemo, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
-import NodeGit from 'nodegit'
-import produce from "immer";
-import _ from 'lodash'
+import { Git } from '@giterm/git'
+import { useSelector } from 'react-redux'
 
 import { Hunk } from './Hunk'
 
-export function Diff() {
+export function Diff({
+  mode = 'shas',
+  sha1 = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
+  sha2 = '529bbb2e074ed0cdd5fba316546eeb54704e1d37',
+}) {
   const contextLines = 5
+  const cwd = useSelector((state) => state.config.cwd)
 
   const [diff, setDiff] = useState(null)
   useEffect(() => {
+    let cancelled = false
+
     async function fetch() {
-      const repo = await NodeGit.Repository.open('/Users/nick/dev/giterm/')
+      const git = new Git(cwd)
 
-      const sha2 = '529bbb2e074ed0cdd5fba316546eeb54704e1d37'
-      const sha1 = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf'
+      const diff =
+        mode === 'shas'
+          ? await git.getDiffFromShas(sha1, sha2, {
+              contextLines: contextLines,
+            })
+          : await git.getDiffFromIndex({ contextLines: contextLines })
 
-      // FULL COMMIT TO COMMIT DIFF
-      const c1 = await (await repo.getCommit(sha1)).getTree()
-      const c2 = await (await repo.getCommit(sha2)).getTree()
-
-      const diff = await NodeGit.Diff.treeToTree(repo, c1, c2, { contextLines: contextLines })
-
-      const stats = await diff.getStats()
-      const _patches = await diff.patches()
-
-      const patches = await Promise.all(
-        _patches.map(async (patch) => {
-          const oldFilePath = patch.oldFile().path()
-          const newFilePath = patch.newFile().path()
-          const status = patch.status()
-
-          return {
-            hunks: await Promise.all(
-              (await patch.hunks()).map(async (hunk) => {
-                return {
-                  header: hunk.header(),
-                  headerLen: hunk.headerLen(),
-                  newLines: hunk.newLines(),
-                  newStart: hunk.newStart(),
-                  oldLines: hunk.oldLines(),
-                  oldStart: hunk.oldStart(),
-                  size: hunk.size(),
-                  lines: (await hunk.lines()).map((line) => {
-                    return {
-                      content: line.content(),
-                      contentLen: line.contentLen(),
-                      contentOffset: line.contentOffset(),
-                      newLineno: line.newLineno(),
-                      numLines: line.numLines(),
-                      oldLineno: line.oldLineno(),
-                      origin: line.origin(),
-                      rawContent: line.rawContent(),
-                    }
-                  }),
-                }
-              }),
-            ),
-            status,
-            oldFilePath,
-            newFilePath,
-          }
-        }),
-      )
-
-      // Later we new NodeGit.DiffLine in order to stage/unstage
-      // repo.stageFilemode
-      // repo.stageLines
-
-      setDiff({
-        stats: {
-          insertions: stats.insertions(), 
-          filesChanged: stats.filesChanged(), 
-          deletions: stats.deletions(),
-        },
-        patches
-      })
+      if (!cancelled) {
+        setDiff(diff)
+      }
     }
 
     fetch()
-  }, [])
+
+    return () => {
+      cancelled = true
+    }
+  }, [cwd, mode, sha1, sha2])
 
   const patchIndex = 3 // Commits.js
   const changeset = useMemo(() => {
@@ -89,10 +46,10 @@ export function Diff() {
 
     const data = diff.patches[patchIndex]
     // const data = {...diff[patchIndex], hunks: [diff[patchIndex].hunks[0], diff[patchIndex].hunks[1]]}
-    
-    const changeset = {...data, hunks: []}
 
-    for (const hunk of data.hunks) {    
+    const changeset = { ...data, hunks: [] }
+
+    for (const hunk of data.hunks) {
       const linesLeft = []
       const linesRight = []
 
@@ -111,24 +68,23 @@ export function Diff() {
         // Otherwise push one at a time to keep the diff compact
         if (isLeft) {
           linesLeft.push(line)
-        } 
+        }
         if (isRight) {
           linesRight.push(line)
-        } 
+        }
       }
 
-      changeset.hunks.push({ ...hunk, linesLeft, linesRight})
+      changeset.hunks.push({ ...hunk, linesLeft, linesRight })
     }
 
     return changeset
-
   }, [diff])
 
   if (!changeset) {
     return <Container>Loading</Container>
   }
 
-  console.log({changeset, diff})
+  console.log({ changeset, diff })
 
   return (
     <Container>
@@ -151,6 +107,12 @@ export function Diff() {
       </HunksGrid>
     </Container>
   )
+}
+
+Diff.propTypes = {
+  mode: PropTypes.oneOf(['shas', 'index']),
+  sha1: PropTypes.string,
+  sha2: PropTypes.string,
 }
 
 const Container = styled.div`

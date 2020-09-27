@@ -420,9 +420,98 @@ export class Git {
     }
   }
 
-  // TODO:
+  /**
+   * @param {string} shaOld
+   * @param {string} shaNew
+   * @param {NodeGit.DiffOptions} options
+   */
+  getDiffFromShas = async (shaOld, shaNew, options) => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return null
+    }
 
-  diffIndexItem = () => {}
+    const treeOld = await (await repo.getCommit(shaOld)).getTree()
+    const treeNew = await (await repo.getCommit(shaNew)).getTree()
 
-  diffCommits = (sha1, sha2) => {}
+    const diff = await NodeGit.Diff.treeToTree(repo, treeOld, treeNew, options)
+
+    return await this._processDiff(diff)
+  }
+
+  /**
+   * @param {NodeGit.DiffOptions} options
+   */
+  getDiffFromIndex = async (options) => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return null
+    }
+
+    const headTree = (await repo.getHeadCommit()).getTree()
+    const diff = await NodeGit.Diff.treeToWorkdirWithIndex(
+      repo,
+      headTree,
+      options,
+    )
+
+    return await this._processDiff(diff)
+  }
+
+  _processDiff = async (diff) => {
+    const stats = await diff.getStats()
+    const _patches = await diff.patches()
+
+    const patches = await Promise.all(
+      _patches.map(async (patch) => {
+        const oldFilePath = patch.oldFile().path()
+        const newFilePath = patch.newFile().path()
+        const status = patch.status()
+
+        return {
+          hunks: await Promise.all(
+            (await patch.hunks()).map(async (hunk) => {
+              return {
+                header: hunk.header(),
+                headerLen: hunk.headerLen(),
+                newLines: hunk.newLines(),
+                newStart: hunk.newStart(),
+                oldLines: hunk.oldLines(),
+                oldStart: hunk.oldStart(),
+                size: hunk.size(),
+                lines: (await hunk.lines()).map((line) => {
+                  return {
+                    content: line.content(),
+                    contentLen: line.contentLen(),
+                    contentOffset: line.contentOffset(),
+                    newLineno: line.newLineno(),
+                    numLines: line.numLines(),
+                    oldLineno: line.oldLineno(),
+                    origin: line.origin(),
+                    rawContent: line.rawContent(),
+                  }
+                }),
+              }
+            }),
+          ),
+          status,
+          oldFilePath,
+          newFilePath,
+        }
+      }),
+    )
+
+    // Later we new NodeGit.DiffLine in order to stage/unstage
+    // repo.stageFilemode
+    // repo.stageLines
+
+    return {
+      stats: {
+        insertions: stats.insertions(),
+        filesChanged: stats.filesChanged(),
+        deletions: stats.deletions(),
+      },
+      patches,
+    }
+  }
 }

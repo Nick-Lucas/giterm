@@ -9,12 +9,12 @@ import { Row, Label } from './Row'
 import { RightClickArea } from 'app/lib/primitives'
 
 export function Tags() {
-  const _tags = useSelector((state) => state.tags.list) || []
+  const _tags = useSelector((state) => state.tags.list)
 
   const tags = useMemo(() => {
     const tags = []
 
-    for (const tag of _tags) {
+    for (const tag of _tags || []) {
       tags.push({
         id: tag.id,
         name: tag.name,

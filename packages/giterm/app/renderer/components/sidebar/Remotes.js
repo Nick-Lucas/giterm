@@ -9,11 +9,11 @@ import { Row, Label } from './Row'
 import { RightClickArea } from 'app/lib/primitives'
 
 export function Remotes() {
-  const _remotes = useSelector((state) => state.remotes) || []
+  const _remotes = useSelector((state) => state.remotes)
   const remotes = useMemo(() => {
     const remotes = []
 
-    for (const remote of _remotes) {
+    for (const remote of _remotes || []) {
       remotes.push({
         id: remote.name,
         name: remote.name,

@@ -10,12 +10,12 @@ import { colours } from 'app/lib/theme'
 import { RightClickArea } from 'app/lib/primitives'
 
 export function Changes() {
-  const _files = useSelector((state) => state.status.files) || []
+  const _files = useSelector((state) => state.status.files)
   const { staged, unstaged } = useMemo(() => {
     const staged = []
     const unstaged = []
 
-    for (const file of _files) {
+    for (const file of _files || []) {
       let colour = null
       if (file.isNew) {
         colour = colours.TEXT.POSITIVE

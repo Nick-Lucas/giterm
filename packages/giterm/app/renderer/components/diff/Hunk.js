@@ -11,8 +11,6 @@ export const Hunk = ({ hunk, index }) => {
   const hunkHeaderRow = 1
   const hunkStartRow = 2
   const hunkEndRow = rowCount + hunkStartRow
-  
-  const lineNormaliser = rowMinNo - 1
 
   const linesContextLeft = hunk.linesLeft.map((line) => {
     const { contentOffset, newLineno, oldLineno } = line
@@ -84,28 +82,20 @@ export const Hunk = ({ hunk, index }) => {
       {/* Left Content */}
       <HunkContentColumn col="1" row={`${hunkStartRow} / ${hunkEndRow}`}>
         {hunk.linesLeft.map((line, lineI) => {
-          const {
-            content,
-            newLineno,
-            oldLineno,
-          } = line
+          const { content, oldLineno } = line
           const { showLeft, leftColour } = linesContextLeft[lineI]
 
           const row = lineI + 1
-          
+
           return (
             <React.Fragment key={`left_${row}`}>
               {showLeft && (
                 <>
-                  <LineNumberCell
-                    row={row}
-                    colour={leftColour}>
+                  <LineNumberCell row={row} colour={leftColour}>
                     {oldLineno}
                   </LineNumberCell>
 
-                  <ContentCell
-                    row={row}
-                    colour={leftColour}>
+                  <ContentCell row={row} colour={leftColour}>
                     {content}
                   </ContentCell>
                 </>
@@ -118,7 +108,7 @@ export const Hunk = ({ hunk, index }) => {
       {/* Right Content */}
       <HunkContentColumn col="2" row={`${hunkStartRow} / ${hunkEndRow}`}>
         {hunk.linesRight.map((line, lineI) => {
-          const { content, newLineno, oldLineno } = line
+          const { content, newLineno } = line
           const { showRight, rightColour } = linesContextRight[lineI]
 
           const row = lineI + 1
@@ -127,15 +117,11 @@ export const Hunk = ({ hunk, index }) => {
             <React.Fragment key={`right_${row}`}>
               {showRight && (
                 <>
-                  <LineNumberCell
-                    row={row}
-                    colour={rightColour}>
+                  <LineNumberCell row={row} colour={rightColour}>
                     {newLineno}
                   </LineNumberCell>
 
-                  <ContentCell
-                    row={row}
-                    colour={rightColour}>
+                  <ContentCell row={row} colour={rightColour}>
                     {content}
                   </ContentCell>
                 </>
