@@ -113,9 +113,13 @@ export function Diff() {
             size,
           } = hunk
 
-          const rowModifier = Math.min(oldStart, newStart)
-          const rowCount =
-            Math.max(oldStart + oldLines, newStart + newLines) - rowModifier
+          const rowMinNo = Math.min(oldStart, newStart)
+          const rowMaxNo = Math.max(oldStart + oldLines, newStart + newLines)
+          const rowCount = rowMaxNo - rowMinNo + 1
+
+          const hunkHeaderRow = 1
+          const hunkStartRow = 2
+          const hunkEndRow = rowCount + hunkStartRow
 
           const linesContext = hunk.lines.map((line) => {
             const { contentOffset, newLineno, oldLineno } = line
@@ -152,16 +156,14 @@ export function Diff() {
 
           return (
             <HunkCellGrid key={`hunk_${i}`} row={i + 1}>
-              <Cell row="1" col="1 / 3" colour="blue">
+              <Cell row={hunkHeaderRow} col="1 / 3" colour="blue">
                 hunk_{i}
               </Cell>
 
               {/* Left Content */}
               <HunkContentColumn
                 col="1"
-                row={`${_.first(hunk.lines).oldLineno -
-                  rowModifier +
-                  2} / ${_.last(hunk.lines).oldLineno - rowModifier + 3}`}>
+                row={`${hunkStartRow} / ${hunkEndRow}`}>
                 {hunk.lines.map((line, lineI) => {
                   const { content, newLineno, oldLineno } = line
                   const { showLeft, leftColour } = linesContext[lineI]
@@ -172,13 +174,13 @@ export function Diff() {
                       {showLeft && (
                         <>
                           <LineNumberCell
-                            row={oldLineno - rowModifier + 2}
+                            row={oldLineno - rowMinNo}
                             colour={leftColour}>
                             {oldLineno}
                           </LineNumberCell>
 
                           <ContentCell
-                            row={oldLineno - rowModifier + 2}
+                            row={oldLineno - rowMinNo}
                             colour={leftColour}>
                             {content}
                           </ContentCell>
@@ -192,9 +194,7 @@ export function Diff() {
               {/* Right Content */}
               <HunkContentColumn
                 col="2"
-                row={`${_.first(hunk.lines).newLineno -
-                  rowModifier +
-                  2} / ${_.last(hunk.lines).newLineno - rowModifier + 3}`}>
+                row={`${hunkStartRow} / ${hunkEndRow}`}>
                 {hunk.lines.map((line, lineI) => {
                   const { content, newLineno, oldLineno } = line
                   const { showRight, rightColour } = linesContext[lineI]
@@ -205,13 +205,13 @@ export function Diff() {
                       {showRight && (
                         <>
                           <LineNumberCell
-                            row={newLineno - rowModifier + 2}
+                            row={newLineno - rowMinNo}
                             colour={rightColour}>
                             {newLineno}
                           </LineNumberCell>
 
                           <ContentCell
-                            row={newLineno - rowModifier + 2}
+                            row={newLineno - rowMinNo}
                             colour={rightColour}>
                             {content}
                           </ContentCell>
@@ -240,8 +240,6 @@ const Container = styled.div`
 
   overflow: auto;
 
-  padding: 1rem 0.5rem;
-
   z-index: 1000;
 `
 
@@ -254,10 +252,8 @@ const HunksGrid = styled.div`
 const HunkCellGrid = styled.div`
   display: grid;
 
-  /* LinNo Content LineNo Content */
   grid-auto-columns: 1fr 1fr;
 
-  /* Position in higher grid */
   grid-column: 1;
   grid-row: ${({ row }) => row};
 
@@ -267,6 +263,7 @@ const HunkCellGrid = styled.div`
 const HunkContentColumn = styled.div`
   display: grid;
   grid-auto-columns: min-content 1fr;
+  grid-auto-rows: 1.5rem;
 
   grid-column: ${({ col }) => col};
   grid-row: ${({ row }) => row};
