@@ -12,16 +12,12 @@ export const Hunk = ({ hunk, index }) => {
   const hunkStartRow = 2
   const hunkEndRow = rowCount + hunkStartRow
 
-  const linesContextLeft = hunk.linesLeft.map((line) => {
+  function getColour(line) {
     const { contentOffset, newLineno, oldLineno } = line
 
     const isRemovedLine = newLineno < 0
     const isAddedLine = oldLineno < 0
     const isModifiedLine = !isRemovedLine && !isAddedLine && contentOffset >= 0
-    const isContextLine = !isModifiedLine && !isRemovedLine && !isAddedLine
-
-    const showLeft = !isAddedLine
-    const showRight = !isRemovedLine
 
     let leftColour = 'transparent'
     if (isRemovedLine) leftColour = '#A60053'
@@ -32,46 +28,10 @@ export const Hunk = ({ hunk, index }) => {
     if (isModifiedLine) rightColour = '#149490'
 
     return {
-      isRemovedLine,
-      isAddedLine,
-      isModifiedLine,
-      isContextLine,
-      showLeft,
-      showRight,
       leftColour,
       rightColour,
     }
-  })
-  const linesContextRight = hunk.linesRight.map((line) => {
-    const { contentOffset, newLineno, oldLineno } = line
-
-    const isRemovedLine = newLineno < 0
-    const isAddedLine = oldLineno < 0
-    const isModifiedLine = !isRemovedLine && !isAddedLine && contentOffset >= 0
-    const isContextLine = !isModifiedLine && !isRemovedLine && !isAddedLine
-
-    const showLeft = !isAddedLine
-    const showRight = !isRemovedLine
-
-    let leftColour = 'transparent'
-    if (isRemovedLine) leftColour = '#A60053'
-    if (isModifiedLine) leftColour = '#149490'
-
-    let rightColour = 'transparent'
-    if (isAddedLine) rightColour = '#149490'
-    if (isModifiedLine) rightColour = '#149490'
-
-    return {
-      isRemovedLine,
-      isAddedLine,
-      isModifiedLine,
-      isContextLine,
-      showLeft,
-      showRight,
-      leftColour,
-      rightColour,
-    }
-  })
+  }
 
   return (
     <HunkCellGrid row={index + 1}>
@@ -82,24 +42,19 @@ export const Hunk = ({ hunk, index }) => {
       {/* Left Content */}
       <HunkContentColumn col="1" row={`${hunkStartRow} / ${hunkEndRow}`}>
         {hunk.linesLeft.map((line, lineI) => {
-          const { content, oldLineno } = line
-          const { showLeft, leftColour } = linesContextLeft[lineI]
-
           const row = lineI + 1
+          const { content, oldLineno } = line
+          const { leftColour } = getColour(line)
 
           return (
             <React.Fragment key={`left_${row}`}>
-              {showLeft && (
-                <>
-                  <LineNumberCell row={row} colour={leftColour}>
-                    {oldLineno}
-                  </LineNumberCell>
+              <LineNumberCell row={row} colour={leftColour}>
+                {oldLineno}
+              </LineNumberCell>
 
-                  <ContentCell row={row} colour={leftColour}>
-                    {content}
-                  </ContentCell>
-                </>
-              )}
+              <ContentCell row={row} colour={leftColour}>
+                {content}
+              </ContentCell>
             </React.Fragment>
           )
         })}
@@ -108,24 +63,19 @@ export const Hunk = ({ hunk, index }) => {
       {/* Right Content */}
       <HunkContentColumn col="2" row={`${hunkStartRow} / ${hunkEndRow}`}>
         {hunk.linesRight.map((line, lineI) => {
-          const { content, newLineno } = line
-          const { showRight, rightColour } = linesContextRight[lineI]
-
           const row = lineI + 1
+          const { content, newLineno } = line
+          const { rightColour } = getColour(line)
 
           return (
             <React.Fragment key={`right_${row}`}>
-              {showRight && (
-                <>
-                  <LineNumberCell row={row} colour={rightColour}>
-                    {newLineno}
-                  </LineNumberCell>
+              <LineNumberCell row={row} colour={rightColour}>
+                {newLineno}
+              </LineNumberCell>
 
-                  <ContentCell row={row} colour={rightColour}>
-                    {content}
-                  </ContentCell>
-                </>
-              )}
+              <ContentCell row={row} colour={rightColour}>
+                {content}
+              </ContentCell>
             </React.Fragment>
           )
         })}
