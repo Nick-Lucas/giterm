@@ -13,8 +13,8 @@ export function Diff() {
     async function fetch() {
       const repo = await NodeGit.Repository.open('/Users/nick/dev/giterm/')
 
-      const sha1 = '529bbb2e074ed0cdd5fba316546eeb54704e1d37'
-      const sha2 = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf'
+      const sha2 = '529bbb2e074ed0cdd5fba316546eeb54704e1d37'
+      const sha1 = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf'
 
       // FULL COMMIT TO COMMIT DIFF
       const c1 = await (await repo.getCommit(sha1)).getTree()
@@ -77,8 +77,8 @@ export function Diff() {
   const changeset = useMemo(() => {
     if (!diff) return null
 
-    // const data = diff[patchIndex]
-    const data = {...diff[patchIndex], hunks: [diff[patchIndex].hunks[0], diff[patchIndex].hunks[1]]}
+    const data = diff[patchIndex]
+    // const data = {...diff[patchIndex], hunks: [diff[patchIndex].hunks[0], diff[patchIndex].hunks[1]]}
     
     const changeset = {...data, hunks: []}
 
@@ -91,45 +91,19 @@ export function Diff() {
         const isLeft = line.oldLineno >= 0
         const isRight = line.newLineno >= 0
 
-        function compactPush(lines, line) {
-          let pushIndex = -1
-          // Fill the last gap if there is one
-          if (lines.length > 0) {
-            for (let i = headIndex-1; i >= 0; i--) {
-              if (lines[i].empty) {
-                pushIndex = i
-              } else {
-                break
-              }
-            }
-          }
-
-          if (pushIndex >= 0) {
-            lines[pushIndex] = line
-          } else {
-            lines[headIndex] = line
-          }
-
-          return pushIndex >= 0
-        }
-
-        // Where line has not changed at-all we ensure it stays in the same row
+        // Where line has not changed at-all we fix the row to the same index in both columns
         if (isLeft && isRight && line.contentOffset < 0) {
           linesLeft[headIndex] = line
           linesRight[headIndex] = line
           continue
         }
+
+        // Otherwise push one at a time to keep the diff compact
         if (isLeft) {
-          const compacted = compactPush(linesLeft, line)
-          if (!compacted) {
-            linesRight[headIndex] = {empty: true}
-          }
+          linesLeft.push(line)
         } 
         if (isRight) {
-          const compacted = compactPush(linesRight, line)
-          if (!compacted) {
-            linesLeft[headIndex] = {empty: true}
-          }
+          linesRight.push(line)
         } 
       }
 
