@@ -84,11 +84,17 @@ export function Diff() {
 
   return (
     <Container>
-      <div>
-        {changeset.oldFilePath === changeset.newFilePath
-          ? changeset.oldFilePath
-          : `${changeset.oldFilePath} -> ${changeset.newFilePath}`}
-      </div>
+      <PatchName>
+        {changeset.oldFilePath === changeset.newFilePath ? (
+          <PatchNameCell>{changeset.oldFilePath}</PatchNameCell>
+        ) : (
+          <>
+            <PatchNameCell>{changeset.newFilePath}</PatchNameCell>
+            <PatchNameSpeparator>{'->'}</PatchNameSpeparator>
+            <PatchNameCell>{changeset.oldFilePath}</PatchNameCell>
+          </>
+        )}
+      </PatchName>
 
       <HunksGrid>
         {changeset.hunks.map((hunk, i) => {
@@ -140,7 +146,7 @@ export function Diff() {
           return (
             <HunkCellGrid key={`hunk_${i}`} row={i + 1}>
               <Cell row={hunkHeaderRow} col="1 / 3" colour="blue">
-                hunk_{i}
+                Hunk {i + 1}
               </Cell>
 
               {/* Left Content */}
@@ -212,16 +218,45 @@ export function Diff() {
 
 const Container = styled.div`
   position: absolute;
-  top: 5%;
-  bottom: 5%;
-  right: 5%;
-  left: 5%;
+  top: 3%;
+  bottom: 3%;
+  right: 3%;
+  left: 3%;
 
-  background-color: black;
+  background-color: #001825;
 
   overflow: auto;
 
   z-index: 1000;
+
+  box-shadow: 2px 2px 15px 0px rgb(255, 255, 255, 0.3);
+  border-radius: 5px;
+  padding: 0.25rem 0;
+`
+
+const PatchName = styled.div`
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+
+  padding: 0 1rem;
+`
+
+const PatchNameSpeparator = styled.div`
+  padding: 0 0.5rem;
+`
+
+const PatchNameCell = styled.div`
+  flex: 1;
+
+  color: ${({ colour }) => colour || 'inherit'};
+
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  direction: rtl;
+  text-align: center;
 `
 
 const HunksGrid = styled.div`
@@ -230,31 +265,34 @@ const HunksGrid = styled.div`
   grid-auto-columns: 1fr;
 `
 
-const HunkCellGrid = styled.div`
+const HunkCellGrid = styled.div.attrs((props) => ({
+  gridRow: props.row,
+}))`
   display: grid;
 
   grid-auto-columns: 1fr 1fr;
 
   grid-column: 1;
-  grid-row: ${({ row }) => row};
 
   margin-top: 0.5rem;
 `
 
-const HunkContentColumn = styled.div`
+const HunkContentColumn = styled.div.attrs((props) => ({
+  gridRow: props.row,
+}))`
   display: grid;
   grid-auto-columns: min-content 1fr;
   grid-auto-rows: 1.5rem;
 
   grid-column: ${({ col }) => col};
-  grid-row: ${({ row }) => row};
 
   overflow: scroll;
 `
 
-const Cell = styled.div`
+const Cell = styled.div.attrs((props) => ({
+  gridRow: props.row,
+}))`
   grid-column: ${({ col }) => col};
-  grid-row: ${({ row }) => row};
 
   background-color: ${({ colour = 'transparent' }) => colour};
 
