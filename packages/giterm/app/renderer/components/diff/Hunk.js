@@ -11,7 +11,7 @@ export const Hunk = ({ hunk, index }) => {
   const hunkHeaderRow = 1
   const hunkStartRow = 2
   const hunkEndRow = rowCount + hunkStartRow
-  console.log({ index, rowMinNo })
+  
   const lineNormaliser = rowMinNo - 1
 
   const linesContextLeft = hunk.linesLeft.map((line) => {

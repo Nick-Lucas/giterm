@@ -22,6 +22,7 @@ export function Diff() {
 
       const diff = await NodeGit.Diff.treeToTree(repo, c1, c2)
 
+      const stats = await diff.getStats()
       const _patches = await diff.patches()
 
       const patches = await Promise.all(
@@ -67,7 +68,14 @@ export function Diff() {
       // repo.stageFilemode
       // repo.stageLines
 
-      setDiff(patches)
+      setDiff({
+        stats: {
+          insertions: stats.insertions(), 
+          filesChanged: stats.filesChanged(), 
+          deletions: stats.deletions(),
+        },
+        patches
+      })
     }
 
     fetch()
@@ -77,7 +85,7 @@ export function Diff() {
   const changeset = useMemo(() => {
     if (!diff) return null
 
-    const data = diff[patchIndex]
+    const data = diff.patches[patchIndex]
     // const data = {...diff[patchIndex], hunks: [diff[patchIndex].hunks[0], diff[patchIndex].hunks[1]]}
     
     const changeset = {...data, hunks: []}
@@ -118,7 +126,7 @@ export function Diff() {
     return <Container>Loading</Container>
   }
 
-  console.log(changeset)
+  console.log({changeset, diff})
 
   return (
     <Container>
