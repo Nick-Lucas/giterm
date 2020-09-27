@@ -2,6 +2,7 @@ import React, { useMemo, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import NodeGit from 'nodegit'
+import _ from 'lodash'
 
 import { data } from './data'
 
@@ -116,82 +117,110 @@ export function Diff() {
           const rowCount =
             Math.max(oldStart + oldLines, newStart + newLines) - rowModifier
 
+          const linesContext = hunk.lines.map((line) => {
+            const { contentOffset, newLineno, oldLineno } = line
+
+            const isRemovedLine = newLineno < 0
+            const isAddedLine = oldLineno < 0
+            const isModifiedLine =
+              !isRemovedLine && !isAddedLine && contentOffset >= 0
+            const isContextLine =
+              !isModifiedLine && !isRemovedLine && !isAddedLine
+
+            const showLeft = !isAddedLine
+            const showRight = !isRemovedLine
+
+            let leftColour = 'transparent'
+            if (isRemovedLine) leftColour = '#A60053'
+            if (isModifiedLine) leftColour = '#149490'
+
+            let rightColour = 'transparent'
+            if (isAddedLine) rightColour = '#149490'
+            if (isModifiedLine) rightColour = '#149490'
+
+            return {
+              isRemovedLine,
+              isAddedLine,
+              isModifiedLine,
+              isContextLine,
+              showLeft,
+              showRight,
+              leftColour,
+              rightColour,
+            }
+          })
+
           return (
-            <HunkCellGrid key={`hunk_${i}`} row={i}>
-              <Cell row="1" col="1 / 5" colour="blue">
+            <HunkCellGrid key={`hunk_${i}`} row={i + 1}>
+              <Cell row="1" col="1 / 3" colour="blue">
                 hunk_{i}
               </Cell>
 
-              {hunk.lines.map((line) => {
-                const {
-                  content,
-                  contentLen,
-                  contentOffset,
-                  newLineno,
-                  numLines,
-                  oldLineno,
-                  origin,
-                  rawContent,
-                } = line
+              {/* Left Content */}
+              <HunkContentColumn
+                col="1"
+                row={`${_.first(hunk.lines).oldLineno -
+                  rowModifier +
+                  2} / ${_.last(hunk.lines).oldLineno - rowModifier + 3}`}>
+                {hunk.lines.map((line, lineI) => {
+                  const { content, newLineno, oldLineno } = line
+                  const { showLeft, leftColour } = linesContext[lineI]
 
-                const isRemovedLine = newLineno < 0
-                const isAddedLine = oldLineno < 0
-                const isModifiedLine =
-                  !isRemovedLine && !isAddedLine && contentOffset >= 0
-                const isContextLine =
-                  !isModifiedLine && !isRemovedLine && !isAddedLine
+                  return (
+                    <React.Fragment
+                      key={`content_left_${oldLineno}->${newLineno}`}>
+                      {showLeft && (
+                        <>
+                          <LineNumberCell
+                            row={oldLineno - rowModifier + 2}
+                            colour={leftColour}>
+                            {oldLineno}
+                          </LineNumberCell>
 
-                const showLeft = !isAddedLine
-                const showRight = !isRemovedLine
+                          <ContentCell
+                            row={oldLineno - rowModifier + 2}
+                            colour={leftColour}>
+                            {content}
+                          </ContentCell>
+                        </>
+                      )}
+                    </React.Fragment>
+                  )
+                })}
+              </HunkContentColumn>
 
-                let leftColour = 'transparent'
-                if (isRemovedLine) leftColour = '#A60053'
-                if (isModifiedLine) leftColour = '#149490'
+              {/* Right Content */}
+              <HunkContentColumn
+                col="2"
+                row={`${_.first(hunk.lines).newLineno -
+                  rowModifier +
+                  2} / ${_.last(hunk.lines).newLineno - rowModifier + 3}`}>
+                {hunk.lines.map((line, lineI) => {
+                  const { content, newLineno, oldLineno } = line
+                  const { showRight, rightColour } = linesContext[lineI]
 
-                let rightColour = 'transparent'
-                if (isAddedLine) rightColour = '#149490'
-                if (isModifiedLine) rightColour = '#149490'
+                  return (
+                    <React.Fragment
+                      key={`content_right_${oldLineno}->${newLineno}`}>
+                      {showRight && (
+                        <>
+                          <LineNumberCell
+                            row={newLineno - rowModifier + 2}
+                            colour={rightColour}>
+                            {newLineno}
+                          </LineNumberCell>
 
-                return (
-                  <React.Fragment key={`${oldLineno}->${newLineno}`}>
-                    {showLeft && (
-                      <>
-                        <LineNumberCell
-                          row={oldLineno - rowModifier + 2}
-                          old
-                          colour={leftColour}>
-                          {oldLineno}
-                        </LineNumberCell>
-
-                        <ContentCell
-                          row={oldLineno - rowModifier + 2}
-                          col="2"
-                          colour={leftColour}>
-                          {content}
-                        </ContentCell>
-                      </>
-                    )}
-
-                    {showRight && (
-                      <>
-                        <LineNumberCell
-                          row={newLineno - rowModifier + 2}
-                          new
-                          colour={rightColour}>
-                          {newLineno}
-                        </LineNumberCell>
-
-                        <ContentCell
-                          row={newLineno - rowModifier + 2}
-                          col="4"
-                          colour={rightColour}>
-                          {content}
-                        </ContentCell>
-                      </>
-                    )}
-                  </React.Fragment>
-                )
-              })}
+                          <ContentCell
+                            row={newLineno - rowModifier + 2}
+                            colour={rightColour}>
+                            {content}
+                          </ContentCell>
+                        </>
+                      )}
+                    </React.Fragment>
+                  )
+                })}
+              </HunkContentColumn>
             </HunkCellGrid>
           )
         })}
@@ -212,6 +241,8 @@ const Container = styled.div`
   overflow: auto;
 
   padding: 1rem 0.5rem;
+
+  z-index: 1000;
 `
 
 const HunksGrid = styled.div`
@@ -224,11 +255,23 @@ const HunkCellGrid = styled.div`
   display: grid;
 
   /* LinNo Content LineNo Content */
-  grid-auto-columns: min-content 1fr min-content 1fr;
+  grid-auto-columns: 1fr 1fr;
 
   /* Position in higher grid */
   grid-column: 1;
   grid-row: ${({ row }) => row};
+
+  margin-top: 0.5rem;
+`
+
+const HunkContentColumn = styled.div`
+  display: grid;
+  grid-auto-columns: min-content 1fr;
+
+  grid-column: ${({ col }) => col};
+  grid-row: ${({ row }) => row};
+
+  overflow: scroll;
 `
 
 const Cell = styled.div`
@@ -240,11 +283,11 @@ const Cell = styled.div`
   padding: 0.25rem;
 
   white-space: pre;
-
-  overflow: scroll;
 `
 
-const LineNumberCell = styled(Cell).attrs((props) => ({
-  col: props.new ? '3' : '1',
-}))``
-const ContentCell = styled(Cell)``
+const LineNumberCell = styled(Cell)`
+  grid-column: 1;
+`
+const ContentCell = styled(Cell)`
+  grid-column: 2;
+`
