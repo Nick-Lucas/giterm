@@ -4,6 +4,7 @@ import styled, { css } from 'styled-components'
 
 import { Commits } from 'app/components/commits'
 import Terminal from 'app/components/terminal'
+import { Diff } from 'app/components/diff'
 import { StatusBar } from 'app/components/StatusBar'
 import { init } from 'app/store/core/actions'
 import * as Sidebar from 'app/components/sidebar'
@@ -45,6 +46,8 @@ export function Home() {
         <TerminalWrapper fullscreen={terminalFullscreen}>
           <Terminal />
         </TerminalWrapper>
+
+        <Diff />
       </FullscreenWrapper>
     </>
   )
