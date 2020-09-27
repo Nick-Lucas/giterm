@@ -1,0 +1,244 @@
+[
+  {
+    "header": "@@ -1,9 +1,7 @@\n",
+    "headerLen": 16,
+    "newLines": 7,
+    "newStart": 1,
+    "oldLines": 9,
+    "oldStart": 1,
+    "size": 11,
+    "lines": [
+      {
+        "content": "import React, { useCallback, useMemo, useRef, useState } from 'react'\n",
+        "contentLen": 70,
+        "contentOffset": 0,
+        "newLineno": -1,
+        "numLines": 1,
+        "oldLineno": 1,
+        "origin": 45,
+        "rawContent": "import React, { useCallback, useMemo, useRef, useState } from 'react'\n"
+      },
+      {
+        "content": "import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'\n",
+        "contentLen": 81,
+        "contentOffset": 0,
+        "newLineno": 1,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react'\n"
+      },
+      {
+        "content": "import { useDispatch, useSelector } from 'react-redux'\n",
+        "contentLen": 55,
+        "contentOffset": -1,
+        "newLineno": 2,
+        "numLines": 1,
+        "oldLineno": 2,
+        "origin": 32,
+        "rawContent": "import { useDispatch, useSelector } from 'react-redux'\n"
+      },
+      {
+        "content": "import styled from 'styled-components'\n",
+        "contentLen": 39,
+        "contentOffset": -1,
+        "newLineno": 3,
+        "numLines": 1,
+        "oldLineno": 3,
+        "origin": 32,
+        "rawContent": "import styled from 'styled-components'\n"
+      },
+      {
+        "content": "import { FixedSizeList } from 'react-window'\n",
+        "contentLen": 45,
+        "contentOffset": 164,
+        "newLineno": -1,
+        "numLines": 1,
+        "oldLineno": 4,
+        "origin": 45,
+        "rawContent": "import { FixedSizeList } from 'react-window'\n"
+      },
+      {
+        "content": "import AutoSizer from 'react-virtualized-auto-sizer'\n",
+        "contentLen": 53,
+        "contentOffset": 209,
+        "newLineno": -1,
+        "numLines": 1,
+        "oldLineno": 5,
+        "origin": 45,
+        "rawContent": "import AutoSizer from 'react-virtualized-auto-sizer'\n"
+      },
+      {
+        "content": "import InfiniteLoader from 'react-window-infinite-loader'\n",
+        "contentLen": 58,
+        "contentOffset": 262,
+        "newLineno": -1,
+        "numLines": 1,
+        "oldLineno": 6,
+        "origin": 45,
+        "rawContent": "import InfiniteLoader from 'react-window-infinite-loader'\n"
+      },
+      {
+        "content": "import { List, AutoSizer } from 'react-virtualized'\n",
+        "contentLen": 52,
+        "contentOffset": 175,
+        "newLineno": 4,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "import { List, AutoSizer } from 'react-virtualized'\n"
+      },
+      {
+        "content": "import _ from 'lodash'\n",
+        "contentLen": 23,
+        "contentOffset": -1,
+        "newLineno": 5,
+        "numLines": 1,
+        "oldLineno": 7,
+        "origin": 32,
+        "rawContent": "import _ from 'lodash'\n"
+      },
+      {
+        "content": "import moment from 'moment'\n",
+        "contentLen": 28,
+        "contentOffset": -1,
+        "newLineno": 6,
+        "numLines": 1,
+        "oldLineno": 8,
+        "origin": 32,
+        "rawContent": "import moment from 'moment'\n"
+      },
+      {
+        "content": "\n",
+        "contentLen": 1,
+        "contentOffset": -1,
+        "newLineno": 7,
+        "numLines": 1,
+        "oldLineno": 9,
+        "origin": 32,
+        "rawContent": "\n"
+      }
+    ]
+  },
+  {
+    "header": "@@ -19,6 +17,11 @@ export function Commits() {\n",
+    "headerLen": 47,
+    "newLines": 11,
+    "newStart": 17,
+    "oldLines": 6,
+    "oldStart": 19,
+    "size": 11,
+    "lines": [
+      {
+        "content": "  const graphWidth = useSelector((state) => state.graph.width)\n",
+        "contentLen": 63,
+        "contentOffset": -1,
+        "newLineno": 17,
+        "numLines": 1,
+        "oldLineno": 19,
+        "origin": 32,
+        "rawContent": "  const graphWidth = useSelector((state) => state.graph.width)\n"
+      },
+      {
+        "content": "  const headSHA = useSelector((state) => state.status.headSHA)\n",
+        "contentLen": 63,
+        "contentOffset": -1,
+        "newLineno": 18,
+        "numLines": 1,
+        "oldLineno": 20,
+        "origin": 32,
+        "rawContent": "  const headSHA = useSelector((state) => state.status.headSHA)\n"
+      },
+      {
+        "content": "\n",
+        "contentLen": 1,
+        "contentOffset": -1,
+        "newLineno": 19,
+        "numLines": 1,
+        "oldLineno": 21,
+        "origin": 32,
+        "rawContent": "\n"
+      },
+      {
+        "content": "  const listRef = useRef()\n",
+        "contentLen": 27,
+        "contentOffset": 782,
+        "newLineno": 20,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "  const listRef = useRef()\n"
+      },
+      {
+        "content": "  useEffect(() => {\n",
+        "contentLen": 20,
+        "contentOffset": 809,
+        "newLineno": 21,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "  useEffect(() => {\n"
+      },
+      {
+        "content": "    listRef.current.forceUpdateGrid()\n",
+        "contentLen": 38,
+        "contentOffset": 829,
+        "newLineno": 22,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "    listRef.current.forceUpdateGrid()\n"
+      },
+      {
+        "content": "  })\n",
+        "contentLen": 5,
+        "contentOffset": 867,
+        "newLineno": 23,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "  })\n"
+      },
+      {
+        "content": "\n",
+        "contentLen": 1,
+        "contentOffset": 872,
+        "newLineno": 24,
+        "numLines": 1,
+        "oldLineno": -1,
+        "origin": 43,
+        "rawContent": "\n"
+      },
+      {
+        "content": "  const columns = useMemo(() => {\n",
+        "contentLen": 34,
+        "contentOffset": -1,
+        "newLineno": 25,
+        "numLines": 1,
+        "oldLineno": 22,
+        "origin": 32,
+        "rawContent": "  const columns = useMemo(() => {\n"
+      },
+      {
+        "content": "    const graphCols = Math.min(8, graphWidth)\n",
+        "contentLen": 46,
+        "contentOffset": -1,
+        "newLineno": 26,
+        "numLines": 1,
+        "oldLineno": 23,
+        "origin": 32,
+        "rawContent": "    const graphCols = Math.min(8, graphWidth)\n"
+      },
+      {
+        "content": "\n",
+        "contentLen": 1,
+        "contentOffset": -1,
+        "newLineno": 27,
+        "numLines": 1,
+        "oldLineno": 24,
+        "origin": 32,
+        "rawContent": "\n"
+      }
+    ]
+  }
+]

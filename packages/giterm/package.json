@@ -43,6 +43,7 @@
     "electron-updater": "^4.2.2",
     "feather-icons": "^4.7.3",
     "history": "^4.10.1",
+    "immer": "^7.0.9",
     "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "node-pty": "^0.9.0",

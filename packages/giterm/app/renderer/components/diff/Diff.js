@@ -2,6 +2,10 @@ import React, { useMemo, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import NodeGit from 'nodegit'
+import produce from "immer";
+import _ from 'lodash'
+
+import { Hunk } from './Hunk'
 
 export function Diff() {
   const [diff, setDiff] = useState(null)
@@ -73,7 +77,67 @@ export function Diff() {
   const changeset = useMemo(() => {
     if (!diff) return null
 
-    return diff[patchIndex]
+    // const data = diff[patchIndex]
+    const data = {...diff[patchIndex], hunks: [diff[patchIndex].hunks[0], diff[patchIndex].hunks[1]]}
+    
+    const changeset = {...data, hunks: []}
+
+    for (const hunk of data.hunks) {    
+      const linesLeft = []
+      const linesRight = []
+
+      for (const line of hunk.lines) {
+        const headIndex = Math.max(linesLeft.length, linesRight.length)
+        const isLeft = line.oldLineno >= 0
+        const isRight = line.newLineno >= 0
+
+        function compactPush(lines, line) {
+          let pushIndex = -1
+          // Fill the last gap if there is one
+          if (lines.length > 0) {
+            for (let i = headIndex-1; i >= 0; i--) {
+              if (lines[i].empty) {
+                pushIndex = i
+              } else {
+                break
+              }
+            }
+          }
+
+          if (pushIndex >= 0) {
+            lines[pushIndex] = line
+          } else {
+            lines[headIndex] = line
+          }
+
+          return pushIndex >= 0
+        }
+
+        // Where line has not changed at-all we ensure it stays in the same row
+        if (isLeft && isRight && line.contentOffset < 0) {
+          linesLeft[headIndex] = line
+          linesRight[headIndex] = line
+          continue
+        }
+        if (isLeft) {
+          const compacted = compactPush(linesLeft, line)
+          if (!compacted) {
+            linesRight[headIndex] = {empty: true}
+          }
+        } 
+        if (isRight) {
+          const compacted = compactPush(linesRight, line)
+          if (!compacted) {
+            linesLeft[headIndex] = {empty: true}
+          }
+        } 
+      }
+
+      changeset.hunks.push({ ...hunk, linesLeft, linesRight})
+    }
+
+    return changeset
+
   }, [diff])
 
   if (!changeset) {
@@ -97,120 +161,9 @@ export function Diff() {
       </PatchName>
 
       <HunksGrid>
-        {changeset.hunks.map((hunk, i) => {
-          const { newLines, newStart, oldLines, oldStart } = hunk
-
-          const rowMinNo = Math.min(oldStart, newStart)
-          const rowMaxNo = Math.max(oldStart + oldLines, newStart + newLines)
-          const rowCount = rowMaxNo - rowMinNo + 1
-
-          const hunkHeaderRow = 1
-          const hunkStartRow = 2
-          const hunkEndRow = rowCount + hunkStartRow
-
-          const lineNormaliser = rowMinNo - 1
-
-          const linesContext = hunk.lines.map((line) => {
-            const { contentOffset, newLineno, oldLineno } = line
-
-            const isRemovedLine = newLineno < 0
-            const isAddedLine = oldLineno < 0
-            const isModifiedLine =
-              !isRemovedLine && !isAddedLine && contentOffset >= 0
-            const isContextLine =
-              !isModifiedLine && !isRemovedLine && !isAddedLine
-
-            const showLeft = !isAddedLine
-            const showRight = !isRemovedLine
-
-            let leftColour = 'transparent'
-            if (isRemovedLine) leftColour = '#A60053'
-            if (isModifiedLine) leftColour = '#149490'
-
-            let rightColour = 'transparent'
-            if (isAddedLine) rightColour = '#149490'
-            if (isModifiedLine) rightColour = '#149490'
-
-            return {
-              isRemovedLine,
-              isAddedLine,
-              isModifiedLine,
-              isContextLine,
-              showLeft,
-              showRight,
-              leftColour,
-              rightColour,
-            }
-          })
-
-          return (
-            <HunkCellGrid key={`hunk_${i}`} row={i + 1}>
-              <Cell row={hunkHeaderRow} col="1 / 3" colour="blue">
-                Hunk {i + 1}
-              </Cell>
-
-              {/* Left Content */}
-              <HunkContentColumn
-                col="1"
-                row={`${hunkStartRow} / ${hunkEndRow}`}>
-                {hunk.lines.map((line, lineI) => {
-                  const { content, newLineno, oldLineno } = line
-                  const { showLeft, leftColour } = linesContext[lineI]
-
-                  return (
-                    <React.Fragment key={`left_${oldLineno}->${newLineno}`}>
-                      {showLeft && (
-                        <>
-                          <LineNumberCell
-                            row={oldLineno - lineNormaliser}
-                            colour={leftColour}>
-                            {oldLineno}
-                          </LineNumberCell>
-
-                          <ContentCell
-                            row={oldLineno - lineNormaliser}
-                            colour={leftColour}>
-                            {content}
-                          </ContentCell>
-                        </>
-                      )}
-                    </React.Fragment>
-                  )
-                })}
-              </HunkContentColumn>
-
-              {/* Right Content */}
-              <HunkContentColumn
-                col="2"
-                row={`${hunkStartRow} / ${hunkEndRow}`}>
-                {hunk.lines.map((line, lineI) => {
-                  const { content, newLineno, oldLineno } = line
-                  const { showRight, rightColour } = linesContext[lineI]
-
-                  return (
-                    <React.Fragment key={`right_${oldLineno}->${newLineno}`}>
-                      {showRight && (
-                        <>
-                          <LineNumberCell
-                            row={newLineno - lineNormaliser}
-                            colour={rightColour}>
-                            {newLineno}
-                          </LineNumberCell>
-
-                          <ContentCell
-                            row={newLineno - lineNormaliser}
-                            colour={rightColour}>
-                            {content}
-                          </ContentCell>
-                        </>
-                      )}
-                    </React.Fragment>
-                  )
-                })}
-              </HunkContentColumn>
-            </HunkCellGrid>
-          )
-        })}
+        {changeset.hunks.map((hunk, i) => (
+          <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
+        ))}
       </HunksGrid>
     </Container>
   )
@@ -263,47 +216,4 @@ const HunksGrid = styled.div`
   display: grid;
 
   grid-auto-columns: 1fr;
-`
-
-const HunkCellGrid = styled.div.attrs((props) => ({
-  gridRow: props.row,
-}))`
-  display: grid;
-
-  grid-auto-columns: 1fr 1fr;
-
-  grid-column: 1;
-
-  margin-top: 0.5rem;
-`
-
-const HunkContentColumn = styled.div.attrs((props) => ({
-  gridRow: props.row,
-}))`
-  display: grid;
-  grid-auto-columns: min-content 1fr;
-  grid-auto-rows: 1.5rem;
-
-  grid-column: ${({ col }) => col};
-
-  overflow: scroll;
-`
-
-const Cell = styled.div.attrs((props) => ({
-  gridRow: props.row,
-}))`
-  grid-column: ${({ col }) => col};
-
-  background-color: ${({ colour = 'transparent' }) => colour};
-
-  padding: 0.25rem;
-
-  white-space: pre;
-`
-
-const LineNumberCell = styled(Cell)`
-  grid-column: 1;
-`
-const ContentCell = styled(Cell)`
-  grid-column: 2;
 `
