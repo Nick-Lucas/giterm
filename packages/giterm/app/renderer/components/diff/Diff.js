@@ -8,6 +8,8 @@ import _ from 'lodash'
 import { Hunk } from './Hunk'
 
 export function Diff() {
+  const contextLines = 5
+
   const [diff, setDiff] = useState(null)
   useEffect(() => {
     async function fetch() {
@@ -20,7 +22,7 @@ export function Diff() {
       const c1 = await (await repo.getCommit(sha1)).getTree()
       const c2 = await (await repo.getCommit(sha2)).getTree()
 
-      const diff = await NodeGit.Diff.treeToTree(repo, c1, c2)
+      const diff = await NodeGit.Diff.treeToTree(repo, c1, c2, { contextLines: contextLines })
 
       const stats = await diff.getStats()
       const _patches = await diff.patches()
