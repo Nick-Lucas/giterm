@@ -71,5 +71,5 @@ async function unwrapFuncs(obj) {
   )
 }
 
-// getIndexDiff()
-getCommitsDiff()
+getIndexDiff()
+// getCommitsDiff()

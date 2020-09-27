@@ -7,13 +7,15 @@ import { useSelector } from 'react-redux'
 import { Hunk } from './Hunk'
 
 export function Diff({
-  mode = 'shas',
+  mode = 'index',
   sha1 = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
   sha2 = '529bbb2e074ed0cdd5fba316546eeb54704e1d37',
+  filePath = 'packages/giterm/app/renderer/components/diff/Diff.js',
 }) {
   const contextLines = 5
   const cwd = useSelector((state) => state.config.cwd)
 
+  const [loading, setLoading] = useState(true)
   const [diff, setDiff] = useState(null)
   useEffect(() => {
     let cancelled = false
@@ -30,6 +32,7 @@ export function Diff({
 
       if (!cancelled) {
         setDiff(diff)
+        setLoading(false)
       }
     }
 
@@ -40,16 +43,18 @@ export function Diff({
     }
   }, [cwd, mode, sha1, sha2])
 
-  const patchIndex = 3 // Commits.js
   const changeset = useMemo(() => {
     if (!diff) return null
+    console.log(diff)
+    const patch = diff.patches.find(
+      (patch) =>
+        patch.oldFilePath === filePath || patch.newFilePath === filePath,
+    )
 
-    const data = diff.patches[patchIndex]
-    // const data = {...diff[patchIndex], hunks: [diff[patchIndex].hunks[0], diff[patchIndex].hunks[1]]}
+    const changeset = { ...patch, selectedFilePath: filePath, hunks: [] }
+    if (!patch) return changeset
 
-    const changeset = { ...data, hunks: [] }
-
-    for (const hunk of data.hunks) {
+    for (const hunk of patch.hunks) {
       const linesLeft = []
       const linesRight = []
 
@@ -78,10 +83,14 @@ export function Diff({
     }
 
     return changeset
-  }, [diff])
+  }, [diff, filePath])
 
-  if (!changeset) {
-    return <Container>Loading</Container>
+  if (loading) {
+    return (
+      <Container>
+        <MessageText>Loading</MessageText>
+      </Container>
+    )
   }
 
   console.log({ changeset, diff })
@@ -90,7 +99,9 @@ export function Diff({
     <Container>
       <PatchName>
         {changeset.oldFilePath === changeset.newFilePath ? (
-          <PatchNameCell>{changeset.oldFilePath}</PatchNameCell>
+          <PatchNameCell>
+            {changeset.oldFilePath ?? changeset.selectedFilePath}
+          </PatchNameCell>
         ) : (
           <>
             <PatchNameCell>{changeset.newFilePath}</PatchNameCell>
@@ -101,6 +112,10 @@ export function Diff({
       </PatchName>
 
       <HunksGrid>
+        {changeset.hunks.length === 0 && (
+          <MessageText>Nothing to display!</MessageText>
+        )}
+
         {changeset.hunks.map((hunk, i) => (
           <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
         ))}
@@ -162,4 +177,10 @@ const HunksGrid = styled.div`
   display: grid;
 
   grid-auto-columns: 1fr;
+
+  margin-top: 1rem;
+`
+
+const MessageText = styled.div`
+  text-align: center;
 `

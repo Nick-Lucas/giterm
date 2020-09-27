@@ -448,7 +448,7 @@ export class Git {
       return null
     }
 
-    const headTree = (await repo.getHeadCommit()).getTree()
+    const headTree = await (await repo.getHeadCommit()).getTree()
     const diff = await NodeGit.Diff.treeToWorkdirWithIndex(
       repo,
       headTree,
