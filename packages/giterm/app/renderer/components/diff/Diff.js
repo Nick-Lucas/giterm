@@ -2,19 +2,6 @@ import React, { useMemo, useState, useEffect } from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 import NodeGit from 'nodegit'
-import _ from 'lodash'
-
-import { data } from './data'
-
-function unwrap(objectWithFunctions) {
-  return Object.keys(objectWithFunctions).reduce((obj, key) => {
-    obj[key] =
-      typeof objectWithFunctions[key] === 'function'
-        ? objectWithFunctions[key]()
-        : objectWithFunctions[key]
-    return obj
-  }, {})
-}
 
 export function Diff() {
   const [diff, setDiff] = useState(null)
@@ -31,10 +18,10 @@ export function Diff() {
 
       const diff = await NodeGit.Diff.treeToTree(repo, c1, c2)
 
-      const patches = await diff.patches()
+      const _patches = await diff.patches()
 
-      const dp = await Promise.all(
-        patches.map(async (patch) => {
+      const patches = await Promise.all(
+        _patches.map(async (patch) => {
           const oldFilePath = patch.oldFile().path()
           const newFilePath = patch.newFile().path()
           const status = patch.status()
@@ -76,11 +63,11 @@ export function Diff() {
       // repo.stageFilemode
       // repo.stageLines
 
-      setDiff(dp)
+      setDiff(patches)
     }
 
     fetch()
-  })
+  }, [])
 
   const patchIndex = 3 // Commits.js
   const changeset = useMemo(() => {
@@ -93,6 +80,8 @@ export function Diff() {
     return <Container>Loading</Container>
   }
 
+  console.log(changeset)
+
   return (
     <Container>
       <div>
@@ -103,15 +92,7 @@ export function Diff() {
 
       <HunksGrid>
         {changeset.hunks.map((hunk, i) => {
-          const {
-            header,
-            headerLen,
-            newLines,
-            newStart,
-            oldLines,
-            oldStart,
-            size,
-          } = hunk
+          const { newLines, newStart, oldLines, oldStart } = hunk
 
           const rowMinNo = Math.min(oldStart, newStart)
           const rowMaxNo = Math.max(oldStart + oldLines, newStart + newLines)
@@ -120,6 +101,8 @@ export function Diff() {
           const hunkHeaderRow = 1
           const hunkStartRow = 2
           const hunkEndRow = rowCount + hunkStartRow
+
+          const lineNormaliser = rowMinNo - 1
 
           const linesContext = hunk.lines.map((line) => {
             const { contentOffset, newLineno, oldLineno } = line
@@ -169,18 +152,17 @@ export function Diff() {
                   const { showLeft, leftColour } = linesContext[lineI]
 
                   return (
-                    <React.Fragment
-                      key={`content_left_${oldLineno}->${newLineno}`}>
+                    <React.Fragment key={`left_${oldLineno}->${newLineno}`}>
                       {showLeft && (
                         <>
                           <LineNumberCell
-                            row={oldLineno - rowMinNo}
+                            row={oldLineno - lineNormaliser}
                             colour={leftColour}>
                             {oldLineno}
                           </LineNumberCell>
 
                           <ContentCell
-                            row={oldLineno - rowMinNo}
+                            row={oldLineno - lineNormaliser}
                             colour={leftColour}>
                             {content}
                           </ContentCell>
@@ -200,18 +182,17 @@ export function Diff() {
                   const { showRight, rightColour } = linesContext[lineI]
 
                   return (
-                    <React.Fragment
-                      key={`content_right_${oldLineno}->${newLineno}`}>
+                    <React.Fragment key={`right_${oldLineno}->${newLineno}`}>
                       {showRight && (
                         <>
                           <LineNumberCell
-                            row={newLineno - rowMinNo}
+                            row={newLineno - lineNormaliser}
                             colour={rightColour}>
                             {newLineno}
                           </LineNumberCell>
 
                           <ContentCell
-                            row={newLineno - rowMinNo}
+                            row={newLineno - lineNormaliser}
                             colour={rightColour}>
                             {content}
                           </ContentCell>

@@ -31,7 +31,8 @@ async function getCommitsDiff() {
   const c2 = await (await repo.getCommit(sha2)).getTree()
 
   const diff = await NodeGit.Diff.treeToTree(repo, c1, c2)
-  diff.patches[0]
+  // const hs = (await (await diff.patches())[0].hunks())[0].
+  // repo.stageLines()
   console.log(JSON.stringify(await unwrapFuncs(diff), null, 2))
 }
 
