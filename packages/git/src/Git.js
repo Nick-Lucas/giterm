@@ -425,18 +425,34 @@ export class Git {
    * @param {string} shaNew
    * @param {NodeGit.DiffOptions} options
    */
-  getDiffFromShas = async (shaOld, shaNew, options) => {
+  getDiffFromShas = async (shaNew, shaOld = null, options) => {
     const repo = await this.getComplex()
     if (!repo) {
       return null
     }
 
-    const treeOld = await (await repo.getCommit(shaOld)).getTree()
-    const treeNew = await (await repo.getCommit(shaNew)).getTree()
+    if (!shaNew) {
+      console.error('shaNew was not provided')
+      return null
+    }
 
-    const diff = await NodeGit.Diff.treeToTree(repo, treeOld, treeNew, options)
-
-    return await this._processDiff(diff)
+    if (shaOld != null) {
+      const treeOld = await (await repo.getCommit(shaOld)).getTree()
+      const treeNew = await (await repo.getCommit(shaNew)).getTree()
+      const diff = await NodeGit.Diff.treeToTree(
+        repo,
+        treeOld,
+        treeNew,
+        options,
+      )
+      return await this._processDiff(diff)
+    } else {
+      // Diff single commit, with support for first commit in history
+      const diff = await (await repo.getCommit(shaNew)).getDiffWithOptions(
+        options,
+      )
+      return await this._processDiff(diff)
+    }
   }
 
   /**

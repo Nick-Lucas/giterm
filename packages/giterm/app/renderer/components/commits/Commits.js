@@ -42,23 +42,28 @@ export function Commits() {
     ]
   }, [graphWidth])
 
-  const [selectedSHAs, setSelectedSHAs] = useState([])
-  const handleSelect = useCallback((e, commit) => {
-    if (CtrlOrCmdHeld(e)) {
-      setSelectedSHAs((current) =>
-        [_.last(current), commit.sha].filter(Boolean),
-      )
-    } else {
-      setSelectedSHAs([commit.sha])
-    }
-  }, [])
+  const [selectedCommits, setSelectedCommits] = useState([])
+  const selectedShas = useMemo(() => selectedCommits.map((c) => c.sha), [
+    selectedCommits,
+  ])
+  const handleSelect = useCallback(
+    (e, commit) => {
+      let nextState = []
+      if (CtrlOrCmdHeld(e) && selectedCommits.length > 0) {
+        nextState = [_.last(selectedCommits), commit].filter(Boolean)
+      } else {
+        nextState = [commit]
+      }
+      setSelectedCommits(nextState)
 
-  useEffect(() => {
-    // TODO: allow a commit to be diffed to itself
-    if (selectedSHAs.length > 1) {
-      dispatch(diffShas(selectedSHAs[0], selectedSHAs[1]))
-    }
-  }, [dispatch, selectedSHAs])
+      const [newCommit, oldCommit] = _.sortBy(
+        nextState,
+        (c) => c.dateISO,
+      ).reverse()
+      dispatch(diffShas(newCommit.sha, oldCommit?.sha ?? null))
+    },
+    [dispatch, selectedCommits],
+  )
 
   /**
    * @type {React.MutableRefObject<FixedSizeList>}
@@ -68,7 +73,7 @@ export function Commits() {
     // TODO: improve this logic to find the index asynchronously and pre-load if possible
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
-      setSelectedSHAs([headSHA])
+      setSelectedCommits([headSHA])
       listRef.current?.scrollToItem(index, 'smart')
     }
   })
@@ -98,7 +103,7 @@ export function Commits() {
             key={commits[index].sha}
             index={index}
             style={style}
-            isSelected={selectedSHAs.includes(commits[index].sha)}
+            isSelected={selectedShas.includes(commits[index].sha)}
             onClick={handleSelect}
             columns={columns}
           />

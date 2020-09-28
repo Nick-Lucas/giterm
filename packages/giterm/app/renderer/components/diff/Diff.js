@@ -8,8 +8,8 @@ import { Hunk } from './Hunk'
 
 export function Diff({
   mode = 'index',
-  sha1 = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
-  sha2 = '529bbb2e074ed0cdd5fba316546eeb54704e1d37',
+  shaNew = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
+  shaOld = '529bbb2e074ed0cdd5fba316546eeb54704e1d37',
   filePath = 'packages/giterm/app/renderer/components/diff/Diff.js',
 }) {
   const contextLines = 5
@@ -25,7 +25,7 @@ export function Diff({
 
       const diff =
         mode === 'shas'
-          ? await git.getDiffFromShas(sha1, sha2, {
+          ? await git.getDiffFromShas(shaNew, shaOld, {
               contextLines: contextLines,
             })
           : await git.getDiffFromIndex({ contextLines: contextLines })
@@ -41,7 +41,7 @@ export function Diff({
     return () => {
       cancelled = true
     }
-  }, [cwd, mode, sha1, sha2])
+  }, [cwd, mode, shaNew, shaOld])
 
   const changeset = useMemo(() => {
     if (!diff) return null
@@ -126,8 +126,8 @@ export function Diff({
 
 Diff.propTypes = {
   mode: PropTypes.oneOf(['shas', 'index']),
-  sha1: PropTypes.string,
-  sha2: PropTypes.string,
+  shaNew: PropTypes.string,
+  shaOld: PropTypes.string,
 }
 
 const Container = styled.div`

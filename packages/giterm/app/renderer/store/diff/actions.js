@@ -4,9 +4,9 @@ export const diffIndex = () => ({
 })
 
 export const DIFF_SHAS = 'diff/shas'
-export const diffShas = (shaOld, shaNew) => ({
+export const diffShas = (shaNew, shaOld = null) => ({
   type: DIFF_SHAS,
-  shas: [shaOld, shaNew],
+  shas: [shaNew, shaOld],
 })
 
 export const DIFF_COMPLETE = 'diff/complete'
