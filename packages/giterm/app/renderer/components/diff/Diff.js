@@ -111,7 +111,7 @@ export function Diff({
         )}
       </PatchName>
 
-      <HunksGrid>
+      <HunksContainer>
         {changeset.hunks.length === 0 && (
           <MessageText>Nothing to display!</MessageText>
         )}
@@ -119,7 +119,7 @@ export function Diff({
         {changeset.hunks.map((hunk, i) => (
           <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
         ))}
-      </HunksGrid>
+      </HunksContainer>
     </Container>
   )
 }
@@ -131,20 +131,14 @@ Diff.propTypes = {
 }
 
 const Container = styled.div`
-  position: absolute;
-  top: 3%;
-  bottom: 3%;
-  right: 3%;
-  left: 3%;
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: column;
 
   background-color: #001825;
 
   overflow: auto;
 
-  z-index: 1000;
-
-  box-shadow: 2px 2px 15px 0px rgb(255, 255, 255, 0.3);
-  border-radius: 5px;
   padding: 0.25rem 0;
 `
 
@@ -173,10 +167,10 @@ const PatchNameCell = styled.div`
   text-align: center;
 `
 
-const HunksGrid = styled.div`
-  display: grid;
-
-  grid-auto-columns: 1fr;
+const HunksContainer = styled.div`
+  display: flex;
+  flex-direction: column;
+  flex: 0 0 auto;
 
   margin-top: 1rem;
 `

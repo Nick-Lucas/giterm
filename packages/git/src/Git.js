@@ -448,10 +448,10 @@ export class Git {
       return await this._processDiff(diff)
     } else {
       // Diff single commit, with support for first commit in history
-      const diff = await (await repo.getCommit(shaNew)).getDiffWithOptions(
+      const diffs = await (await repo.getCommit(shaNew)).getDiffWithOptions(
         options,
       )
-      return await this._processDiff(diff)
+      return await this._processDiff(diffs[0])
     }
   }
 

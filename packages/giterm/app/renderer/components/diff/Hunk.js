@@ -93,8 +93,6 @@ const HunkCellGrid = styled.div.attrs((props) => ({
 
   grid-auto-columns: 1fr 1fr;
 
-  grid-column: 1;
-
   margin-top: 0.5rem;
 `
 

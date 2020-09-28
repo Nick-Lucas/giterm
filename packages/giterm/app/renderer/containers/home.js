@@ -17,6 +17,8 @@ export function Home() {
     dispatch(init())
   }, [dispatch])
 
+  const diff = useSelector((state) => state.diff)
+
   return (
     <>
       <StatusBar />
@@ -44,10 +46,15 @@ export function Home() {
         <Divider hide={terminalFullscreen} />
 
         <TerminalWrapper fullscreen={terminalFullscreen}>
-          <Terminal />
+          {!diff.show && <Terminal />}
+          {diff.show && (
+            <Diff
+              mode={diff.mode}
+              shaNew={diff.shas[0]}
+              shaOld={diff.shas[1]}
+            />
+          )}
         </TerminalWrapper>
-
-        {/* <Diff /> */}
       </FullscreenWrapper>
     </>
   )
@@ -59,6 +66,7 @@ const FullscreenWrapper = styled.div`
   flex: 1;
   flex-direction: column;
   max-width: 100%;
+  overflow: hidden;
 `
 
 const PlaygroundWrapper = styled.div`
