@@ -22,6 +22,7 @@ const store = configureStore(initialState)
 const history = syncHistoryWithStore(routerHistory, store)
 
 // Shortcuts
+// TODO: use globalShortcuts and accelerators instead: https://www.electronjs.org/docs/api/accelerator
 window.addEventListener(
   'keydown',
   (ev) => {

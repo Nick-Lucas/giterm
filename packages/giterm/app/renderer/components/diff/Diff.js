@@ -6,6 +6,7 @@ import { useSelector } from 'react-redux'
 
 import { Hunk } from './Hunk'
 
+// TODO: add a file selector to this view
 export function Diff({
   mode = 'index',
   shaNew = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
