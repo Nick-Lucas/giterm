@@ -47,7 +47,7 @@ export function Home() {
           <Terminal />
         </TerminalWrapper>
 
-        <Diff />
+        {/* <Diff /> */}
       </FullscreenWrapper>
     </>
   )

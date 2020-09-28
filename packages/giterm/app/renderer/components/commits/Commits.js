@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react'
+import React, { useCallback, useMemo, useRef, useState, useEffect } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
 import { FixedSizeList } from 'react-window'
@@ -6,6 +6,8 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import InfiniteLoader from 'react-window-infinite-loader'
 import _ from 'lodash'
 import moment from 'moment'
+import { CtrlOrCmdHeld } from 'app/lib/keyhelpers'
+import { diffShas } from 'app/store/diff/actions'
 
 import Header from './header'
 import { reachedEndOfList } from 'app/store/commits/actions'
@@ -40,10 +42,23 @@ export function Commits() {
     ]
   }, [graphWidth])
 
-  const [selectedSHA, setSelectedSHA] = useState('')
-  const handleSelect = useCallback((commit) => {
-    setSelectedSHA(commit.sha)
+  const [selectedSHAs, setSelectedSHAs] = useState([])
+  const handleSelect = useCallback((e, commit) => {
+    if (CtrlOrCmdHeld(e)) {
+      setSelectedSHAs((current) =>
+        [_.last(current), commit.sha].filter(Boolean),
+      )
+    } else {
+      setSelectedSHAs([commit.sha])
+    }
   }, [])
+
+  useEffect(() => {
+    // TODO: allow a commit to be diffed to itself
+    if (selectedSHAs.length > 1) {
+      dispatch(diffShas(selectedSHAs[0], selectedSHAs[1]))
+    }
+  }, [dispatch, selectedSHAs])
 
   /**
    * @type {React.MutableRefObject<FixedSizeList>}
@@ -53,7 +68,7 @@ export function Commits() {
     // TODO: improve this logic to find the index asynchronously and pre-load if possible
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
-      setSelectedSHA(headSHA)
+      setSelectedSHAs([headSHA])
       listRef.current?.scrollToItem(index, 'smart')
     }
   })
@@ -83,8 +98,8 @@ export function Commits() {
             key={commits[index].sha}
             index={index}
             style={style}
-            isSelected={selectedSHA === commits[index].sha}
-            onSelect={handleSelect}
+            isSelected={selectedSHAs.includes(commits[index].sha)}
+            onClick={handleSelect}
             columns={columns}
           />
         )}

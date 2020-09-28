@@ -141,11 +141,7 @@ export const _Row = ({
   }, [refs])
 
   return (
-    <RowWrapper
-      onClick={handleSelect}
-      onDoubleClick={handleDoubleClick}
-      isSelected={selected}
-      isHead={isHead}>
+    <RowWrapper isSelected={selected} isHead={isHead}>
       {columns.map((column) => (
         <RowColumn key={column.key} width={column.width}>
           {column.showTags &&
