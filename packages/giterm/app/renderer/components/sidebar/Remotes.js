@@ -5,8 +5,7 @@ import { clipboard } from 'electron'
 import { Cloud } from 'react-feather'
 
 import { Section } from './Section'
-import { Row, Label } from './Row'
-import { RightClickArea } from 'app/lib/primitives'
+import { RightClickArea, List } from 'app/lib/primitives'
 
 export function Remotes() {
   const _remotes = useSelector((state) => state.remotes)
@@ -34,9 +33,9 @@ export function Remotes() {
       {remotes.map((remote) => {
         return (
           <RightClickArea key={remote.id} menuItems={remote.menuItems}>
-            <Row>
-              <Label>{remote.name}</Label>
-            </Row>
+            <List.Row>
+              <List.Label>{remote.name}</List.Label>
+            </List.Row>
           </RightClickArea>
         )
       })}

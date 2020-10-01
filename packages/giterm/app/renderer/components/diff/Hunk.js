@@ -1,5 +1,5 @@
 import React from 'react'
-import styled from 'styled-components'
+import styled, { css } from 'styled-components'
 
 export const Hunk = ({ hunk, index }) => {
   const { newLines, newStart, oldLines, oldStart } = hunk
@@ -40,7 +40,10 @@ export const Hunk = ({ hunk, index }) => {
       </Cell>
 
       {/* Left Content */}
-      <HunkContentColumn col="1" row={`${hunkStartRow} / ${hunkEndRow}`}>
+      <HunkContentColumn
+        col="1"
+        row={`${hunkStartRow} / ${hunkEndRow}`}
+        divider>
         {hunk.linesLeft.map((line, lineI) => {
           const row = lineI + 1
           const { content, oldLineno } = line
@@ -108,6 +111,12 @@ const HunkContentColumn = styled.div.attrs((props) => ({
   grid-column: ${({ col }) => col};
 
   overflow: scroll;
+
+  ${({ divider }) =>
+    divider &&
+    css`
+      border-right: solid gray 1px;
+    `}
 `
 
 const Cell = styled.div.attrs((props) => ({

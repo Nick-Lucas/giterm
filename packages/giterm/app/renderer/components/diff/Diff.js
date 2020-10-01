@@ -5,6 +5,7 @@ import { Git } from '@giterm/git'
 import { useSelector } from 'react-redux'
 
 import { Hunk } from './Hunk'
+import { RightClickArea, List } from 'app/lib/primitives'
 
 // TODO: add a file selector to this view
 export function Diff({
@@ -100,26 +101,26 @@ export function Diff({
       <Files>
         {diff.patches.map((patch) => {
           return (
-            <File
+            <List.Row
               key={patch.newFilePath}
               onClick={() => setFilePath(patch.newFilePath)}>
-              {patch.newFilePath}
-            </File>
+              <List.Label trimStart>{patch.newFilePath}</List.Label>
+            </List.Row>
           )
         })}
       </Files>
 
-      <Container>
+      <DiffContainer>
         <PatchName>
           {changeset.oldFilePath === changeset.newFilePath ? (
-            <PatchNameCell>
+            <List.Label trimStart>
               {changeset.oldFilePath ?? changeset.selectedFilePath}
-            </PatchNameCell>
+            </List.Label>
           ) : (
             <>
-              <PatchNameCell>{changeset.newFilePath}</PatchNameCell>
-              <PatchNameSpeparator>{'->'}</PatchNameSpeparator>
-              <PatchNameCell>{changeset.oldFilePath}</PatchNameCell>
+              <List.Label trimStart>{changeset.newFilePath}</List.Label>
+              <PatchNameSeparator>{'->'}</PatchNameSeparator>
+              <List.Label trimStart>{changeset.oldFilePath}</List.Label>
             </>
           )}
         </PatchName>
@@ -133,7 +134,7 @@ export function Diff({
             <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
           ))}
         </HunksContainer>
-      </Container>
+      </DiffContainer>
     </Row>
   )
 }
@@ -149,39 +150,33 @@ const Row = styled.div`
   flex: 1 1 auto;
   flex-direction: row;
   height: 100%;
-`
 
-const File = styled.div`
-  margin: 0.25rem 0;
-
-  text-align: left;
-  direction: rtl;
-  white-space: nowrap;
-  text-overflow: ellipsis;
   overflow: hidden;
 `
 
 const Container = styled.div`
   display: flex;
-  flex: 1 1 auto;
   flex-direction: column;
 
-  background-color: #001825;
-
   overflow: auto;
-
-  padding: 0.25rem 0;
 `
 
 const Files = styled(Container)`
-  flex: 0 0 20rem;
-  padding: 0.25rem;
+  flex: 1 1 0;
+  max-width: 20rem;
+  padding: 0.25rem 0;
 
   border-right: solid gray 1px;
 `
 
+const DiffContainer = styled(Container)`
+  flex: 3 3 0;
+`
+
 const PatchName = styled.div`
-  display: flex;
+  display: block;
+  flex: 0 0 auto;
+
   flex-direction: row;
   align-items: center;
   justify-content: center;
@@ -189,20 +184,8 @@ const PatchName = styled.div`
   padding: 0 1rem;
 `
 
-const PatchNameSpeparator = styled.div`
+const PatchNameSeparator = styled.div`
   padding: 0 0.5rem;
-`
-
-const PatchNameCell = styled.div`
-  flex: 1;
-
-  color: ${({ colour }) => colour || 'inherit'};
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  direction: rtl;
-  text-align: center;
 `
 
 const HunksContainer = styled.div`

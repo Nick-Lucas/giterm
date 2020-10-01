@@ -16,15 +16,3 @@ export const Row = styled.div`
   font-weight: ${({ active }) => (active ? 'bold' : 'inherit')};
   color: ${({ active }) => (active ? colours.TEXT.FOCUS : 'inherit')};
 `
-
-export const Label = styled.div`
-  flex: 1;
-
-  color: ${({ colour }) => colour || 'inherit'};
-
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  direction: ${({ trimStart }) => (trimStart ? 'rtl' : 'inherit')};
-  text-align: left;
-`

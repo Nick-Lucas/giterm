@@ -5,9 +5,8 @@ import styled from 'styled-components'
 import { clipboard } from 'electron'
 
 import { Section } from './Section'
-import { Row, Label } from './Row'
 import { colours } from 'app/lib/theme'
-import { RightClickArea } from 'app/lib/primitives'
+import { RightClickArea, List } from 'app/lib/primitives'
 
 export function Changes() {
   const _files = useSelector((state) => state.status.files)
@@ -51,18 +50,18 @@ export function Changes() {
       title={`CHANGES`}
       hasContent={_files.length > 0}
       icon={
-        <Label>
+        <List.Label>
           ({staged.length}/{_files.length})
-        </Label>
+        </List.Label>
       }>
       {staged.map((file) => {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
-            <Row>
-              <Label colour={file.colour} trimStart>
+            <List.Row>
+              <List.Label colour={file.colour} trimStart>
                 {file.path}
-              </Label>
-            </Row>
+              </List.Label>
+            </List.Row>
           </RightClickArea>
         )
       })}
@@ -72,11 +71,11 @@ export function Changes() {
       {unstaged.map((file) => {
         return (
           <RightClickArea key={file.path} menuItems={file.menuItems}>
-            <Row>
-              <Label colour={file.colour} trimStart>
+            <List.Row>
+              <List.Label colour={file.colour} trimStart>
                 {file.path}
-              </Label>
-            </Row>
+              </List.Label>
+            </List.Row>
           </RightClickArea>
         )
       })}
