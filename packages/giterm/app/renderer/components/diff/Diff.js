@@ -11,10 +11,11 @@ export function Diff({
   mode = 'index',
   shaNew = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
   shaOld = '529bbb2e074ed0cdd5fba316546eeb54704e1d37',
-  filePath = 'packages/giterm/app/renderer/components/diff/Diff.js',
 }) {
   const contextLines = 5
   const cwd = useSelector((state) => state.config.cwd)
+
+  const [filePath, setFilePath] = useState(null)
 
   const [loading, setLoading] = useState(true)
   const [diff, setDiff] = useState(null)
@@ -94,34 +95,46 @@ export function Diff({
     )
   }
 
-  console.log({ changeset, diff })
-
   return (
-    <Container>
-      <PatchName>
-        {changeset.oldFilePath === changeset.newFilePath ? (
-          <PatchNameCell>
-            {changeset.oldFilePath ?? changeset.selectedFilePath}
-          </PatchNameCell>
-        ) : (
-          <>
-            <PatchNameCell>{changeset.newFilePath}</PatchNameCell>
-            <PatchNameSpeparator>{'->'}</PatchNameSpeparator>
-            <PatchNameCell>{changeset.oldFilePath}</PatchNameCell>
-          </>
-        )}
-      </PatchName>
+    <Row>
+      <Files>
+        {diff.patches.map((patch) => {
+          return (
+            <File
+              key={patch.newFilePath}
+              onClick={() => setFilePath(patch.newFilePath)}>
+              {patch.newFilePath}
+            </File>
+          )
+        })}
+      </Files>
 
-      <HunksContainer>
-        {changeset.hunks.length === 0 && (
-          <MessageText>Nothing to display!</MessageText>
-        )}
+      <Container>
+        <PatchName>
+          {changeset.oldFilePath === changeset.newFilePath ? (
+            <PatchNameCell>
+              {changeset.oldFilePath ?? changeset.selectedFilePath}
+            </PatchNameCell>
+          ) : (
+            <>
+              <PatchNameCell>{changeset.newFilePath}</PatchNameCell>
+              <PatchNameSpeparator>{'->'}</PatchNameSpeparator>
+              <PatchNameCell>{changeset.oldFilePath}</PatchNameCell>
+            </>
+          )}
+        </PatchName>
 
-        {changeset.hunks.map((hunk, i) => (
-          <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
-        ))}
-      </HunksContainer>
-    </Container>
+        <HunksContainer>
+          {changeset.hunks.length === 0 && (
+            <MessageText>Nothing to display!</MessageText>
+          )}
+
+          {changeset.hunks.map((hunk, i) => (
+            <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
+          ))}
+        </HunksContainer>
+      </Container>
+    </Row>
   )
 }
 
@@ -130,6 +143,23 @@ Diff.propTypes = {
   shaNew: PropTypes.string,
   shaOld: PropTypes.string,
 }
+
+const Row = styled.div`
+  display: flex;
+  flex: 1 1 auto;
+  flex-direction: row;
+  height: 100%;
+`
+
+const File = styled.div`
+  margin: 0.25rem 0;
+
+  text-align: left;
+  direction: rtl;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+`
 
 const Container = styled.div`
   display: flex;
@@ -141,6 +171,13 @@ const Container = styled.div`
   overflow: auto;
 
   padding: 0.25rem 0;
+`
+
+const Files = styled(Container)`
+  flex: 0 0 20rem;
+  padding: 0.25rem;
+
+  border-right: solid gray 1px;
 `
 
 const PatchName = styled.div`
