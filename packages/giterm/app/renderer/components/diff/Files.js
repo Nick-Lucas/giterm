@@ -7,7 +7,6 @@ import { colours } from 'app/lib/theme'
 
 export const Files = ({ patches, filePath, onChange }) => {
   const colourByIndex = useMemo(() => {
-    console.log({ patches })
     return patches.map((file) => {
       if (file.isAdded) {
         return colours.TEXT.POSITIVE
@@ -24,6 +23,7 @@ export const Files = ({ patches, filePath, onChange }) => {
       {patches.map((patch, i) => {
         return (
           <List.Row
+            active={patch.newFilePath === filePath}
             key={patch.newFilePath}
             onClick={() => onChange(patch.newFilePath)}>
             <List.Label trimStart colour={colourByIndex[i]}>

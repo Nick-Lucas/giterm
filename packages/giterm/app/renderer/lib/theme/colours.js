@@ -18,8 +18,8 @@ export const TEXT = {
 }
 
 export const OVERLAY = {
-  HINT: 'rgba(255, 255, 255, 0.2)',
-  FOCUS: 'rgba(255, 255, 255, 0.3)',
+  FOCUS: 'rgba(255, 255, 255, 0.2)',
+  HINT: 'rgba(255, 255, 255, 0.3)',
 }
 
 export const PILL = {

@@ -7,6 +7,8 @@ export const Row = styled.div`
   align-items: center;
   padding: 0.25rem 0.5rem;
 
+  background-color: ${({ active }) =>
+    active ? colours.OVERLAY.FOCUS : 'transparent'};
   :hover {
     background-color: ${colours.OVERLAY.HINT};
   }
