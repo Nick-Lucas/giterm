@@ -5,9 +5,9 @@ import { Git } from '@giterm/git'
 import { useSelector } from 'react-redux'
 
 import { Hunk } from './Hunk'
-import { RightClickArea, List } from 'app/lib/primitives'
+import { Files } from './Files'
+import { List } from 'app/lib/primitives'
 
-// TODO: add a file selector to this view
 export function Diff({
   mode = 'index',
   shaNew = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
@@ -48,7 +48,7 @@ export function Diff({
 
   const changeset = useMemo(() => {
     if (!diff) return null
-    console.log(diff)
+
     const patch = diff.patches.find(
       (patch) =>
         patch.oldFilePath === filePath || patch.newFilePath === filePath,
@@ -90,25 +90,19 @@ export function Diff({
 
   if (loading) {
     return (
-      <Container>
+      <DiffContainer>
         <MessageText>Loading</MessageText>
-      </Container>
+      </DiffContainer>
     )
   }
 
   return (
     <Row>
-      <Files>
-        {diff.patches.map((patch) => {
-          return (
-            <List.Row
-              key={patch.newFilePath}
-              onClick={() => setFilePath(patch.newFilePath)}>
-              <List.Label trimStart>{patch.newFilePath}</List.Label>
-            </List.Row>
-          )
-        })}
-      </Files>
+      <Files
+        patches={diff.patches}
+        filePath={filePath}
+        onChange={setFilePath}
+      />
 
       <DiffContainer>
         <PatchName>
@@ -154,22 +148,12 @@ const Row = styled.div`
   overflow: hidden;
 `
 
-const Container = styled.div`
+const DiffContainer = styled.div`
   display: flex;
   flex-direction: column;
 
   overflow: auto;
-`
 
-const Files = styled(Container)`
-  flex: 1 1 0;
-  max-width: 20rem;
-  padding: 0.25rem 0;
-
-  border-right: solid gray 1px;
-`
-
-const DiffContainer = styled(Container)`
   flex: 3 3 0;
 `
 

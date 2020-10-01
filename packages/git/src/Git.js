@@ -474,6 +474,9 @@ export class Git {
     return await this._processDiff(diff)
   }
 
+  /**
+   * @param {NodeGit.Diff} diff
+   */
   _processDiff = async (diff) => {
     const stats = await diff.getStats()
     const _patches = await diff.patches()
@@ -483,6 +486,9 @@ export class Git {
         const oldFilePath = patch.oldFile().path()
         const newFilePath = patch.newFile().path()
         const status = patch.status()
+        const isAdded = patch.isAdded()
+        const isDeleted = patch.isDeleted()
+        const isModified = patch.isModified()
 
         return {
           hunks: await Promise.all(
@@ -513,6 +519,9 @@ export class Git {
           status,
           oldFilePath,
           newFilePath,
+          isAdded,
+          isDeleted,
+          isModified,
         }
       }),
     )
