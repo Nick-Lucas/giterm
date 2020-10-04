@@ -10,6 +10,8 @@ import {
   flipUserTerminalFullscreen,
 } from 'app/store/terminal/actions'
 
+import { Panel, Menu } from 'app/lib/primitives'
+
 export function TerminalPanel() {
   const dispatch = useDispatch()
   const { fullscreen } = useSelector((state) => state.terminal)
@@ -25,23 +27,23 @@ export function TerminalPanel() {
   }, [dispatch])
 
   return (
-    <Wrapper>
-      <MenuPanel>
-        <MenuItem
+    <StyledPanel>
+      <Menu.Show>
+        <Menu.Item
           title={fullscreen ? 'Minimise (ctl+tab)' : 'Maximise (ctl+tab)'}
           onClick={handleUserToggle}>
           {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-        </MenuItem>
-      </MenuPanel>
+        </Menu.Item>
+      </Menu.Show>
 
       <TerminalWrapper>
         <Terminal onAlternateBufferChange={handleBufferChange} />
       </TerminalWrapper>
-    </Wrapper>
+    </StyledPanel>
   )
 }
 
-const Wrapper = styled.div`
+const StyledPanel = styled(Panel)`
   display: flex;
   flex: 1;
   flex-direction: column;
@@ -50,20 +52,4 @@ const Wrapper = styled.div`
 const TerminalWrapper = styled.div`
   display: flex;
   flex: 1;
-`
-
-const MenuPanel = styled.div`
-  display: flex;
-  flex-direction: row;
-  justify-content: flex-end;
-  padding: 3px;
-
-  position: absolute;
-  left: 0;
-  right: 0;
-`
-
-const MenuItem = styled.div`
-  display: flex;
-  cursor: pointer;
 `
