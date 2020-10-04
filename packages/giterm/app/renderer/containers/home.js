@@ -3,7 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import styled, { css } from 'styled-components'
 
 import { Commits } from 'app/components/commits'
-import Terminal from 'app/components/terminal'
+import { TerminalPanel } from 'app/components/terminal'
 import { DiffPanel } from 'app/components/diff'
 import { StatusBar } from 'app/components/StatusBar'
 import { init } from 'app/store/core/actions'
@@ -46,13 +46,14 @@ export function Home() {
         <Divider hide={terminalFullscreen} />
 
         <TerminalWrapper fullscreen={terminalFullscreen}>
-          {!diff.show && <Terminal />}
-          {diff.show && (
+          {diff.show ? (
             <DiffPanel
               mode={diff.mode}
               shaNew={diff.shas[0]}
               shaOld={diff.shas[1]}
             />
+          ) : (
+            <TerminalPanel />
           )}
         </TerminalWrapper>
       </FullscreenWrapper>
