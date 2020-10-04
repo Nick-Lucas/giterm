@@ -31,11 +31,18 @@ export default function menu(mainWindow) {
       ],
     },
     {
-      label: 'Git',
+      label: 'View',
       submenu: [
         {
           label: 'Toggle Remote Data',
           accelerator: 'Control+R',
+          click() {
+            // app.js
+          },
+        },
+        {
+          label: 'Toggle Diff View',
+          accelerator: 'Control+1',
           click() {
             // app.js
           },

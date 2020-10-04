@@ -211,6 +211,8 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
   // Autofocus Terminal on keys
 
   useEffect(() => {
+    if (!isShown) return
+
     const handleNotFocused = () => {
       if (!focused) {
         terminal.focus()
@@ -224,7 +226,7 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
     return () => {
       window.removeEventListener('keydown', handleNotFocused)
     }
-  }, [focused, terminal])
+  }, [focused, isShown, terminal])
 
   return <TerminalContainer ref={container} />
 }

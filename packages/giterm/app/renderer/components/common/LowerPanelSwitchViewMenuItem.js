@@ -16,7 +16,7 @@ export function LowerPanelSwitchViewMenuItem() {
 
   return (
     <Menu.Item
-      title={show ? 'Show Terminal (ctl+d)' : 'Show Diff (ctl+d)'}
+      title={show ? 'Show Terminal (ctl+1)' : 'Show Diff (ctl+1)'}
       onClick={handleUserToggle}>
       {show ? <Terminal size={20} /> : <FileText size={20} />}
     </Menu.Item>

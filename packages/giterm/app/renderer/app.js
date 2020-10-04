@@ -11,6 +11,7 @@ import configureStore from './store'
 import { Home } from './containers/home'
 import { showRemoteBranches, showBranchTags } from './store/config/actions'
 import { flipUserTerminalFullscreen } from './store/terminal/actions'
+import { diffToggleShow } from './store/diff/actions'
 
 import '../sentry'
 import { ErrorBoundary } from '@sentry/react'
@@ -22,12 +23,16 @@ const store = configureStore(initialState)
 const history = syncHistoryWithStore(routerHistory, store)
 
 // Shortcuts
-// TODO: use globalShortcuts and accelerators instead: https://www.electronjs.org/docs/api/accelerator
 window.addEventListener(
   'keydown',
   (ev) => {
     if (ev.ctrlKey && ev.code === 'Tab') {
       store.dispatch(flipUserTerminalFullscreen())
+      ev.stopImmediatePropagation()
+      return
+    }
+    if (ev.ctrlKey && ev.code === 'Digit1') {
+      store.dispatch(diffToggleShow())
       ev.stopImmediatePropagation()
       return
     }
