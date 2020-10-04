@@ -7,10 +7,9 @@ import { LowerPanelSwitchViewMenuItem } from './LowerPanelSwitchViewMenuItem'
 export function LowerPanelMenu({ children, ...props }) {
   return (
     <Menu.Show {...props}>
-      <LowerPanelExpandCollapseMenuItem />
-      <LowerPanelSwitchViewMenuItem />
-
       {children}
+      <LowerPanelSwitchViewMenuItem />
+      <LowerPanelExpandCollapseMenuItem />
     </Menu.Show>
   )
 }
