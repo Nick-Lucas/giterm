@@ -141,7 +141,7 @@ Diff.propTypes = {
 
 const Row = styled.div`
   display: flex;
-  flex: 1 1 auto;
+  flex: 1 1 0;
   flex-direction: row;
   height: 100%;
 
