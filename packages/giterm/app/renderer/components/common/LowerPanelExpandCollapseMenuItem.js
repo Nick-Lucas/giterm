@@ -1,7 +1,7 @@
 import React, { useCallback } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 
-import { Minimize2, Maximize2 } from 'react-feather'
+import { Minimize, Maximize } from 'react-feather'
 import { flipUserTerminalFullscreen } from 'app/store/terminal/actions'
 
 import { Menu } from 'app/lib/primitives'
@@ -18,7 +18,7 @@ export function LowerPanelExpandCollapseMenuItem() {
     <Menu.Item
       title={fullscreen ? 'Minimise (ctl+tab)' : 'Maximise (ctl+tab)'}
       onClick={handleUserToggle}>
-      {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
+      {fullscreen ? <Minimize size={20} /> : <Maximize size={20} />}
     </Menu.Item>
   )
 }
