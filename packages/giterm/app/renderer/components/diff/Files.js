@@ -1,8 +1,7 @@
 import React, { useMemo } from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { RightClickArea, List } from 'app/lib/primitives'
+import { List } from 'app/lib/primitives'
 import { colours } from 'app/lib/theme'
 
 export const Files = ({ patches, filePath, onChange }) => {

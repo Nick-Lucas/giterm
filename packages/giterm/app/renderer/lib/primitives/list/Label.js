@@ -9,5 +9,5 @@ export const Label = styled.div`
   text-overflow: ellipsis;
   white-space: nowrap;
   direction: ${({ trimStart }) => (trimStart ? 'rtl' : 'inherit')};
-  text-align: left;
+  text-align: ${({ textAlign = 'left' }) => textAlign};
 `
