@@ -21,11 +21,11 @@ export const Hunk = ({ hunk, index }) => {
     const isAddedLine = oldLineno < 0
     const isModifiedLine = !isRemovedLine && !isAddedLine && contentOffset >= 0
 
-    let leftColour = 'transparent'
+    let leftColour = colours.BACKGROUND.FOCUS
     if (isRemovedLine) leftColour = colours.BACKGROUND.NEGATIVE
     if (isModifiedLine) leftColour = colours.BACKGROUND.NEGATIVE
 
-    let rightColour = 'transparent'
+    let rightColour = colours.BACKGROUND.FOCUS
     if (isAddedLine) rightColour = colours.BACKGROUND.POSITIVE
     if (isModifiedLine) rightColour = colours.BACKGROUND.POSITIVE
 
@@ -37,7 +37,7 @@ export const Hunk = ({ hunk, index }) => {
 
   return (
     <HunkCellGrid row={index + 1}>
-      <Cell row={hunkHeaderRow} col="1 / 3" colour="blue">
+      <Cell row={hunkHeaderRow} col="1 / 3">
         Hunk {index + 1}
       </Cell>
 
@@ -98,7 +98,10 @@ const HunkCellGrid = styled.div.attrs((props) => ({
 
   grid-auto-columns: 1fr 1fr;
 
-  margin-top: 0.5rem;
+  margin-top: 1rem;
+  :first-child {
+    margin-top: 0;
+  }
 `
 
 const HunkContentColumn = styled.div.attrs((props) => ({
@@ -114,6 +117,8 @@ const HunkContentColumn = styled.div.attrs((props) => ({
 
   overflow: scroll;
 
+  border-top: solid gray 1px;
+  border-bottom: solid gray 1px;
   ${({ divider }) =>
     divider &&
     css`

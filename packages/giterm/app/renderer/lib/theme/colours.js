@@ -20,6 +20,7 @@ export const BACKGROUND = {
   POSITIVE: alpha('#149490', 0.65),
   NEGATIVE: alpha('#A60053', 0.65),
   ACTION: alpha('#0086FF', 0.65),
+  FOCUS: alpha('#0086FF', 0.1),
 }
 
 export const TEXT = {
