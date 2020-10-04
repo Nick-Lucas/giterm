@@ -1,12 +1,24 @@
-import { useMemo, useState, useEffect } from 'react'
-
+import { useMemo, useState, useEffect, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import { Git } from '@giterm/git'
-import { useSelector } from 'react-redux'
 
-export function useDiffData(mode, { shaNew, shaOld, contextLines = 5 } = {}) {
+import { diffFileSelected } from 'app/store/diff/actions'
+
+export function useDiffData({ contextLines = 5 } = {}) {
+  const dispatch = useDispatch()
   const cwd = useSelector((state) => state.config.cwd)
+  const {
+    mode,
+    shas: [shaNew, shaOld = null] = [],
+    filePath: _filePath,
+  } = useSelector((state) => state.diff)
 
-  const [_filePath, setFilePath] = useState(null)
+  const setFilePath = useCallback(
+    (filePath) => {
+      dispatch(diffFileSelected(filePath))
+    },
+    [dispatch],
+  )
 
   const [loading, setLoading] = useState(true)
   const [diff, setDiff] = useState(null)

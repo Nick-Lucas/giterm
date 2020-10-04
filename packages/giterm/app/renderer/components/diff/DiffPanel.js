@@ -9,15 +9,8 @@ import { Files } from './Files'
 import { Diff } from './Diff'
 import { useDiffData } from './useDiffData'
 
-export function DiffPanel({
-  mode = 'index',
-  shaNew = 'bc546e06e8b7e4b561b5b859acb97e0f809eaaaf',
-  shaOld = '529bbb2e074ed0cdd5fba316546eeb54704e1d37',
-}) {
-  const { loading, filePath, setFilePath, filePatch, diff } = useDiffData(
-    mode,
-    { shaNew, shaOld },
-  )
+export function DiffPanel() {
+  const { loading, filePath, setFilePath, filePatch, diff } = useDiffData()
 
   if (loading) {
     return (
