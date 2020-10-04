@@ -13,3 +13,8 @@ export const DIFF_COMPLETE = 'diff/complete'
 export const diffComplete = () => ({
   type: DIFF_COMPLETE,
 })
+
+export const DIFF_TOGGLE_SHOW = 'diff/toggle_show'
+export const diffToggleShow = () => ({
+  type: DIFF_TOGGLE_SHOW,
+})

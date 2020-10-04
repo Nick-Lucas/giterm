@@ -32,7 +32,7 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
-export function Terminal({ onAlternateBufferChange }) {
+export function Terminal({ isShown = true, onAlternateBufferChange }) {
   const dispatch = useDispatch()
   const container = useRef()
 
@@ -89,16 +89,18 @@ export function Terminal({ onAlternateBufferChange }) {
   // Resize Events
 
   const handleResizeTerminal = useCallback(() => {
+    if (!isShown) return
+
     terminal.resize(10, 10)
     fit.fit()
     terminal.focus()
-  }, [fit, terminal])
+  }, [fit, isShown, terminal])
 
   useLayoutEffect(() => {
     setTimeout(() => {
       handleResizeTerminal()
     }, 0)
-  }, [fullscreen, handleResizeTerminal, terminal.element])
+  }, [fullscreen, handleResizeTerminal, isShown, terminal.element])
 
   useEffect(() => {
     const handleResize = _.debounce(handleResizeTerminal, 5)
@@ -229,6 +231,7 @@ export function Terminal({ onAlternateBufferChange }) {
 
 Terminal.propTypes = {
   onAlternateBufferChange: PropTypes.func.isRequired,
+  isShown: PropTypes.bool,
 }
 
 const TerminalContainer = styled.div`

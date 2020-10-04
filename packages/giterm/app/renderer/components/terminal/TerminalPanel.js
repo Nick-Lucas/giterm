@@ -1,20 +1,16 @@
 import React, { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
 import { Terminal } from './terminal'
 
-import { Minimize2, Maximize2 } from 'react-feather'
-import {
-  autoTerminalFullscreen,
-  flipUserTerminalFullscreen,
-} from 'app/store/terminal/actions'
+import { autoTerminalFullscreen } from 'app/store/terminal/actions'
 
-import { Panel, Menu } from 'app/lib/primitives'
+import { Panel } from 'app/lib/primitives'
+import { LowerPanelMenu } from 'app/components/common'
 
-export function TerminalPanel() {
+export function TerminalPanel({ show }) {
   const dispatch = useDispatch()
-  const { fullscreen } = useSelector((state) => state.terminal)
 
   const handleBufferChange = useCallback(
     (fullscreen) => {
@@ -22,29 +18,20 @@ export function TerminalPanel() {
     },
     [dispatch],
   )
-  const handleUserToggle = useCallback(() => {
-    dispatch(flipUserTerminalFullscreen())
-  }, [dispatch])
 
   return (
-    <StyledPanel>
-      <Menu.Show>
-        <Menu.Item
-          title={fullscreen ? 'Minimise (ctl+tab)' : 'Maximise (ctl+tab)'}
-          onClick={handleUserToggle}>
-          {fullscreen ? <Minimize2 size={20} /> : <Maximize2 size={20} />}
-        </Menu.Item>
-      </Menu.Show>
+    <StyledPanel show={show}>
+      <LowerPanelMenu />
 
       <TerminalWrapper>
-        <Terminal onAlternateBufferChange={handleBufferChange} />
+        <Terminal isShown={show} onAlternateBufferChange={handleBufferChange} />
       </TerminalWrapper>
     </StyledPanel>
   )
 }
 
 const StyledPanel = styled(Panel)`
-  display: flex;
+  display: ${({ show }) => (show ? 'flex' : 'none')};
   flex: 1;
   flex-direction: column;
 `

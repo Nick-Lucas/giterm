@@ -46,15 +46,15 @@ export function Home() {
         <Divider hide={terminalFullscreen} />
 
         <TerminalWrapper fullscreen={terminalFullscreen}>
-          {diff.show ? (
+          {diff.show && (
             <DiffPanel
               mode={diff.mode}
               shaNew={diff.shas[0]}
               shaOld={diff.shas[1]}
             />
-          ) : (
-            <TerminalPanel />
           )}
+
+          <TerminalPanel show={!diff.show} />
         </TerminalWrapper>
       </FullscreenWrapper>
     </>

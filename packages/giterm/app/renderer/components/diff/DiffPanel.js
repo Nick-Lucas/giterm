@@ -2,9 +2,11 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
+import { Panel } from 'app/lib/primitives'
+import { LowerPanelMenu } from 'app/components/common'
+
 import { Files } from './Files'
 import { Diff } from './Diff'
-
 import { useDiffData } from './useDiffData'
 
 export function DiffPanel({
@@ -26,7 +28,9 @@ export function DiffPanel({
   }
 
   return (
-    <Row>
+    <StyledPanel>
+      <LowerPanelMenu />
+
       <Files
         patches={diff.patches}
         filePath={filePath}
@@ -34,7 +38,7 @@ export function DiffPanel({
       />
 
       <Diff filePatch={filePatch} />
-    </Row>
+    </StyledPanel>
   )
 }
 
@@ -44,7 +48,7 @@ DiffPanel.propTypes = {
   shaOld: PropTypes.string,
 }
 
-const Row = styled.div`
+const StyledPanel = styled(Panel)`
   display: flex;
   flex: 1 1 0;
   flex-direction: row;

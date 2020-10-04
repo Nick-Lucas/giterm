@@ -6,7 +6,7 @@ import { useSelector } from 'react-redux'
 export function useDiffData(mode, { shaNew, shaOld, contextLines = 5 } = {}) {
   const cwd = useSelector((state) => state.config.cwd)
 
-  const [filePath, setFilePath] = useState(null)
+  const [_filePath, setFilePath] = useState(null)
 
   const [loading, setLoading] = useState(true)
   const [diff, setDiff] = useState(null)
@@ -35,6 +35,17 @@ export function useDiffData(mode, { shaNew, shaOld, contextLines = 5 } = {}) {
       cancelled = true
     }
   }, [contextLines, cwd, mode, shaNew, shaOld])
+
+  const filePath = useMemo(() => {
+    if (
+      !_filePath ||
+      !diff?.patches?.some((patch) => patch.newFilePath === _filePath)
+    ) {
+      return diff?.patches[0]?.newFilePath ?? null
+    } else {
+      return _filePath
+    }
+  }, [_filePath, diff?.patches])
 
   const filePatch = useMemo(() => {
     if (!diff) return null

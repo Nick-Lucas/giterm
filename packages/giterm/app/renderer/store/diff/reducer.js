@@ -1,4 +1,9 @@
-import { DIFF_INDEX, DIFF_SHAS, DIFF_COMPLETE } from './actions'
+import {
+  DIFF_INDEX,
+  DIFF_SHAS,
+  DIFF_COMPLETE,
+  DIFF_TOGGLE_SHOW,
+} from './actions'
 
 const initialState = {
   show: false,
@@ -27,6 +32,13 @@ export function reducer(state = initialState, action) {
         show: true,
         mode: 'shas',
         shas: shas,
+      }
+    }
+
+    case DIFF_TOGGLE_SHOW: {
+      return {
+        ...state,
+        show: !state.show,
       }
     }
 

@@ -20,12 +20,19 @@ const MenuWrapper = styled.div`
   justify-content: flex-end;
   padding: 3px;
 
+  z-index: 1000;
+
   position: absolute;
-  left: 0;
+  top: 0;
   right: 0;
 `
 
 export const Item = styled.div`
   display: flex;
   cursor: pointer;
+
+  margin-right: 0.25rem;
+  :last-child {
+    margin-right: 0;
+  }
 `
