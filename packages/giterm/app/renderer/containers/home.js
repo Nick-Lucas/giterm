@@ -113,6 +113,7 @@ const TerminalWrapper = styled.div`
   height: 30%;
   min-height: 100px;
 
+  transition: all 0.2s ease-in-out;
   ${(props) =>
     props.fullscreen &&
     css`
@@ -122,6 +123,8 @@ const TerminalWrapper = styled.div`
       left: 0;
       right: 0;
       height: 100%;
+
+      transition: none;
     `};
 `
 

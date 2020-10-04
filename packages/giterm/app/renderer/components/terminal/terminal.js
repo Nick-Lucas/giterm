@@ -106,6 +106,7 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
     const handleResize = _.debounce(handleResizeTerminal, 5)
 
     window.addEventListener('resize', handleResize, false)
+    window.addEventListener('transitionend', handleResize, false)
 
     const onResizeDisposable = terminal.onResize(
       _.throttle(({ cols, rows }) => {
@@ -115,6 +116,7 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
 
     return () => {
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('transitionend', handleResize)
       onResizeDisposable.dispose()
     }
   }, [handleResizeTerminal, ptyProcess, terminal])
