@@ -1,6 +1,8 @@
 import React from 'react'
 import styled, { css } from 'styled-components'
 
+import { colours } from 'app/lib/theme'
+
 export const Hunk = ({ hunk, index }) => {
   const { newLines, newStart, oldLines, oldStart } = hunk
 
@@ -20,12 +22,12 @@ export const Hunk = ({ hunk, index }) => {
     const isModifiedLine = !isRemovedLine && !isAddedLine && contentOffset >= 0
 
     let leftColour = 'transparent'
-    if (isRemovedLine) leftColour = '#A60053'
-    if (isModifiedLine) leftColour = '#149490'
+    if (isRemovedLine) leftColour = colours.BACKGROUND.NEGATIVE
+    if (isModifiedLine) leftColour = colours.BACKGROUND.NEGATIVE
 
     let rightColour = 'transparent'
-    if (isAddedLine) rightColour = '#149490'
-    if (isModifiedLine) rightColour = '#149490'
+    if (isAddedLine) rightColour = colours.BACKGROUND.POSITIVE
+    if (isModifiedLine) rightColour = colours.BACKGROUND.POSITIVE
 
     return {
       leftColour,

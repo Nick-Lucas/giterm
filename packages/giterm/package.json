@@ -37,6 +37,7 @@
     "@sentry/electron": "^2.0.0",
     "@sentry/react": "^5.22.3",
     "chokidar": "^3.3.1",
+    "color": "^3.1.2",
     "debounce": "^1.2.0",
     "electron-devtools-installer": "^3.1.1",
     "electron-log": "^4.0.6",
