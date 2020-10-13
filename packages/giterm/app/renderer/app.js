@@ -22,21 +22,39 @@ const routerHistory = createMemoryHistory()
 const store = configureStore(initialState)
 const history = syncHistoryWithStore(routerHistory, store)
 
+/**
+ * @param {KeyboardEvent} ev
+ * @param {KeyboardEvent.code} key
+ */
+function combo(
+  ev,
+  pressed = false,
+  { ctrl = false, alt = false, meta = false, shift = false } = {},
+) {
+  return (
+    pressed &&
+    ev.ctrlKey == ctrl &&
+    ev.altKey == alt &&
+    ev.metaKey == meta &&
+    ev.shiftKey == shift
+  )
+}
+
 // Shortcuts
 window.addEventListener(
   'keydown',
   (ev) => {
-    if (ev.ctrlKey && ev.code === 'Tab') {
+    if (combo(ev, ev.code === 'Tab', { useCode: true, ctrl: true })) {
       store.dispatch(flipUserTerminalFullscreen())
       ev.stopImmediatePropagation()
       return
     }
-    if (ev.ctrlKey && ev.code === 'Digit1') {
+    if (combo(ev, ev.code === 'Digit1', { useCode: true, ctrl: true })) {
       store.dispatch(diffToggleShow())
       ev.stopImmediatePropagation()
       return
     }
-    if (ev.ctrlKey && ev.key === 'r') {
+    if (combo(ev, ev.key === 'r', { ctrl: true })) {
       store.dispatch(
         showRemoteBranches(!store.getState().config.showRemoteBranches),
       )
