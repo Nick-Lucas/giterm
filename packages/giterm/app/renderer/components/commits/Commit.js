@@ -8,7 +8,7 @@ import { checkoutCommit } from 'app/store/commits/actions'
 import { Row } from './Row'
 import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 
-export function Commit({ index, style, onSelect, isSelected, columns }) {
+export function Commit({ index, style, onClick, isSelected, columns }) {
   const dispatch = useDispatch()
 
   const branchesBySha = useSelector((state) => state.branches.bySha)
@@ -20,6 +20,12 @@ export function Commit({ index, style, onSelect, isSelected, columns }) {
   const status = useSelector((state) => state.status)
   const { showRemoteBranches } = useSelector((state) => state.config)
 
+  const handleClick = useCallback(
+    (e) => {
+      onClick(e, commit)
+    },
+    [commit, onClick],
+  )
   const handleCheckoutCommit = useCallback(
     (commit) => {
       dispatch(checkoutCommit(commit.sha))
@@ -71,14 +77,17 @@ export function Commit({ index, style, onSelect, isSelected, columns }) {
   const linksAfter = links[index + 1] || []
 
   return (
-    <RightClickArea key={commit.sha} menuItems={menuItems} style={style}>
+    <RightClickArea
+      key={commit.sha}
+      menuItems={menuItems}
+      style={style}
+      onClick={handleClick}
+      onDoubleClick={handleCheckoutCommit}>
       <Row
         commit={commit}
         columns={columns}
         refs={refsForCommit}
         selected={isSelected}
-        onSelect={onSelect}
-        onDoubleClick={handleCheckoutCommit}
         isHead={status.headSHA === commit.sha}
         node={node}
         linksBefore={linksBefore}
@@ -90,5 +99,5 @@ export function Commit({ index, style, onSelect, isSelected, columns }) {
 
 Commit.propTypes = {
   isSelected: PropTypes.bool,
-  onSelect: PropTypes.func.isRequired,
+  onClick: PropTypes.func.isRequired,
 }

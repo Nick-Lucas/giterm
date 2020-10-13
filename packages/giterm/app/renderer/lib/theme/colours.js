@@ -1,3 +1,11 @@
+import Color from 'color'
+
+export function alpha(hex, amount = 0) {
+  return Color(hex, 'hex')
+    .alpha(amount)
+    .toString()
+}
+
 export const GRAPH_NODES = [
   '#058ED9',
   '#880044',
@@ -7,6 +15,13 @@ export const GRAPH_NODES = [
   '#0055A2',
   '#96C5F7',
 ]
+
+export const BACKGROUND = {
+  POSITIVE: alpha('#149490', 0.65),
+  NEGATIVE: alpha('#A60053', 0.65),
+  ACTION: alpha('#0086FF', 0.65),
+  FOCUS: alpha('#0086FF', 0.1),
+}
 
 export const TEXT = {
   FOCUS: '#fff',
@@ -18,8 +33,8 @@ export const TEXT = {
 }
 
 export const OVERLAY = {
-  HINT: 'rgba(255, 255, 255, 0.2)',
-  FOCUS: 'rgba(255, 255, 255, 0.3)',
+  FOCUS: 'rgba(255, 255, 255, 0.2)',
+  HINT: 'rgba(255, 255, 255, 0.3)',
 }
 
 export const PILL = {

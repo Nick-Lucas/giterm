@@ -419,4 +419,124 @@ export class Git {
       watcher.close()
     }
   }
+
+  /**
+   * @param {string} shaOld
+   * @param {string} shaNew
+   * @param {NodeGit.DiffOptions} options
+   */
+  getDiffFromShas = async (shaNew, shaOld = null, options) => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return null
+    }
+
+    if (!shaNew) {
+      console.error('shaNew was not provided')
+      return null
+    }
+
+    if (shaOld != null) {
+      const treeOld = await (await repo.getCommit(shaOld)).getTree()
+      const treeNew = await (await repo.getCommit(shaNew)).getTree()
+      const diff = await NodeGit.Diff.treeToTree(
+        repo,
+        treeOld,
+        treeNew,
+        options,
+      )
+      return await this._processDiff(diff)
+    } else {
+      // Diff single commit, with support for first commit in history
+      const diffs = await (await repo.getCommit(shaNew)).getDiffWithOptions(
+        options,
+      )
+      return await this._processDiff(diffs[0])
+    }
+  }
+
+  /**
+   * @param {NodeGit.DiffOptions} options
+   */
+  getDiffFromIndex = async (options) => {
+    const repo = await this.getComplex()
+    if (!repo) {
+      return null
+    }
+
+    const headTree = await (await repo.getHeadCommit()).getTree()
+    const diff = await NodeGit.Diff.treeToWorkdirWithIndex(
+      repo,
+      headTree,
+      options,
+    )
+
+    return await this._processDiff(diff)
+  }
+
+  /**
+   * @param {NodeGit.Diff} diff
+   */
+  _processDiff = async (diff) => {
+    const stats = await diff.getStats()
+    const _patches = await diff.patches()
+
+    const patches = await Promise.all(
+      _patches.map(async (patch) => {
+        const oldFilePath = patch.oldFile().path()
+        const newFilePath = patch.newFile().path()
+        const status = patch.status()
+        const isAdded = patch.isAdded()
+        const isDeleted = patch.isDeleted()
+        const isModified = patch.isModified()
+
+        return {
+          hunks: await Promise.all(
+            (await patch.hunks()).map(async (hunk) => {
+              return {
+                header: hunk.header(),
+                headerLen: hunk.headerLen(),
+                newLines: hunk.newLines(),
+                newStart: hunk.newStart(),
+                oldLines: hunk.oldLines(),
+                oldStart: hunk.oldStart(),
+                size: hunk.size(),
+                lines: (await hunk.lines()).map((line) => {
+                  return {
+                    content: line.content(),
+                    contentLen: line.contentLen(),
+                    contentOffset: line.contentOffset(),
+                    newLineno: line.newLineno(),
+                    numLines: line.numLines(),
+                    oldLineno: line.oldLineno(),
+                    origin: line.origin(),
+                    rawContent: line.rawContent(),
+                  }
+                }),
+              }
+            }),
+          ),
+          status,
+          oldFilePath,
+          newFilePath,
+          isAdded,
+          isDeleted,
+          isModified,
+        }
+      }),
+    )
+
+    // Later we new NodeGit.DiffLine in order to stage/unstage
+    // repo.stageFilemode
+    // repo.stageLines
+
+    return {
+      stats: {
+        insertions: stats.insertions(),
+        filesChanged: stats.filesChanged(),
+        deletions: stats.deletions(),
+      },
+      patches,
+    }
+  }
 }

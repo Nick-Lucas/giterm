@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, memo } from 'react'
+import React, { useMemo, memo } from 'react'
 import PropTypes from 'prop-types'
 import styled, { css } from 'styled-components'
 import * as propTypes from './props'
@@ -90,17 +90,7 @@ export const _Row = ({
   linksBefore,
   linksAfter,
   selected,
-  onSelect,
-  onDoubleClick,
 }) => {
-  const handleSelect = useCallback(() => {
-    onSelect(commit)
-  }, [commit, onSelect])
-
-  const handleDoubleClick = useCallback(() => {
-    onDoubleClick(commit)
-  }, [commit, onDoubleClick])
-
   const pairedRefs = useMemo(() => {
     const [tags, branches] = _.partition(
       refs,
@@ -141,11 +131,7 @@ export const _Row = ({
   }, [refs])
 
   return (
-    <RowWrapper
-      onClick={handleSelect}
-      onDoubleClick={handleDoubleClick}
-      isSelected={selected}
-      isHead={isHead}>
+    <RowWrapper isSelected={selected} isHead={isHead}>
       {columns.map((column) => (
         <RowColumn key={column.key} width={column.width}>
           {column.showTags &&
@@ -220,8 +206,6 @@ Row.displayName = 'Row'
 
 Row.propTypes = {
   selected: PropTypes.bool,
-  onSelect: PropTypes.func,
-  onDoubleClick: PropTypes.func,
   columns: propTypes.columns,
   refs: propTypes.refs,
   commit: propTypes.commit,

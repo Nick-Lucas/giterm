@@ -4,9 +4,8 @@ import { useSelector } from 'react-redux'
 import { clipboard } from 'electron'
 import { Cloud, GitBranch } from 'react-feather'
 
-import { RightClickArea } from 'app/lib/primitives'
+import { RightClickArea, List } from 'app/lib/primitives'
 import { Section } from './Section'
-import { Row, Label } from './Row'
 import { BranchUpstreamState } from './BranchUpstreamState'
 
 /*  A branch
@@ -20,12 +19,12 @@ import { BranchUpstreamState } from './BranchUpstreamState'
 */
 
 export function Branches() {
-  const _branches = useSelector((state) => state.branches.list) || []
+  const _branches = useSelector((state) => state.branches.list)
   const branches = useMemo(() => {
     const foundRemotes = {}
     const branches = []
 
-    for (const branch of _branches) {
+    for (const branch of _branches || []) {
       if (branch.isRemote) {
         continue
       }
@@ -65,8 +64,8 @@ export function Branches() {
       {branches.map((branch) => {
         return (
           <RightClickArea key={branch.id} menuItems={branch.menuItems}>
-            <Row active={branch.isHead}>
-              <Label>{branch.name}</Label>
+            <List.Row active={branch.isHead}>
+              <List.Label>{branch.name}</List.Label>
 
               {(branch.isHead || branch.upstream) && (
                 <BranchUpstreamState
@@ -75,7 +74,7 @@ export function Branches() {
                   selected={branch.isHead}
                 />
               )}
-            </Row>
+            </List.Row>
           </RightClickArea>
         )
       })}

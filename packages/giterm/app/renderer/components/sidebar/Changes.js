@@ -1,21 +1,33 @@
-import React, { useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import React, { useMemo, useCallback } from 'react'
+import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
 
 import { clipboard } from 'electron'
 
 import { Section } from './Section'
-import { Row, Label } from './Row'
 import { colours } from 'app/lib/theme'
-import { RightClickArea } from 'app/lib/primitives'
+import { RightClickArea, List } from 'app/lib/primitives'
+
+import { diffIndex } from 'app/store/diff/actions'
 
 export function Changes() {
-  const _files = useSelector((state) => state.status.files) || []
+  const dispatch = useDispatch()
+  const handleFileSelect = useCallback(
+    (filePath) => {
+      dispatch(diffIndex(filePath))
+    },
+    [dispatch],
+  )
+  const diff = useSelector((state) => state.diff)
+  const selectedFilePath =
+    diff.show && diff.mode === 'index' ? diff.filePath : null
+
+  const _files = useSelector((state) => state.status.files)
   const { staged, unstaged } = useMemo(() => {
     const staged = []
     const unstaged = []
 
-    for (const file of _files) {
+    for (const file of _files || []) {
       let colour = null
       if (file.isNew) {
         colour = colours.TEXT.POSITIVE
@@ -28,6 +40,7 @@ export function Changes() {
       const item = {
         path: file.path,
         colour,
+        onClick: () => handleFileSelect(file.path),
         menuItems: [
           {
             label: 'Copy Path',
@@ -44,25 +57,28 @@ export function Changes() {
     }
 
     return { staged, unstaged }
-  }, [_files])
+  }, [_files, handleFileSelect])
 
   return (
     <Section
       title={`CHANGES`}
       hasContent={_files.length > 0}
       icon={
-        <Label>
+        <List.Label>
           ({staged.length}/{_files.length})
-        </Label>
+        </List.Label>
       }>
       {staged.map((file) => {
         return (
-          <RightClickArea key={file.path} menuItems={file.menuItems}>
-            <Row>
-              <Label colour={file.colour} trimStart>
+          <RightClickArea
+            key={file.path}
+            onClick={file.onClick}
+            menuItems={file.menuItems}>
+            <List.Row active={selectedFilePath === file.path}>
+              <List.Label colour={file.colour} trimStart>
                 {file.path}
-              </Label>
-            </Row>
+              </List.Label>
+            </List.Row>
           </RightClickArea>
         )
       })}
@@ -71,12 +87,15 @@ export function Changes() {
 
       {unstaged.map((file) => {
         return (
-          <RightClickArea key={file.path} menuItems={file.menuItems}>
-            <Row>
-              <Label colour={file.colour} trimStart>
+          <RightClickArea
+            key={file.path}
+            onClick={file.onClick}
+            menuItems={file.menuItems}>
+            <List.Row active={selectedFilePath === file.path}>
+              <List.Label colour={file.colour} trimStart>
                 {file.path}
-              </Label>
-            </Row>
+              </List.Label>
+            </List.Row>
           </RightClickArea>
         )
       })}

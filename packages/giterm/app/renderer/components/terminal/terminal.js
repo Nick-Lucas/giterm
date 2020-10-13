@@ -32,7 +32,7 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
-export function Terminal({ onAlternateBufferChange }) {
+export function Terminal({ isShown = true, onAlternateBufferChange }) {
   const dispatch = useDispatch()
   const container = useRef()
 
@@ -89,21 +89,24 @@ export function Terminal({ onAlternateBufferChange }) {
   // Resize Events
 
   const handleResizeTerminal = useCallback(() => {
+    if (!isShown) return
+
     terminal.resize(10, 10)
     fit.fit()
     terminal.focus()
-  }, [fit, terminal])
+  }, [fit, isShown, terminal])
 
   useLayoutEffect(() => {
     setTimeout(() => {
       handleResizeTerminal()
     }, 0)
-  }, [fullscreen, handleResizeTerminal, terminal.element])
+  }, [fullscreen, handleResizeTerminal, isShown, terminal.element])
 
   useEffect(() => {
     const handleResize = _.debounce(handleResizeTerminal, 5)
 
     window.addEventListener('resize', handleResize, false)
+    window.addEventListener('transitionend', handleResize, false)
 
     const onResizeDisposable = terminal.onResize(
       _.throttle(({ cols, rows }) => {
@@ -113,6 +116,7 @@ export function Terminal({ onAlternateBufferChange }) {
 
     return () => {
       window.removeEventListener('resize', handleResize)
+      window.removeEventListener('transitionend', handleResize)
       onResizeDisposable.dispose()
     }
   }, [handleResizeTerminal, ptyProcess, terminal])
@@ -209,6 +213,8 @@ export function Terminal({ onAlternateBufferChange }) {
   // Autofocus Terminal on keys
 
   useEffect(() => {
+    if (!isShown) return
+
     const handleNotFocused = () => {
       if (!focused) {
         terminal.focus()
@@ -222,13 +228,14 @@ export function Terminal({ onAlternateBufferChange }) {
     return () => {
       window.removeEventListener('keydown', handleNotFocused)
     }
-  }, [focused, terminal])
+  }, [focused, isShown, terminal])
 
   return <TerminalContainer ref={container} />
 }
 
 Terminal.propTypes = {
   onAlternateBufferChange: PropTypes.func.isRequired,
+  isShown: PropTypes.bool,
 }
 
 const TerminalContainer = styled.div`

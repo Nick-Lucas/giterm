@@ -6,6 +6,8 @@ import AutoSizer from 'react-virtualized-auto-sizer'
 import InfiniteLoader from 'react-window-infinite-loader'
 import _ from 'lodash'
 import moment from 'moment'
+import { CtrlOrCmdHeld } from 'app/lib/keyhelpers'
+import { diffShas } from 'app/store/diff/actions'
 
 import Header from './header'
 import { reachedEndOfList } from 'app/store/commits/actions'
@@ -40,10 +42,28 @@ export function Commits() {
     ]
   }, [graphWidth])
 
-  const [selectedSHA, setSelectedSHA] = useState('')
-  const handleSelect = useCallback((commit) => {
-    setSelectedSHA(commit.sha)
-  }, [])
+  const [selectedCommits, setSelectedCommits] = useState([])
+  const selectedShas = useMemo(() => selectedCommits.map((c) => c.sha), [
+    selectedCommits,
+  ])
+  const handleSelect = useCallback(
+    (e, commit) => {
+      let nextState = []
+      if (CtrlOrCmdHeld(e) && selectedCommits.length > 0) {
+        nextState = [_.last(selectedCommits), commit].filter(Boolean)
+      } else {
+        nextState = [commit]
+      }
+      setSelectedCommits(nextState)
+
+      const [newCommit, oldCommit] = _.sortBy(
+        nextState,
+        (c) => c.dateISO,
+      ).reverse()
+      dispatch(diffShas(newCommit.sha, oldCommit?.sha ?? null))
+    },
+    [dispatch, selectedCommits],
+  )
 
   /**
    * @type {React.MutableRefObject<FixedSizeList>}
@@ -53,7 +73,7 @@ export function Commits() {
     // TODO: improve this logic to find the index asynchronously and pre-load if possible
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
-      setSelectedSHA(headSHA)
+      setSelectedCommits([headSHA])
       listRef.current?.scrollToItem(index, 'smart')
     }
   })
@@ -83,8 +103,8 @@ export function Commits() {
             key={commits[index].sha}
             index={index}
             style={style}
-            isSelected={selectedSHA === commits[index].sha}
-            onSelect={handleSelect}
+            isSelected={selectedShas.includes(commits[index].sha)}
+            onClick={handleSelect}
             columns={columns}
           />
         )}

@@ -3,7 +3,8 @@ import { useSelector, useDispatch } from 'react-redux'
 import styled, { css } from 'styled-components'
 
 import { Commits } from 'app/components/commits'
-import Terminal from 'app/components/terminal'
+import { TerminalPanel } from 'app/components/terminal'
+import { DiffPanel } from 'app/components/diff'
 import { StatusBar } from 'app/components/StatusBar'
 import { init } from 'app/store/core/actions'
 import * as Sidebar from 'app/components/sidebar'
@@ -15,6 +16,8 @@ export function Home() {
   useEffect(() => {
     dispatch(init())
   }, [dispatch])
+
+  const diff = useSelector((state) => state.diff)
 
   return (
     <>
@@ -43,7 +46,9 @@ export function Home() {
         <Divider hide={terminalFullscreen} />
 
         <TerminalWrapper fullscreen={terminalFullscreen}>
-          <Terminal />
+          {diff.show && <DiffPanel />}
+
+          <TerminalPanel show={!diff.show} />
         </TerminalWrapper>
       </FullscreenWrapper>
     </>
@@ -56,6 +61,7 @@ const FullscreenWrapper = styled.div`
   flex: 1;
   flex-direction: column;
   max-width: 100%;
+  overflow: hidden;
 `
 
 const PlaygroundWrapper = styled.div`
@@ -107,6 +113,7 @@ const TerminalWrapper = styled.div`
   height: 30%;
   min-height: 100px;
 
+  transition: all 0.2s ease-in-out;
   ${(props) =>
     props.fullscreen &&
     css`
@@ -116,6 +123,8 @@ const TerminalWrapper = styled.div`
       left: 0;
       right: 0;
       height: 100%;
+
+      transition: none;
     `};
 `
 

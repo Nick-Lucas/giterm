@@ -5,16 +5,15 @@ import { clipboard } from 'electron'
 import { Target } from 'react-feather'
 
 import { Section } from './Section'
-import { Row, Label } from './Row'
-import { RightClickArea } from 'app/lib/primitives'
+import { RightClickArea, List } from 'app/lib/primitives'
 
 export function Tags() {
-  const _tags = useSelector((state) => state.tags.list) || []
+  const _tags = useSelector((state) => state.tags.list)
 
   const tags = useMemo(() => {
     const tags = []
 
-    for (const tag of _tags) {
+    for (const tag of _tags || []) {
       tags.push({
         id: tag.id,
         name: tag.name,
@@ -35,9 +34,9 @@ export function Tags() {
       {tags.map((tag) => {
         return (
           <RightClickArea key={tag.id} menuItems={tag.menuItems}>
-            <Row>
-              <Label>{tag.name}</Label>
-            </Row>
+            <List.Row>
+              <List.Label>{tag.name}</List.Label>
+            </List.Row>
           </RightClickArea>
         )
       })}
