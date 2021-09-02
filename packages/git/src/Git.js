@@ -1,6 +1,6 @@
 import _ from 'lodash'
 import fp from 'lodash/fp'
-import NodeGit from 'nodegit'
+// import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import chokidar from 'chokidar'
 import path from 'path'
@@ -49,25 +49,31 @@ export class Git {
         this._simple = null
       }
     }
-    return this._simple
+
+    /** @type {import("simple-git/src/git")} */
+    const simple = this._simple
+
+    return simple
   }
 
   getComplex = async () => {
-    if (!this._complex) {
-      if (this.cwd === '/') {
-        return null
-      }
+    return null
 
-      try {
-        perfStart('GIT/open-complex')
-        this._complex = await NodeGit.Repository.open(this.cwd)
-        perfEnd('GIT/open-complex')
-      } catch (err) {
-        console.error(err)
-        this._complex = null
-      }
-    }
-    return this._complex
+    // if (!this._complex) {
+    //   if (this.cwd === '/') {
+    //     return null
+    //   }
+
+    //   try {
+    //     perfStart('GIT/open-complex')
+    //     this._complex = await NodeGit.Repository.open(this.cwd)
+    //     perfEnd('GIT/open-complex')
+    //   } catch (err) {
+    //     console.error(err)
+    //     this._complex = null
+    //   }
+    // }
+    // return this._complex
   }
 
   getSpawn = async () => {
