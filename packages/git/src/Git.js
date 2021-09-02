@@ -1,6 +1,4 @@
 import _ from 'lodash'
-import fp from 'lodash/fp'
-// import NodeGit from 'nodegit'
 import SimpleGit from 'simple-git'
 import chokidar from 'chokidar'
 import path from 'path'
@@ -136,102 +134,153 @@ export class Git {
   }
 
   getHeadSHA = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return ''
     }
 
-    const commit = await repo.getHeadCommit()
-    if (!commit) {
-      return ''
-    }
+    const sha = await spawn(['show', '--format=%H', '-s', 'HEAD'])
 
-    return commit.sha()
+    return sha
   }
 
   getAllBranches = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return []
     }
 
-    const refs = await Promise.all(
-      await repo.getReferences().then((refs) =>
-        refs
-          .filter((ref) => ref.isBranch() || ref.isRemote())
-          .map(async (ref) => {
-            const id = ref.name()
-            const simpleName = _.last(id.match(/.*\/(.*$)/))
+    // Based on
+    // git branch --list --all --format="[%(HEAD)] -SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso) -upstream- %(upstream) %(upstream:track)" -q --sort=-committerdate
 
-            const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-            const commit = await repo.getCommit(commitRef)
+    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
+    const format = [
+      '%(HEAD)',
+      '%(objectname)',
+      '%(refname)',
+      '%(refname:short)',
+      '%(authordate:unix)',
+      '%(committerdate:unix)',
+      '%(upstream)',
+      '%(upstream:short)',
+      '%(upstream:track)',
+    ]
 
-            let upstream = null
-            const upstreamRef = await NodeGit.Branch.upstream(ref).catch(
-              () => null,
-            )
-            if (upstreamRef) {
-              const { ahead, behind } = await NodeGit.Graph.aheadBehind(
-                repo,
-                ref.target(),
-                upstreamRef.target(),
-              )
+    const fragments = [
+      'branch',
+      '--list',
+      '--all',
+      '--sort=-committerdate',
+      `--format=${format.join(SEP)}`,
+    ]
 
-              upstream = {
-                name: upstreamRef.name(),
-                ahead,
-                behind,
-              }
-            }
+    const result = await spawn(fragments)
 
-            return {
-              id,
-              name: ref.shorthand(),
-              simpleName,
-              isRemote: !!ref.isRemote(),
-              isHead: !!ref.isHead(),
-              headSHA: ref.target().tostrS(),
-              date: commit.date(),
-              upstream,
-            }
-          }),
-      ),
-    )
+    const tuples = result
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((str) => str.split(SEP))
 
-    return fp.flow(
-      fp.uniqBy((branch) => branch.id),
-      fp.sortBy([
+    const refs = tuples.map((segments) => {
+      if (segments.length !== format.length) {
+        console.warn(segments)
+        throw `Separator ${SEP} in output, cannot parse git branches. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
+      }
+
+      const [
+        isHead,
+        sha,
+        refId,
+        name,
+        authorDate,
+        commitDate,
+        upstreamId,
+        upstreamName,
+        upstreamDiff,
+      ] = segments
+
+      let upstream = null
+      if (upstreamId) {
+        upstream = {
+          id: upstreamId,
+          name: upstreamName,
+          ahead: /ahead (\d+)/.exec(upstreamDiff)?.[1] ?? 0,
+          behind: /behind (\d+)/.exec(upstreamDiff)?.[1] ?? 0,
+        }
+      }
+
+      return {
+        id: refId,
+        name: name,
+        isRemote: refId.startsWith('refs/remotes'),
+        isHead: isHead === '*',
+        headSHA: sha,
+        date: commitDate,
+        authorDate: authorDate,
+        upstream: upstream,
+      }
+    })
+
+    return _(refs)
+      .uniqBy((branch) => branch.id)
+      .sortBy([
         (branch) => branch.isRemote,
         (branch) => -branch.date,
         (branch) => branch.name,
-      ]),
-    )(refs)
+      ])
+      .value()
   }
 
   getAllTags = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return []
     }
 
-    const refs = await Promise.all(
-      await repo.getReferences().then((refs) =>
-        refs
-          .filter((ref) => ref.isTag())
-          .map(async (ref) => {
-            const id = ref.name()
-            const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-            const commit = await repo.getCommit(commitRef)
+    // Based on
+    // git tag --list  --format="-SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso)" --sort=-committerdate
 
-            return {
-              id,
-              name: ref.shorthand(),
-              headSHA: ref.target().tostrS(),
-              date: commit.date(),
-            }
-          }),
-      ),
-    )
+    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
+    const format = [
+      '%(objectname)',
+      '%(refname)',
+      '%(refname:short)',
+      '%(authordate:unix)',
+      '%(committerdate:unix)',
+    ]
+
+    const fragments = [
+      'tag',
+      '--list',
+      '--sort=-committerdate',
+      `--format=${format.join(SEP)}`,
+    ]
+
+    const result = await spawn(fragments)
+
+    const tuples = result
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((str) => str.split(SEP))
+
+    const refs = tuples.map((segments) => {
+      if (segments.length !== format.length) {
+        console.warn(segments)
+        throw `Separator ${SEP} in output, cannot parse git tags. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
+      }
+
+      const [sha, id, name, authorDate, committerDate] = segments
+
+      return {
+        id,
+        name,
+        headSHA: sha,
+        date: committerDate,
+        authorDate: authorDate,
+      }
+    })
+
+    console.log(tuples)
 
     return _.sortBy(refs, [(tag) => -tag.date, (tag) => tag.name])
   }
@@ -252,11 +301,6 @@ export class Git {
   }
 
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
-    const repo = await this.getComplex()
-    if (!repo) {
-      return [[], '']
-    }
-
     const headSha = this.getHeadSHA()
     if (!headSha) {
       return [[], '']
