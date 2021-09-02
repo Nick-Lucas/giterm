@@ -7,6 +7,7 @@ import { createHash } from 'crypto'
 import { spawn } from 'child_process'
 
 import repoResolver from './repo-resolver'
+import { IsoGit } from './IsoGit'
 
 import { STATE } from './constants'
 
@@ -54,24 +55,23 @@ export class Git {
     return simple
   }
 
-  getComplex = async () => {
-    return null
+  getComplex = () => null
+  getIsoGit = () => {
+    if (!this._isogit) {
+      if (this.cwd === '/') {
+        return null
+      }
 
-    // if (!this._complex) {
-    //   if (this.cwd === '/') {
-    //     return null
-    //   }
-
-    //   try {
-    //     perfStart('GIT/open-complex')
-    //     this._complex = await NodeGit.Repository.open(this.cwd)
-    //     perfEnd('GIT/open-complex')
-    //   } catch (err) {
-    //     console.error(err)
-    //     this._complex = null
-    //   }
-    // }
-    // return this._complex
+      try {
+        perfStart('GIT/open-complex')
+        this._isogit = new IsoGit(this.cwd)
+        perfEnd('GIT/open-complex')
+      } catch (err) {
+        console.error(err)
+        this._isogit = null
+      }
+    }
+    return this._isogit
   }
 
   getSpawn = async () => {
@@ -280,8 +280,6 @@ export class Git {
       }
     })
 
-    console.log(tuples)
-
     return _.sortBy(refs, [(tag) => -tag.date, (tag) => tag.name])
   }
 
@@ -403,12 +401,12 @@ export class Git {
   }
 
   getStatus = async () => {
-    const repo = await this.getComplex()
+    const repo = this.getIsoGit()
     if (!repo) {
       return []
     }
 
-    const files = await repo.getStatus()
+    const files = await repo.status()
 
     return files.map((file) => {
       return {

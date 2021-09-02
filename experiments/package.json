@@ -1,9 +1,0 @@
-{
-  "name": "experiments",
-  "version": "1.0.0",
-  "main": "index.js",
-  "license": "MIT",
-  "dependencies": {
-    "nodegit": "0.26.5"
-  }
-}
