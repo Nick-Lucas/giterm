@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import SimpleGit from 'simple-git'
+import simpleGit from 'simple-git'
 import chokidar from 'chokidar'
 import path from 'path'
 import { createHash } from 'crypto'
@@ -41,7 +41,7 @@ export class Git {
 
       try {
         perfStart('GIT/open-simple')
-        this._simple = new SimpleGit(this.cwd)
+        this._simple = simpleGit(this.cwd)
         perfEnd('GIT/open-simple')
       } catch (err) {
         console.error(err)
@@ -49,7 +49,7 @@ export class Git {
       }
     }
 
-    /** @type {import("simple-git/src/git")} */
+    /** @type {import("simple-git/typings/simple-git").SimpleGit} */
     const simple = this._simple
 
     return simple
@@ -204,8 +204,8 @@ export class Git {
         upstream = {
           id: upstreamId,
           name: upstreamName,
-          ahead: /ahead (\d+)/.exec(upstreamDiff)?.[1] ?? 0,
-          behind: /behind (\d+)/.exec(upstreamDiff)?.[1] ?? 0,
+          ahead: parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? 0),
+          behind: parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? 0),
         }
       }
 
@@ -394,31 +394,17 @@ export class Git {
       await repo.checkoutBranch(branch)
     } else {
       const simple = this.getSimple()
-      await new Promise((resolve) => {
-        simple.checkout(sha, () => resolve())
-      })
+      simple.checkout(sha)
     }
   }
 
   getStatus = async () => {
-    const repo = this.getIsoGit()
-    if (!repo) {
+    const ig = this.getIsoGit()
+    if (!ig) {
       return []
     }
-
-    const files = await repo.status()
-
-    return files.map((file) => {
-      return {
-        path: file.path(),
-        staged: !!file.inIndex(),
-        isNew: !!file.isNew(),
-        isDeleted: !!file.isDeleted(),
-        isModified: !!file.isModified(),
-        isRenamed: !!file.isRenamed() || !!file.isTypechange(),
-        isIgnored: !!file.isIgnored(),
-      }
-    })
+    
+    return await ig.status()
   }
 
   watchRefs = (callback) => {
