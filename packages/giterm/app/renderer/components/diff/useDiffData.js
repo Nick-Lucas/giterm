@@ -36,7 +36,7 @@ export function useDiffData({ contextLines = 5 } = {}) {
           : await git.getDiffFromIndex({ contextLines })
 
       if (!cancelled) {
-        setDiff(diff)
+        diff != null && setDiff(diff)
         setLoading(false)
       }
     }

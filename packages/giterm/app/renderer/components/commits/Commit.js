@@ -27,7 +27,7 @@ export function Commit({ index, style, onClick, isSelected, columns }) {
     [commit, onClick],
   )
   const handleCheckoutCommit = useCallback(
-    (commit) => {
+    () => {
       dispatch(checkoutCommit(commit.sha))
     },
     [dispatch],

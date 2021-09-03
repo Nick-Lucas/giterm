@@ -376,24 +376,21 @@ export class Git {
     return [commits, digest]
   }
 
+  // FIXME: does not work, but also onDoubleClick on Commit is not working due to a conflict with onClick
   checkout = async (sha) => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const simple = this.getSimple()
+    if (!simple) {
       return
     }
 
-    const branches = await this.getAllBranches(repo)
-    const branch = branches.reduce((out, b) => {
-      if (!out && b.headSHA === sha) {
-        return b.id
-      }
-      return out
-    }, null)
+    const branches = await this.getAllBranches()
+    const branch = branches.find((b) => {
+      return b.headSHA === sha
+    })
 
     if (branch) {
-      await repo.checkoutBranch(branch)
+      simple.checkoutBranch(branch.name)
     } else {
-      const simple = this.getSimple()
       simple.checkout(sha)
     }
   }

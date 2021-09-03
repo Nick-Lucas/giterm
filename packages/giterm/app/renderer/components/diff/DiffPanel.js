@@ -12,7 +12,7 @@ import { useDiffData } from './useDiffData'
 export function DiffPanel() {
   const { loading, filePath, setFilePath, filePatch, diff } = useDiffData()
 
-  if (loading) {
+  if (loading || !diff) {
     return (
       <DiffContainer>
         <MessageText>Loading</MessageText>
