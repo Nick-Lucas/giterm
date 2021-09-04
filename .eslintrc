@@ -8,20 +8,20 @@
     "plugin:import/errors",
     "plugin:import/warnings"
   ],
-  "parser": "babel-eslint",
+  "parser": "@babel/eslint-parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true,
       "modules": true
     }
   },
-  "plugins": [ 
-    "react", 
-    "prettier", 
-    "jest", 
-    "import", 
-    "react-hooks", 
-    "redux-saga" 
+  "plugins": [
+    "react",
+    "prettier",
+    "jest",
+    "import",
+    "react-hooks",
+    "redux-saga"
   ],
   "rules": {
     "prefer-const": "warn",
@@ -35,10 +35,19 @@
     "prettier/prettier": "error",
     "no-redeclare": "error",
     "no-undef": "error",
-    "no-unused-vars": ["error", { "ignoreRestSiblings": true }],
-
+    "no-unused-vars": [
+      "error",
+      {
+        "ignoreRestSiblings": true
+      }
+    ],
     "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": ["error", { "enableDangerousAutofixThisMayCauseInfiniteLoops": true }],
+    "react-hooks/exhaustive-deps": [
+      "error",
+      {
+        "enableDangerousAutofixThisMayCauseInfiniteLoops": true
+      }
+    ],
     "redux-saga/yield-effects": "error",
     "redux-saga/no-yield-in-race": "error"
   },

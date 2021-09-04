@@ -3,12 +3,6 @@
   "workspaces": {
     "packages": [
       "packages/*"
-    ],
-    "nohoist": [
-      "eslint",
-      "eslint-*",
-      "jest",
-      "@jest/**"
     ]
   },
   "scripts": {
@@ -20,7 +14,7 @@
     "clean": "rimraf **/node_modules/ **/dist/"
   },
   "devDependencies": {
-    "babel-eslint": "^10.1.0",
+    "@babel/eslint-parser": "^7.15.4",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-import-resolver-alias": "^1.1.2",

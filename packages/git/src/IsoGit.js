@@ -1,6 +1,6 @@
 import path from 'path'
 import fs from 'fs'
-import igit from 'isomorphic-git'
+import * as igit from 'isomorphic-git'
 
 const el = {
   filename: 0,
