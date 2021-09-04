@@ -52,7 +52,6 @@ export class IsoGit {
         const isModified =
           data[el.head] === head.present &&
           data[el.workdir] === workdir.modified
-        
 
         let staged = false
         let unstaged = false
@@ -60,12 +59,18 @@ export class IsoGit {
           staged = data[el.stage] === 0
           unstaged = !staged
         } else if (isModified) {
-          staged = data[el.stage] === stage.matchesWorkdir || data[el.stage] === stage.differentToWorkdir
-          unstaged = data[el.stage] === stage.matchesHead || data[el.stage] === stage.differentToWorkdir
+          staged =
+            data[el.stage] === stage.matchesWorkdir ||
+            data[el.stage] === stage.differentToWorkdir
+          unstaged =
+            data[el.stage] === stage.matchesHead ||
+            data[el.stage] === stage.differentToWorkdir
         } else {
-          staged = data[el.stage] === stage.matchesWorkdir || data[el.stage] === stage.differentToWorkdir
+          staged =
+            data[el.stage] === stage.matchesWorkdir ||
+            data[el.stage] === stage.differentToWorkdir
           unstaged = !staged
-        } 
+        }
 
         return {
           path: data[el.filename],
@@ -74,7 +79,7 @@ export class IsoGit {
           isNew: isNew,
           isDeleted: isDeleted,
           isModified: isModified,
-          raw: data
+          raw: data,
         }
       })
   }

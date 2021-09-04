@@ -400,7 +400,7 @@ export class Git {
     if (!ig) {
       return []
     }
-    
+
     return await ig.status()
   }
 
@@ -454,55 +454,57 @@ export class Git {
   /**
    * @param {string} shaOld
    * @param {string} shaNew
-   * @param {NodeGit.DiffOptions} options
    */
-  getDiffFromShas = async (shaNew, shaOld = null, options) => {
-    const repo = await this.getComplex()
-    if (!repo) {
+  getDiffFromShas = async (
+    shaNew,
+    shaOld = null,
+    { contextLines = 10 } = {},
+  ) => {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return null
     }
+
+    // From Git:
+    // git diff SHAOLD SHANEW --unified=10
+    // git show SHA --patch -m
 
     if (!shaNew) {
       console.error('shaNew was not provided')
       return null
     }
 
-    if (shaOld != null) {
-      const treeOld = await (await repo.getCommit(shaOld)).getTree()
-      const treeNew = await (await repo.getCommit(shaNew)).getTree()
-      const diff = await NodeGit.Diff.treeToTree(
-        repo,
-        treeOld,
-        treeNew,
-        options,
-      )
-      return await this._processDiff(diff)
+    let cmd = []
+    if (shaOld) {
+      cmd = ['diff', shaOld, shaNew, '--unified=' + contextLines]
     } else {
-      // Diff single commit, with support for first commit in history
-      const diffs = await (await repo.getCommit(shaNew)).getDiffWithOptions(
-        options,
-      )
-      return await this._processDiff(diffs[0])
+      cmd = [
+        'show',
+        shaNew,
+        '--patch', // Always show patch
+        '-m', // Show patch even on merge commits
+        '--unified=' + contextLines,
+      ]
     }
+
+    const patchText = await spawn(cmd)
+    console.info(cmd, patchText)
+
+    return null
   }
 
-  /**
-   * @param {NodeGit.DiffOptions} options
-   */
-  getDiffFromIndex = async (options) => {
-    const repo = await this.getComplex()
-    if (!repo) {
+  getDiffFromIndex = async ({ contextLines }) => {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return null
     }
 
-    const headTree = await (await repo.getHeadCommit()).getTree()
-    const diff = await NodeGit.Diff.treeToWorkdirWithIndex(
-      repo,
-      headTree,
-      options,
-    )
+    const cmd = ['diff', '--unified=' + contextLines]
 
-    return await this._processDiff(diff)
+    const patchText = await spawn(cmd)
+    console.info(cmd, patchText)
+
+    return null
   }
 
   /**
