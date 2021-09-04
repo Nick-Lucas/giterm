@@ -51,7 +51,7 @@ export function Changes() {
 
       if (file.staged) {
         staged.push(item)
-      } 
+      }
       if (file.unstaged) {
         unstaged.push(item)
       }

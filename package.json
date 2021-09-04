@@ -1,8 +1,14 @@
 {
   "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
+  "workspaces": {
+    "packages": [
+      "packages/*"
+    ],
+    "nohoist": [
+      "eslint",
+      "eslint-*"
+    ]
+  },
   "scripts": {
     "build-js": "wsrun --stages --exclude-missing build",
     "dev": "wsrun --exclude-missing dev",
@@ -13,6 +19,7 @@
   },
   "devDependencies": {
     "babel-eslint": "^10.1.0",
+    "eslint": "^7.32.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-import-resolver-alias": "^1.1.2",
     "eslint-plugin-import": "^2.22.0",
