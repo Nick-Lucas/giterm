@@ -1,5 +1,7 @@
 import _ from 'lodash'
 import simpleGit from 'simple-git'
+import { parse } from 'diff2html'
+import { LineType } from 'diff2html/lib-esm/types'
 import chokidar from 'chokidar'
 import path from 'path'
 import { createHash } from 'crypto'
@@ -488,9 +490,11 @@ export class Git {
     }
 
     const patchText = await spawn(cmd)
-    console.info(cmd, patchText)
 
-    return null
+    const diff = this._processDiff2(patchText)
+    console.log('DIFF', diff)
+
+    return diff
   }
 
   getDiffFromIndex = async ({ contextLines }) => {
@@ -502,9 +506,64 @@ export class Git {
     const cmd = ['diff', '--unified=' + contextLines]
 
     const patchText = await spawn(cmd)
-    console.info(cmd, patchText)
 
-    return null
+    const diff = this._processDiff2(patchText)
+    console.log('DIFF', diff)
+
+    return diff
+  }
+
+  _processDiff2 = (diffText) => {
+    const files = parse(diffText)
+
+    console.info('PARSED', files)
+
+    return {
+      stats: {
+        insertions: files.reduce((result, file) => file.addedLines + result, 0),
+        filesChanged: files.length,
+        deletions: files.reduce(
+          (result, file) => file.deletedLines + result,
+          0,
+        ),
+      },
+      patches: files.map((file) => {
+        /** @param {import("diff2html/lib-esm/types").DiffLine} line */
+        function lineToLine(line) {
+          return {
+            content: line.content,
+            contentLen: line.content.length,
+            contentOffset: 0, // FIXME: is this needed?
+            newLineno: line.newNumber,
+            // numLines: line.numLines, // TODO: is this needed?
+            oldLineno: line.oldNumber,
+            // origin: line.origin,  // TODO: is this needed?
+            // rawContent: line.rawContent,  // TODO: is this needed?
+          }
+        }
+
+        return {
+          hunks: file.blocks.map((block) => {
+            return {
+              header: block.header,
+              headerLen: block.header.length,
+              newLines: [], //block.lines.filter(line => line.type == LineType.INSERT),
+              newStart: block.newStartLine,
+              oldLines: block.oldLines,
+              oldStart: block.oldStartLine, // TODO: oldStartLine2 exists, does it matter?
+              size: block.lines.length, // FIXME: probably not correct compared to nodegit impl, does it matter?
+              lines: block.lines.map(lineToLine),
+            }
+          }),
+          status: 'NO_STATUS_DEFINED', // FIXME: is this needed?
+          oldFilePath: file.oldName,
+          newFilePath: file.newName,
+          isAdded: file.isNew,
+          isDeleted: file.isDeleted,
+          isModified: !file.isNew && !file.isDeleted,
+        }
+      }),
+    }
   }
 
   /**
