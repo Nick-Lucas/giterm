@@ -5,11 +5,6 @@ export function alpha(hex, amount = 0) {
     .alpha(amount)
     .toString()
 }
-export function lighten(hex, amount = 0) {
-  return Color(hex, 'hex')
-    .lighten(amount)
-    .toString()
-}
 
 export const GRAPH_NODES = [
   '#058ED9',
