@@ -2,6 +2,11 @@
   "name": "@giterm/gitgraph-example",
   "version": "1.0.0",
   "private": true,
+  "workspaces": {
+    "nohoist": [
+      "**"
+    ]
+  },
   "dependencies": {
     "@giterm/gitgraph": "1.0.0",
     "lodash": "^4.17.15",

@@ -1,16 +1,18 @@
 import _ from 'lodash'
-import fp from 'lodash/fp'
-import NodeGit from 'nodegit'
-import SimpleGit from 'simple-git'
+import simpleGit from 'simple-git'
+import { parse } from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
+
 import { createHash } from 'crypto'
 
+import fs from 'fs'
 import { spawn } from 'child_process'
 
 import repoResolver from './repo-resolver'
+import { IsoGit } from './IsoGit'
 
-import { STATE } from './constants'
+import { STATE, STATE_FILES } from './constants'
 
 const PROFILING = true
 function perfStart(name) {
@@ -34,6 +36,17 @@ export class Git {
     this._watcher = null
   }
 
+  getGitDir = async () => {
+    const dir = path.join(this.cwd, '.git')
+
+    const exists = fs.existsSync(dir)
+    if (!exists) {
+      return null
+    }
+
+    return dir
+  }
+
   getSimple = () => {
     if (!this._simple) {
       if (this.cwd === '/') {
@@ -42,32 +55,36 @@ export class Git {
 
       try {
         perfStart('GIT/open-simple')
-        this._simple = new SimpleGit(this.cwd)
+        this._simple = simpleGit(this.cwd)
         perfEnd('GIT/open-simple')
       } catch (err) {
         console.error(err)
         this._simple = null
       }
     }
-    return this._simple
+
+    /** @type {import("simple-git/typings/simple-git").SimpleGit} */
+    const simple = this._simple
+
+    return simple
   }
 
-  getComplex = async () => {
-    if (!this._complex) {
+  getIsoGit = () => {
+    if (!this._isogit) {
       if (this.cwd === '/') {
         return null
       }
 
       try {
         perfStart('GIT/open-complex')
-        this._complex = await NodeGit.Repository.open(this.cwd)
+        this._isogit = new IsoGit(this.cwd)
         perfEnd('GIT/open-complex')
       } catch (err) {
         console.error(err)
-        this._complex = null
+        this._isogit = null
       }
     }
-    return this._complex
+    return this._isogit
   }
 
   getSpawn = async () => {
@@ -102,155 +119,220 @@ export class Git {
   // methods
   // **********************
 
+  /**
+   * Loosely based on libgit2: `git_repository_state`
+   * https://github.com/libgit2/libgit2/blob/3addb796d392ff6bbd3917a48d81848d40821c5b/src/repository.c#L2956
+   */
   async getStateText() {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const gitDir = await this.getGitDir()
+    if (!gitDir) {
       return STATE.NO_REPO // 'No Repository'
     }
 
-    if (repo.isRebasing()) {
-      return STATE.REBASING // 'Rebasing'
+    const exists = (fileOrDir) => fs.existsSync(path.join(gitDir, fileOrDir))
+
+    if (exists(STATE_FILES.REBASE_MERGE_INTERACTIVE_FILE)) {
+      return STATE.REBASING
     }
-    if (repo.isMerging()) {
-      return STATE.MERGING // 'Merging'
+    if (exists(STATE_FILES.REBASE_MERGE_DIR)) {
+      return STATE.REBASING
     }
-    if (repo.isCherrypicking()) {
-      return STATE.CHERRY_PICKING // 'Cherry Picking'
+    if (exists(STATE_FILES.REBASE_APPLY_REBASING_FILE)) {
+      return STATE.REBASING
     }
-    if (repo.isReverting()) {
-      return STATE.REVERTING // 'Reverting'
+    if (exists(STATE_FILES.REBASE_APPLY_APPLYING_FILE)) {
+      return STATE.APPLYING_MAILBOX
     }
-    if (repo.isBisecting()) {
-      return STATE.BISECTING // 'Bisecting'
+    if (exists(STATE_FILES.REBASE_APPLY_DIR)) {
+      return STATE.REBASING
     }
-    if (repo.isApplyingMailbox()) {
-      return STATE.APPLYING_MAILBOX // 'Applying Mailbox'
+    if (exists(STATE_FILES.MERGE_HEAD_FILE)) {
+      return STATE.MERGING
     }
+    if (exists(STATE_FILES.REVERT_HEAD_FILE)) {
+      return STATE.REVERTING
+    }
+    if (exists(STATE_FILES.CHERRYPICK_HEAD_FILE)) {
+      return STATE.CHERRY_PICKING
+    }
+    if (exists(STATE_FILES.BISECT_LOG_FILE)) {
+      return STATE.BISECTING
+    }
+
     return STATE.OK // 'OK'
   }
 
   getHeadSHA = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return ''
     }
 
-    const commit = await repo.getHeadCommit()
-    if (!commit) {
-      return ''
-    }
+    const sha = await spawn(['show', '--format=%H', '-s', 'HEAD'])
 
-    return commit.sha()
+    return sha
   }
 
   getAllBranches = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return []
     }
 
-    const refs = await Promise.all(
-      await repo.getReferences().then((refs) =>
-        refs
-          .filter((ref) => ref.isBranch() || ref.isRemote())
-          .map(async (ref) => {
-            const id = ref.name()
-            const simpleName = _.last(id.match(/.*\/(.*$)/))
+    // Based on
+    // git branch --list --all --format="[%(HEAD)] -SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso) -upstream- %(upstream) %(upstream:track)" -q --sort=-committerdate
 
-            const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-            const commit = await repo.getCommit(commitRef)
+    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
+    const format = [
+      '%(HEAD)',
+      '%(objectname)',
+      '%(refname)',
+      '%(refname:short)',
+      '%(authordate:unix)',
+      '%(committerdate:unix)',
+      '%(upstream)',
+      '%(upstream:short)',
+      '%(upstream:track)',
+    ]
 
-            let upstream = null
-            const upstreamRef = await NodeGit.Branch.upstream(ref).catch(
-              () => null,
-            )
-            if (upstreamRef) {
-              const { ahead, behind } = await NodeGit.Graph.aheadBehind(
-                repo,
-                ref.target(),
-                upstreamRef.target(),
-              )
+    const fragments = [
+      'branch',
+      '--list',
+      '--all',
+      '--sort=-committerdate',
+      `--format=${format.join(SEP)}`,
+    ]
 
-              upstream = {
-                name: upstreamRef.name(),
-                ahead,
-                behind,
-              }
-            }
+    const result = await spawn(fragments)
 
-            return {
-              id,
-              name: ref.shorthand(),
-              simpleName,
-              isRemote: !!ref.isRemote(),
-              isHead: !!ref.isHead(),
-              headSHA: ref.target().tostrS(),
-              date: commit.date(),
-              upstream,
-            }
-          }),
-      ),
-    )
+    const tuples = result
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((str) => str.split(SEP))
 
-    return fp.flow(
-      fp.uniqBy((branch) => branch.id),
-      fp.sortBy([
+    const refs = tuples.map((segments) => {
+      if (segments.length !== format.length) {
+        console.warn(segments)
+        throw `Separator ${SEP} in output, cannot parse git branches. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
+      }
+
+      const [
+        isHead,
+        sha,
+        refId,
+        name,
+        authorDate,
+        commitDate,
+        upstreamId,
+        upstreamName,
+        upstreamDiff,
+      ] = segments
+
+      let upstream = null
+      if (upstreamId) {
+        upstream = {
+          id: upstreamId,
+          name: upstreamName,
+          ahead: parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? 0),
+          behind: parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? 0),
+        }
+      }
+
+      return {
+        id: refId,
+        name: name,
+        isRemote: refId.startsWith('refs/remotes'),
+        isHead: isHead === '*',
+        headSHA: sha,
+        date: commitDate,
+        authorDate: authorDate,
+        upstream: upstream,
+      }
+    })
+
+    return _(refs)
+      .uniqBy((branch) => branch.id)
+      .sortBy([
         (branch) => branch.isRemote,
         (branch) => -branch.date,
         (branch) => branch.name,
-      ]),
-    )(refs)
+      ])
+      .value()
   }
 
   getAllTags = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return []
     }
 
-    const refs = await Promise.all(
-      await repo.getReferences().then((refs) =>
-        refs
-          .filter((ref) => ref.isTag())
-          .map(async (ref) => {
-            const id = ref.name()
-            const commitRef = await ref.peel(NodeGit.Object.TYPE.COMMIT)
-            const commit = await repo.getCommit(commitRef)
+    // Based on
+    // git tag --list  --format="-SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso)" --sort=-committerdate
 
-            return {
-              id,
-              name: ref.shorthand(),
-              headSHA: ref.target().tostrS(),
-              date: commit.date(),
-            }
-          }),
-      ),
-    )
+    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
+    const format = [
+      '%(objectname)',
+      '%(refname)',
+      '%(refname:short)',
+      '%(authordate:unix)',
+      '%(committerdate:unix)',
+    ]
+
+    const fragments = [
+      'tag',
+      '--list',
+      '--sort=-committerdate',
+      `--format=${format.join(SEP)}`,
+    ]
+
+    const result = await spawn(fragments)
+
+    const tuples = result
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((str) => str.split(SEP))
+
+    const refs = tuples.map((segments) => {
+      if (segments.length !== format.length) {
+        console.warn(segments)
+        throw `Separator ${SEP} in output, cannot parse git tags. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
+      }
+
+      const [sha, id, name, authorDate, committerDate] = segments
+
+      return {
+        id,
+        name,
+        headSHA: sha,
+        date: committerDate,
+        authorDate: authorDate,
+      }
+    })
 
     return _.sortBy(refs, [(tag) => -tag.date, (tag) => tag.name])
   }
 
   getAllRemotes = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return []
     }
 
-    const remotes = await repo.getRemotes()
+    const cmd = ['remote']
 
-    return remotes.map((remote) => {
-      return {
-        name: remote.name(),
-      }
-    })
+    const output = await spawn(cmd)
+
+    return output
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((remote) => {
+        return {
+          name: remote,
+        }
+      })
   }
 
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
-    const repo = await this.getComplex()
-    if (!repo) {
-      return [[], '']
-    }
-
     const headSha = this.getHeadSHA()
     if (!headSha) {
       return [[], '']
@@ -328,49 +410,32 @@ export class Git {
     return [commits, digest]
   }
 
+  // FIXME: does not work, but also onDoubleClick on Commit is not working due to a conflict with onClick
   checkout = async (sha) => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const simple = this.getSimple()
+    if (!simple) {
       return
     }
 
-    const branches = await this.getAllBranches(repo)
-    const branch = branches.reduce((out, b) => {
-      if (!out && b.headSHA === sha) {
-        return b.id
-      }
-      return out
-    }, null)
+    const branches = await this.getAllBranches()
+    const branch = branches.find((b) => {
+      return b.headSHA === sha
+    })
 
     if (branch) {
-      await repo.checkoutBranch(branch)
+      simple.checkoutBranch(branch.name)
     } else {
-      const simple = this.getSimple()
-      await new Promise((resolve) => {
-        simple.checkout(sha, () => resolve())
-      })
+      simple.checkout(sha)
     }
   }
 
   getStatus = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const ig = this.getIsoGit()
+    if (!ig) {
       return []
     }
 
-    const files = await repo.getStatus()
-
-    return files.map((file) => {
-      return {
-        path: file.path(),
-        staged: !!file.inIndex(),
-        isNew: !!file.isNew(),
-        isDeleted: !!file.isDeleted(),
-        isModified: !!file.isModified(),
-        isRenamed: !!file.isRenamed() || !!file.isTypechange(),
-        isIgnored: !!file.isIgnored(),
-      }
-    })
+    return await ig.status()
   }
 
   watchRefs = (callback) => {
@@ -421,122 +486,84 @@ export class Git {
   }
 
   /**
+   * @typedef DiffResult
+   * @property { {insertions: number, deletions: number, filesChanges: number} } stats
+   * @property {import("diff2html/lib-esm/types").DiffFile[]} files
+   */
+
+  /**
    * @param {string} shaOld
    * @param {string} shaNew
-   * @param {NodeGit.DiffOptions} options
+   * @returns {Promise<DiffResult>}
    */
-  getDiffFromShas = async (shaNew, shaOld = null, options) => {
-    const repo = await this.getComplex()
-    if (!repo) {
+  getDiffFromShas = async (
+    shaNew,
+    shaOld = null,
+    { contextLines = 10 } = {},
+  ) => {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return null
     }
+
+    // From Git:
+    // git diff SHAOLD SHANEW --unified=10
+    // git show SHA --patch -m
 
     if (!shaNew) {
       console.error('shaNew was not provided')
       return null
     }
 
-    if (shaOld != null) {
-      const treeOld = await (await repo.getCommit(shaOld)).getTree()
-      const treeNew = await (await repo.getCommit(shaNew)).getTree()
-      const diff = await NodeGit.Diff.treeToTree(
-        repo,
-        treeOld,
-        treeNew,
-        options,
-      )
-      return await this._processDiff(diff)
+    let cmd = []
+    if (shaOld) {
+      cmd = ['diff', shaOld, shaNew, '--unified=' + contextLines]
     } else {
-      // Diff single commit, with support for first commit in history
-      const diffs = await (await repo.getCommit(shaNew)).getDiffWithOptions(
-        options,
-      )
-      return await this._processDiff(diffs[0])
+      cmd = [
+        'show',
+        shaNew,
+        '--patch', // Always show patch
+        '-m', // Show patch even on merge commits
+        '--unified=' + contextLines,
+      ]
     }
+
+    const patchText = await spawn(cmd)
+    const diff = this._processDiff(patchText)
+
+    return diff
   }
 
   /**
-   * @param {NodeGit.DiffOptions} options
+   * @returns {Promise<DiffResult>}
    */
-  getDiffFromIndex = async (options) => {
-    const repo = await this.getComplex()
-    if (!repo) {
+  getDiffFromIndex = async ({ contextLines }) => {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return null
     }
 
-    const headTree = await (await repo.getHeadCommit()).getTree()
-    const diff = await NodeGit.Diff.treeToWorkdirWithIndex(
-      repo,
-      headTree,
-      options,
-    )
+    const cmd = ['diff', '--unified=' + contextLines]
 
-    return await this._processDiff(diff)
+    const patchText = await spawn(cmd)
+    const diff = this._processDiff(patchText)
+
+    return diff
   }
 
-  /**
-   * @param {NodeGit.Diff} diff
-   */
-  _processDiff = async (diff) => {
-    const stats = await diff.getStats()
-    const _patches = await diff.patches()
-
-    const patches = await Promise.all(
-      _patches.map(async (patch) => {
-        const oldFilePath = patch.oldFile().path()
-        const newFilePath = patch.newFile().path()
-        const status = patch.status()
-        const isAdded = patch.isAdded()
-        const isDeleted = patch.isDeleted()
-        const isModified = patch.isModified()
-
-        return {
-          hunks: await Promise.all(
-            (await patch.hunks()).map(async (hunk) => {
-              return {
-                header: hunk.header(),
-                headerLen: hunk.headerLen(),
-                newLines: hunk.newLines(),
-                newStart: hunk.newStart(),
-                oldLines: hunk.oldLines(),
-                oldStart: hunk.oldStart(),
-                size: hunk.size(),
-                lines: (await hunk.lines()).map((line) => {
-                  return {
-                    content: line.content(),
-                    contentLen: line.contentLen(),
-                    contentOffset: line.contentOffset(),
-                    newLineno: line.newLineno(),
-                    numLines: line.numLines(),
-                    oldLineno: line.oldLineno(),
-                    origin: line.origin(),
-                    rawContent: line.rawContent(),
-                  }
-                }),
-              }
-            }),
-          ),
-          status,
-          oldFilePath,
-          newFilePath,
-          isAdded,
-          isDeleted,
-          isModified,
-        }
-      }),
-    )
-
-    // Later we new NodeGit.DiffLine in order to stage/unstage
-    // repo.stageFilemode
-    // repo.stageLines
+  _processDiff = (diffText) => {
+    const files = parse(diffText)
 
     return {
       stats: {
-        insertions: stats.insertions(),
-        filesChanged: stats.filesChanged(),
-        deletions: stats.deletions(),
+        insertions: files.reduce((result, file) => file.addedLines + result, 0),
+        filesChanged: files.length,
+        deletions: files.reduce(
+          (result, file) => file.deletedLines + result,
+          0,
+        ),
       },
-      patches,
+      files,
     }
   }
 }

@@ -12,7 +12,7 @@ import { useDiffData } from './useDiffData'
 export function DiffPanel() {
   const { loading, filePath, setFilePath, filePatch, diff } = useDiffData()
 
-  if (loading) {
+  if (loading || !diff) {
     return (
       <DiffContainer>
         <MessageText>Loading</MessageText>
@@ -24,11 +24,7 @@ export function DiffPanel() {
     <StyledPanel>
       <LowerPanelMenu />
 
-      <Files
-        patches={diff.patches}
-        filePath={filePath}
-        onChange={setFilePath}
-      />
+      <Files patches={diff.files} filePath={filePath} onChange={setFilePath} />
 
       <Diff filePatch={filePatch} />
     </StyledPanel>

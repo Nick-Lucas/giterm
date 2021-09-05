@@ -15,6 +15,8 @@ export const Segment = styled.div`
   align-items: center;
   justify-content: center;
 
+  min-width: ${({ width = 0 }) => width};
+
   padding-left: 3px;
   padding-right: 3px;
 
@@ -45,6 +47,15 @@ export const Segment = styled.div`
     css`
       background-color: ${colours.PILL.BG_WARNING};
     `};
+  ${({ error }) =>
+    error &&
+    css`
+      background-color: ${colours.PILL.BG_ERROR};
+      color: ${colours.PILL.FG_LIGHT};
+    `};
+
+  transition: 300ms ease-in-out all;
+  transition-property: color, background-color;
 `
 
 export const Content = styled.div`

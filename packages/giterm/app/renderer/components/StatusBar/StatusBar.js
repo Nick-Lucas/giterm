@@ -1,33 +1,33 @@
 import React, { useCallback, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import styled, { css } from 'styled-components'
+import styled from 'styled-components'
 import { ArrowUp, ArrowDown } from 'react-feather'
 
 import { StatusBarItem } from './StatusBarItem'
 import { showRemoteBranches } from 'app/store/config/actions'
 import { STATE } from '@giterm/git'
-import { colours } from 'app/lib/theme'
+import { Pill } from 'app/lib/primitives'
 
 function mapStateToDisplay(state) {
   switch (state) {
     case STATE.OK:
-      return [colours.TEXT.DEFAULT, 'OK']
+      return [{}, 'OK']
     case STATE.REBASING:
-      return [colours.TEXT.WARNING, 'Rebasing']
+      return [{ warning: true }, 'Rebasing']
     case STATE.MERGING:
-      return [colours.TEXT.WARNING, 'Merging']
+      return [{ warning: true }, 'Merging']
     case STATE.REVERTING:
-      return [colours.TEXT.WARNING, 'Reverting']
+      return [{ warning: true }, 'Reverting']
     case STATE.CHERRY_PICKING:
-      return [colours.TEXT.WARNING, 'Cherry Picking']
+      return [{ warning: true }, 'Cherry Picking']
     case STATE.BISECTING:
-      return [colours.TEXT.WARNING, 'Bisecting']
+      return [{ warning: true }, 'Bisecting']
     case STATE.APPLYING_MAILBOX:
-      return [colours.TEXT.WARNING, 'Applying Mailbox']
+      return [{ warning: true }, 'Applying Mailbox']
     case STATE.NO_REPO:
-      return [colours.TEXT.NEGATIVE, 'No Repository']
+      return [{ error: true }, 'No Repository']
     default:
-      return [null, '']
+      return [{}, 'Loading...']
   }
 }
 
@@ -43,70 +43,79 @@ export function StatusBar() {
 
   const config = useSelector((state) => state.config)
 
-  const toggleShowRemoteBranches = useCallback(() => {
-    dispatch(showRemoteBranches(!showRemoteBranches))
-  }, [dispatch])
+  const toggleShowRemoteBranches = useCallback(
+    (e) => {
+      dispatch(
+        showRemoteBranches(e?.target?.checked ?? !config.showRemoteBranches),
+      )
+    },
+    [config.showRemoteBranches, dispatch],
+  )
 
-  const [stateColour, stateText] = useMemo(() => mapStateToDisplay(state), [
+  const [stateProps, stateText] = useMemo(() => mapStateToDisplay(state), [
     state,
   ])
 
+  const isAheadBehind =
+    currentBranch?.upstream.ahead > 0 ||
+    currentBranch?.upstream.behind > 0 ||
+    false
+
   return (
     <Wrapper>
-      <Group width={250}>
-        <StatusBarItem title="Status:" colour={stateColour}>
-          {stateText}
-        </StatusBarItem>
-      </Group>
+      <Pill.Container>
+        <Pill.Segment width="6rem" {...stateProps}>
+          <Pill.Content>{stateText}</Pill.Content>
+        </Pill.Segment>
+      </Pill.Container>
 
-      <Group width={300}>
-        {currentBranch && (
-          <>
-            <StatusBarItem title="Branch:">{currentBranch.name}</StatusBarItem>
-
-            {currentBranch.upstream && (
-              <StatusBarItem>
-                <ArrowUp size={15} />
-                {currentBranch.upstream.ahead}
-                <ArrowDown size={15} />
-                {currentBranch.upstream.behind}
-              </StatusBarItem>
-            )}
-          </>
+      <Pill.Container>
+        {currentBranch?.upstream && (
+          <Pill.Segment warning={isAheadBehind}>
+            <ArrowUp size={15} />
+            {currentBranch?.upstream.ahead}
+            <ArrowDown size={15} />
+            {currentBranch?.upstream.behind}
+          </Pill.Segment>
         )}
-      </Group>
 
-      <Group>
-        <StatusBarItem>Show Remote</StatusBarItem>
-        <ToggleInput
-          type="checkbox"
-          onChange={toggleShowRemoteBranches}
-          checked={config.showRemoteBranches}
-        />
-      </Group>
+        <Pill.Segment current={!isAheadBehind && currentBranch?.name}>
+          <Pill.Content>{currentBranch?.name ?? 'No Branch'}</Pill.Content>
+        </Pill.Segment>
+      </Pill.Container>
+
+      <Pill.Container
+        onClick={toggleShowRemoteBranches}
+        style={{ cursor: 'pointer' }}>
+        <Pill.Segment>
+          <ToggleInput
+            type="checkbox"
+            onChange={toggleShowRemoteBranches}
+            checked={config.showRemoteBranches}
+          />
+          <StatusBarItem>Show Remote</StatusBarItem>
+        </Pill.Segment>
+      </Pill.Container>
     </Wrapper>
   )
 }
 
 const Wrapper = styled.div`
   display: flex;
+  align-items: stretch;
+  height: 1.5rem;
+
   margin: 5px;
-`
 
-const Group = styled.div`
-  display: flex;
-  margin-right: 5px;
-
-  ${(props) =>
-    props.width &&
-    css`
-      min-width: ${props.width}px;
-      max-width: ${props.width}px;
-    `};
+  > * {
+    margin-right: 0.5rem;
+  }
 `
 
 const ToggleInput = styled.input`
   margin: 0;
-  align-self: flex-end;
-  margin-bottom: 1px;
+  align-self: center;
+  margin-top: 2px;
+  margin-left: 0.25rem;
+  margin-right: 0.25rem;
 `

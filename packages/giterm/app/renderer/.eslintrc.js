@@ -1,15 +1,12 @@
-
 module.exports = {
-  "env": {
-    "browser": true
+  env: {
+    browser: true,
   },
-  "settings": {
-    "import/resolver": {
+  settings: {
+    'import/resolver': {
       alias: {
-        map: [
-          ["app", __dirname]
-        ]
-      }
-    }
-  }
+        map: [['app', __dirname]],
+      },
+    },
+  },
 }

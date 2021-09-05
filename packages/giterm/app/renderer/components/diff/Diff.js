@@ -9,27 +9,27 @@ export function Diff({ filePatch }) {
   return (
     <DiffContainer>
       <PatchName>
-        {filePatch.oldFilePath === filePatch.newFilePath ? (
+        {filePatch.oldName === filePatch.newName ? (
           <List.Label trimStart textAlign="center">
-            {filePatch.oldFilePath ?? filePatch.selectedFilePath}
+            {filePatch.oldName ?? filePatch.selectedFileName}
           </List.Label>
         ) : (
           <>
             <List.Label trimStart textAlign="right">
-              {filePatch.newFilePath}
+              {filePatch.newName}
             </List.Label>
             <PatchNameSeparator>{'->'}</PatchNameSeparator>
-            <List.Label trimStart>{filePatch.oldFilePath}</List.Label>
+            <List.Label trimStart>{filePatch.oldName}</List.Label>
           </>
         )}
       </PatchName>
 
       <HunksContainer>
-        {filePatch.hunks.length === 0 && (
+        {filePatch.blocks.length === 0 && (
           <MessageText>Nothing to display!</MessageText>
         )}
 
-        {filePatch.hunks.map((hunk, i) => (
+        {filePatch.blocks.map((hunk, i) => (
           <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
         ))}
       </HunksContainer>

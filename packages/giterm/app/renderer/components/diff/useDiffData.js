@@ -36,7 +36,7 @@ export function useDiffData({ contextLines = 5 } = {}) {
           : await git.getDiffFromIndex({ contextLines })
 
       if (!cancelled) {
-        setDiff(diff)
+        diff != null && setDiff(diff)
         setLoading(false)
       }
     }
@@ -51,35 +51,33 @@ export function useDiffData({ contextLines = 5 } = {}) {
   const filePath = useMemo(() => {
     if (
       !_filePath ||
-      !diff?.patches?.some((patch) => patch.newFilePath === _filePath)
+      !diff?.files?.some((patch) => patch.newName === _filePath)
     ) {
-      return diff?.patches[0]?.newFilePath ?? null
+      return diff?.files[0]?.newName ?? null
     } else {
       return _filePath
     }
-  }, [_filePath, diff?.patches])
+  }, [_filePath, diff?.files])
 
   const filePatch = useMemo(() => {
     if (!diff) return null
-
-    const patch = diff.patches.find(
-      (patch) =>
-        patch.oldFilePath === filePath || patch.newFilePath === filePath,
+    const file = diff.files.find(
+      (file) => file.oldName === filePath || file.newName === filePath,
     )
 
-    const filePatch = { ...patch, selectedFilePath: filePath, hunks: [] }
-    if (!patch) return filePatch
+    const filePatch = { ...file, selectedFileName: filePath, blocks: [] }
+    if (!file) return filePatch
 
-    for (const hunk of patch.hunks) {
+    for (const block of file.blocks) {
       const linesLeft = []
       const linesRight = []
 
-      for (const line of hunk.lines) {
-        const isLeft = line.oldLineno >= 0
-        const isRight = line.newLineno >= 0
+      for (const line of block.lines) {
+        const isLeft = line.oldNumber >= 0
+        const isRight = line.newNumber >= 0
 
         // Where line has not changed at-all we fix the row to the same index in both columns
-        if (isLeft && isRight && line.contentOffset < 0) {
+        if (isLeft && isRight) {
           const headIndex = Math.max(linesLeft.length, linesRight.length)
           linesLeft[headIndex] = line
           linesRight[headIndex] = line
@@ -95,7 +93,7 @@ export function useDiffData({ contextLines = 5 } = {}) {
         }
       }
 
-      filePatch.hunks.push({ ...hunk, linesLeft, linesRight })
+      filePatch.blocks.push({ ...block, linesLeft, linesRight })
     }
 
     return filePatch
