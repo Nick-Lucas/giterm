@@ -4,10 +4,13 @@ import styled, { css } from 'styled-components'
 import { colours } from 'app/lib/theme'
 
 export const Hunk = ({ hunk, index }) => {
-  const { newLines, newStart, oldLines, oldStart } = hunk
+  const { newStartLine, oldStartLine, linesLeft, linesRight } = hunk
 
-  const rowMinNo = Math.min(oldStart, newStart)
-  const rowMaxNo = Math.max(oldStart + oldLines, newStart + newLines)
+  const rowMinNo = Math.min(oldStartLine, newStartLine)
+  const rowMaxNo = Math.max(
+    oldStartLine + linesLeft.length,
+    newStartLine + linesRight.length,
+  )
   const rowCount = rowMaxNo - rowMinNo + 1
 
   const hunkHeaderRow = 1
@@ -15,23 +18,25 @@ export const Hunk = ({ hunk, index }) => {
   const hunkEndRow = rowCount + hunkStartRow
 
   function getColour(line) {
-    const { contentOffset, newLineno, oldLineno } = line
+    const { newNumber, oldNumber } = line
 
-    const isRemovedLine = newLineno < 0
-    const isAddedLine = oldLineno < 0
-    const isModifiedLine = !isRemovedLine && !isAddedLine && contentOffset >= 0
-
-    let leftColour = colours.BACKGROUND.FOCUS
-    if (isRemovedLine) leftColour = colours.BACKGROUND.NEGATIVE
-    if (isModifiedLine) leftColour = colours.BACKGROUND.NEGATIVE
-
-    let rightColour = colours.BACKGROUND.FOCUS
-    if (isAddedLine) rightColour = colours.BACKGROUND.POSITIVE
-    if (isModifiedLine) rightColour = colours.BACKGROUND.POSITIVE
-
-    return {
-      leftColour,
-      rightColour,
+    if (newNumber >= 0 && oldNumber >= 0) {
+      return {
+        leftColour: colours.BACKGROUND.FOCUS,
+        rightColour: colours.BACKGROUND.FOCUS,
+      }
+    }
+    if (newNumber >= 0) {
+      return {
+        leftColour: 'transparent',
+        rightColour: colours.BACKGROUND.POSITIVE,
+      }
+    }
+    if (oldNumber >= 0) {
+      return {
+        leftColour: colours.BACKGROUND.NEGATIVE,
+        rightColour: 'transparent',
+      }
     }
   }
 
@@ -46,15 +51,15 @@ export const Hunk = ({ hunk, index }) => {
         col="1"
         row={`${hunkStartRow} / ${hunkEndRow}`}
         divider>
-        {hunk.linesLeft.map((line, lineI) => {
+        {linesLeft.map((line, lineI) => {
           const row = lineI + 1
-          const { content, oldLineno } = line
+          const { content, oldNumber } = line
           const { leftColour } = getColour(line)
 
           return (
             <React.Fragment key={`left_${row}`}>
               <LineNumberCell row={row} colour={leftColour}>
-                {oldLineno}
+                {oldNumber}
               </LineNumberCell>
 
               <ContentCell row={row} colour={leftColour}>
@@ -67,15 +72,15 @@ export const Hunk = ({ hunk, index }) => {
 
       {/* Right Content */}
       <HunkContentColumn col="2" row={`${hunkStartRow} / ${hunkEndRow}`}>
-        {hunk.linesRight.map((line, lineI) => {
+        {linesRight.map((line, lineI) => {
           const row = lineI + 1
-          const { content, newLineno } = line
+          const { content, newNumber } = line
           const { rightColour } = getColour(line)
 
           return (
             <React.Fragment key={`right_${row}`}>
               <LineNumberCell row={row} colour={rightColour}>
-                {newLineno}
+                {newNumber}
               </LineNumberCell>
 
               <ContentCell row={row} colour={rightColour}>

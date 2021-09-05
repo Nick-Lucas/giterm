@@ -7,11 +7,11 @@ import { colours } from 'app/lib/theme'
 export const Files = ({ patches, filePath, onChange }) => {
   const colourByIndex = useMemo(() => {
     return patches.map((file) => {
-      if (file.isAdded) {
+      if (file.isNew) {
         return colours.TEXT.POSITIVE
       } else if (file.isDeleted) {
         return colours.TEXT.NEGATIVE
-      } else if (file.isModified) {
+      } else {
         return colours.TEXT.ACTION
       }
     })
@@ -22,11 +22,11 @@ export const Files = ({ patches, filePath, onChange }) => {
       {patches.map((patch, i) => {
         return (
           <List.Row
-            active={patch.newFilePath === filePath}
-            key={patch.newFilePath}
-            onClick={() => onChange(patch.newFilePath)}>
+            active={patch.newName === filePath}
+            key={patch.newName}
+            onClick={() => onChange(patch.newName)}>
             <List.Label trimStart colour={colourByIndex[i]}>
-              {patch.newFilePath}
+              {patch.newName}
             </List.Label>
           </List.Row>
         )

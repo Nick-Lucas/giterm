@@ -24,11 +24,7 @@ export function DiffPanel() {
     <StyledPanel>
       <LowerPanelMenu />
 
-      <Files
-        patches={diff.patches}
-        filePath={filePath}
-        onChange={setFilePath}
-      />
+      <Files patches={diff.files} filePath={filePath} onChange={setFilePath} />
 
       <Diff filePatch={filePatch} />
     </StyledPanel>

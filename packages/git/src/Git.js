@@ -454,8 +454,15 @@ export class Git {
   }
 
   /**
+   * @typedef DiffResult
+   * @property { {insertions: number, deletions: number, filesChanges: number} } stats
+   * @property {import("diff2html/lib-esm/types").DiffFile[]} files
+   */
+
+  /**
    * @param {string} shaOld
    * @param {string} shaNew
+   * @returns {Promise<DiffResult>}
    */
   getDiffFromShas = async (
     shaNew,
@@ -490,13 +497,14 @@ export class Git {
     }
 
     const patchText = await spawn(cmd)
-
-    const diff = this._processDiff2(patchText)
-    console.log('DIFF', diff)
+    const diff = this._processDiff(patchText)
 
     return diff
   }
 
+  /**
+   * @returns {Promise<DiffResult>}
+   */
   getDiffFromIndex = async ({ contextLines }) => {
     const spawn = await this.getSpawn()
     if (!spawn) {
@@ -506,17 +514,13 @@ export class Git {
     const cmd = ['diff', '--unified=' + contextLines]
 
     const patchText = await spawn(cmd)
-
-    const diff = this._processDiff2(patchText)
-    console.log('DIFF', diff)
+    const diff = this._processDiff(patchText)
 
     return diff
   }
 
-  _processDiff2 = (diffText) => {
+  _processDiff = (diffText) => {
     const files = parse(diffText)
-
-    console.info('PARSED', files)
 
     return {
       stats: {
@@ -527,108 +531,7 @@ export class Git {
           0,
         ),
       },
-      patches: files.map((file) => {
-        /** @param {import("diff2html/lib-esm/types").DiffLine} line */
-        function lineToLine(line) {
-          return {
-            content: line.content,
-            contentLen: line.content.length,
-            contentOffset: 0, // FIXME: is this needed?
-            newLineno: line.newNumber,
-            // numLines: line.numLines, // TODO: is this needed?
-            oldLineno: line.oldNumber,
-            // origin: line.origin,  // TODO: is this needed?
-            // rawContent: line.rawContent,  // TODO: is this needed?
-          }
-        }
-
-        return {
-          hunks: file.blocks.map((block) => {
-            return {
-              header: block.header,
-              headerLen: block.header.length,
-              newLines: [], //block.lines.filter(line => line.type == LineType.INSERT),
-              newStart: block.newStartLine,
-              oldLines: block.oldLines,
-              oldStart: block.oldStartLine, // TODO: oldStartLine2 exists, does it matter?
-              size: block.lines.length, // FIXME: probably not correct compared to nodegit impl, does it matter?
-              lines: block.lines.map(lineToLine),
-            }
-          }),
-          status: 'NO_STATUS_DEFINED', // FIXME: is this needed?
-          oldFilePath: file.oldName,
-          newFilePath: file.newName,
-          isAdded: file.isNew,
-          isDeleted: file.isDeleted,
-          isModified: !file.isNew && !file.isDeleted,
-        }
-      }),
-    }
-  }
-
-  /**
-   * @param {NodeGit.Diff} diff
-   */
-  _processDiff = async (diff) => {
-    const stats = await diff.getStats()
-    const _patches = await diff.patches()
-
-    const patches = await Promise.all(
-      _patches.map(async (patch) => {
-        const oldFilePath = patch.oldFile().path()
-        const newFilePath = patch.newFile().path()
-        const status = patch.status()
-        const isAdded = patch.isAdded()
-        const isDeleted = patch.isDeleted()
-        const isModified = patch.isModified()
-
-        return {
-          hunks: await Promise.all(
-            (await patch.hunks()).map(async (hunk) => {
-              return {
-                header: hunk.header(),
-                headerLen: hunk.headerLen(),
-                newLines: hunk.newLines(),
-                newStart: hunk.newStart(),
-                oldLines: hunk.oldLines(),
-                oldStart: hunk.oldStart(),
-                size: hunk.size(),
-                lines: (await hunk.lines()).map((line) => {
-                  return {
-                    content: line.content(),
-                    contentLen: line.contentLen(),
-                    contentOffset: line.contentOffset(),
-                    newLineno: line.newLineno(),
-                    numLines: line.numLines(),
-                    oldLineno: line.oldLineno(),
-                    origin: line.origin(),
-                    rawContent: line.rawContent(),
-                  }
-                }),
-              }
-            }),
-          ),
-          status,
-          oldFilePath,
-          newFilePath,
-          isAdded,
-          isDeleted,
-          isModified,
-        }
-      }),
-    )
-
-    // Later we new NodeGit.DiffLine in order to stage/unstage
-    // repo.stageFilemode
-    // repo.stageLines
-
-    return {
-      stats: {
-        insertions: stats.insertions(),
-        filesChanged: stats.filesChanged(),
-        deletions: stats.deletions(),
-      },
-      patches,
+      files,
     }
   }
 }
