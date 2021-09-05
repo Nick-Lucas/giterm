@@ -5,6 +5,11 @@ export function alpha(hex, amount = 0) {
     .alpha(amount)
     .toString()
 }
+export function lighten(hex, amount = 0) {
+  return Color(hex, 'hex')
+    .lighten(amount)
+    .toString()
+}
 
 export const GRAPH_NODES = [
   '#058ED9',
@@ -41,5 +46,7 @@ export const PILL = {
   BG: 'rgba(255, 255, 255, 0.6)',
   BG_ACTIVE: 'rgba(200, 255, 200, 0.8)',
   BG_WARNING: '#E5A823',
-  FG: 'rgba(0, 0, 0, 0.5)',
+  BG_ERROR: '#A60053',
+  FG: 'rgba(0, 0, 0, 0.75)',
+  FG_LIGHT: TEXT.DEFAULT,
 }

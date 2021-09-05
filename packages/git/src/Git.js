@@ -3,14 +3,16 @@ import simpleGit from 'simple-git'
 import { parse } from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
+
 import { createHash } from 'crypto'
 
+import fs from 'fs'
 import { spawn } from 'child_process'
 
 import repoResolver from './repo-resolver'
 import { IsoGit } from './IsoGit'
 
-import { STATE } from './constants'
+import { STATE, STATE_FILES } from './constants'
 
 const PROFILING = true
 function perfStart(name) {
@@ -32,6 +34,17 @@ export class Git {
     this._simple = null
     this._complex = null
     this._watcher = null
+  }
+
+  getGitDir = async () => {
+    const dir = path.join(this.cwd, '.git')
+
+    const exists = fs.existsSync(dir)
+    if (!exists) {
+      return null
+    }
+
+    return dir
   }
 
   getSimple = () => {
@@ -56,7 +69,6 @@ export class Git {
     return simple
   }
 
-  getComplex = () => null
   getIsoGit = () => {
     if (!this._isogit) {
       if (this.cwd === '/') {
@@ -107,30 +119,46 @@ export class Git {
   // methods
   // **********************
 
+  /**
+   * Loosely based on libgit2: `git_repository_state`
+   * https://github.com/libgit2/libgit2/blob/3addb796d392ff6bbd3917a48d81848d40821c5b/src/repository.c#L2956
+   */
   async getStateText() {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const gitDir = await this.getGitDir()
+    if (!gitDir) {
       return STATE.NO_REPO // 'No Repository'
     }
 
-    if (repo.isRebasing()) {
-      return STATE.REBASING // 'Rebasing'
+    const exists = (fileOrDir) => fs.existsSync(path.join(gitDir, fileOrDir))
+
+    if (exists(STATE_FILES.REBASE_MERGE_INTERACTIVE_FILE)) {
+      return STATE.REBASING
     }
-    if (repo.isMerging()) {
-      return STATE.MERGING // 'Merging'
+    if (exists(STATE_FILES.REBASE_MERGE_DIR)) {
+      return STATE.REBASING
     }
-    if (repo.isCherrypicking()) {
-      return STATE.CHERRY_PICKING // 'Cherry Picking'
+    if (exists(STATE_FILES.REBASE_APPLY_REBASING_FILE)) {
+      return STATE.REBASING
     }
-    if (repo.isReverting()) {
-      return STATE.REVERTING // 'Reverting'
+    if (exists(STATE_FILES.REBASE_APPLY_APPLYING_FILE)) {
+      return STATE.APPLYING_MAILBOX
     }
-    if (repo.isBisecting()) {
-      return STATE.BISECTING // 'Bisecting'
+    if (exists(STATE_FILES.REBASE_APPLY_DIR)) {
+      return STATE.REBASING
     }
-    if (repo.isApplyingMailbox()) {
-      return STATE.APPLYING_MAILBOX // 'Applying Mailbox'
+    if (exists(STATE_FILES.MERGE_HEAD_FILE)) {
+      return STATE.MERGING
     }
+    if (exists(STATE_FILES.REVERT_HEAD_FILE)) {
+      return STATE.REVERTING
+    }
+    if (exists(STATE_FILES.CHERRYPICK_HEAD_FILE)) {
+      return STATE.CHERRY_PICKING
+    }
+    if (exists(STATE_FILES.BISECT_LOG_FILE)) {
+      return STATE.BISECTING
+    }
+
     return STATE.OK // 'OK'
   }
 

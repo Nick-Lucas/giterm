@@ -105,7 +105,7 @@ export const _Row = ({
     const pairedRefs = []
     for (const localBranch of localBranches) {
       const upstreamBranchIndex = upstreamBranches.findIndex(
-        (other) => other.id === localBranch.upstream?.name,
+        (other) => other.id === localBranch.upstream?.id,
       )
 
       if (upstreamBranchIndex >= 0) {
