@@ -49,7 +49,6 @@ export function useDiffData({ contextLines = 5 } = {}) {
   }, [contextLines, cwd, mode, shaNew, shaOld])
 
   const filePath = useMemo(() => {
-    // TODO: is this correct logic?
     if (
       !_filePath ||
       !diff?.files?.some((patch) => patch.newName === _filePath)
