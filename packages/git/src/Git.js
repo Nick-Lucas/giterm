@@ -1,7 +1,6 @@
 import _ from 'lodash'
 import simpleGit from 'simple-git'
 import { parse } from 'diff2html'
-import { LineType } from 'diff2html/lib-esm/types'
 import chokidar from 'chokidar'
 import path from 'path'
 import { createHash } from 'crypto'
@@ -286,18 +285,23 @@ export class Git {
   }
 
   getAllRemotes = async () => {
-    const repo = await this.getComplex()
-    if (!repo) {
+    const spawn = await this.getSpawn()
+    if (!spawn) {
       return []
     }
 
-    const remotes = await repo.getRemotes()
+    const cmd = ['remote']
 
-    return remotes.map((remote) => {
-      return {
-        name: remote.name(),
-      }
-    })
+    const output = await spawn(cmd)
+
+    return output
+      .split(/\r\n|\r|\n/g)
+      .filter(Boolean)
+      .map((remote) => {
+        return {
+          name: remote,
+        }
+      })
   }
 
   loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
