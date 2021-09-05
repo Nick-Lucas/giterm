@@ -19,7 +19,7 @@ stages:
     steps:
     - task: UseNode@1
       inputs:
-        version: '10.x'
+        version: '14.x'
         checkLatest: true
     - publish: $(Build.SourcesDirectory)
       artifact: SourceCode
@@ -44,7 +44,7 @@ stages:
     steps:
     - task: UseNode@1
       inputs:
-        version: '10.x'
+        version: '14.x'
         checkLatest: true
     - task: DownloadSecureFile@1
       displayName: Download Application Signing Certificate
@@ -75,7 +75,7 @@ stages:
     steps:
     - task: UseNode@1
       inputs:
-        version: '10.x'
+        version: '14.x'
         checkLatest: true
     - script: |
         sudo apt install libkrb5-dev
@@ -99,7 +99,7 @@ stages:
     steps:
     - task: UseNode@1
       inputs:
-        version: '10.x'
+        version: '14.x'
         checkLatest: true
     - script: |
         yarn install --network-timeout=100000
