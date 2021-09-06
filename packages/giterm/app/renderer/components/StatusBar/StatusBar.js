@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
 import styled from 'styled-components'
-import { ArrowUp, ArrowDown } from 'react-feather'
+import { Activity, GitBranch, Cloud, ArrowUp, ArrowDown } from 'react-feather'
 
 import { StatusBarItem } from './StatusBarItem'
 import { showRemoteBranches } from 'app/store/config/actions'
@@ -57,29 +57,49 @@ export function StatusBar() {
   ])
 
   const isAheadBehind =
-    currentBranch?.upstream.ahead > 0 ||
-    currentBranch?.upstream.behind > 0 ||
+    currentBranch?.upstream?.ahead > 0 ||
+    currentBranch?.upstream?.behind > 0 ||
     false
 
   return (
     <Wrapper>
       <Pill.Container>
+        <Pill.Segment {...stateProps}>
+          <Activity size={15} style={{ marginBottom: '1px' }} />
+        </Pill.Segment>
+
         <Pill.Segment width="6rem" {...stateProps}>
           <Pill.Content>{stateText}</Pill.Content>
         </Pill.Segment>
       </Pill.Container>
 
       <Pill.Container>
-        {currentBranch?.upstream && (
-          <Pill.Segment warning={isAheadBehind}>
-            <ArrowUp size={15} />
-            {currentBranch?.upstream.ahead}
-            <ArrowDown size={15} />
-            {currentBranch?.upstream.behind}
+        <Pill.Segment>
+          <GitBranch size={15} />
+        </Pill.Segment>
+
+        {currentBranch?.upstream && isAheadBehind ? (
+          <Pill.Segment warning>
+            {currentBranch?.upstream.ahead > 0 && (
+              <>
+                <ArrowUp size={15} />
+                {currentBranch?.upstream.ahead}
+              </>
+            )}
+            {currentBranch?.upstream.behind > 0 && (
+              <>
+                <ArrowDown size={15} />
+                {currentBranch?.upstream.behind}
+              </>
+            )}
+          </Pill.Segment>
+        ) : (
+          <Pill.Segment>
+            <Cloud size={15} />
           </Pill.Segment>
         )}
 
-        <Pill.Segment current={!isAheadBehind && currentBranch?.name}>
+        <Pill.Segment>
           <Pill.Content>{currentBranch?.name ?? 'No Branch'}</Pill.Content>
         </Pill.Segment>
       </Pill.Container>
