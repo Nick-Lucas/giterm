@@ -136,4 +136,38 @@ describe('Git', () => {
     it.todo('is reverting')
     it.todo('is bisecting')
   })
+
+  describe('getHeadSHA', () => {
+    it('works for no repo', async () => {
+      // await spawn(['init'])
+      const git = new Git(dir)
+      const sha = await git.getHeadSHA()
+      expect(sha).toBe('')
+    })
+
+    it('returns sha on branch', async () => {
+      await spawn(['init'])
+      writeFile('f1', 'abc')
+      const commitSha = await commit('Initial commit')
+
+      const git = new Git(dir)
+      const sha = await git.getHeadSHA()
+      expect(sha).toHaveLength(40)
+      expect(sha).toBe(commitSha)
+    })
+
+    it('returns sha when detached', async () => {
+      await spawn(['init'])
+      writeFile('f1', 'abc')
+      await commit('Initial commit')
+      writeFile('f1', 'abcd')
+      const commitSha = await commit('Second commit')
+      await spawn(['checkout', commitSha])
+
+      const git = new Git(dir)
+      const sha = await git.getHeadSHA()
+      expect(sha).toHaveLength(40)
+      expect(sha).toBe(commitSha)
+    })
+  })
 })

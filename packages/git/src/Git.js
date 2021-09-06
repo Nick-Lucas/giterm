@@ -170,7 +170,7 @@ export class Git {
 
     const sha = await spawn(['show', '--format=%H', '-s', 'HEAD'])
 
-    return sha
+    return sha.trim()
   }
 
   getAllBranches = async () => {
