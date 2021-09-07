@@ -1,5 +1,5 @@
 import { takeLatest, call, put, select } from 'redux-saga/effects'
-import { commitsUpdated, REACHED_END_OF_LIST, CHECKOUT_COMMIT } from './actions'
+import { commitsUpdated, REACHED_END_OF_LIST } from './actions'
 
 import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from 'app/store/config/actions'
 import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
@@ -38,14 +38,6 @@ function* reloadCommits(action) {
   yield put(commitsUpdated(nextCommits, digest))
 }
 
-function* checkoutCommit(action) {
-  const cwd = yield select((state) => state.config.cwd)
-  const git = new Git(cwd)
-
-  const { sha } = action
-  yield call(() => git.checkout(sha))
-}
-
 export function* watch() {
   yield takeLatest(
     [
@@ -57,5 +49,4 @@ export function* watch() {
     ],
     sentrySafeWrapper(reloadCommits),
   )
-  yield takeLatest([CHECKOUT_COMMIT], sentrySafeWrapper(checkoutCommit))
 }

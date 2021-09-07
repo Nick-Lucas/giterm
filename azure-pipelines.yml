@@ -33,6 +33,10 @@ stages:
         yarn lint
       displayName: Lint
     - script: |
+        # Support git CLI usage in tests
+        git config --global user.email \"test@example.com\"
+        git config --global user.name \"Test\"
+
         yarn test
       displayName: Unit Tests
 

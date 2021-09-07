@@ -1,16 +1,13 @@
 import React, { useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { RightClickArea } from 'app/lib/primitives'
 import { clipboard } from 'electron'
 
-import { checkoutCommit } from 'app/store/commits/actions'
 import { Row } from './Row'
 import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 
 export function Commit({ index, style, onClick, isSelected, columns }) {
-  const dispatch = useDispatch()
-
   const branchesBySha = useSelector((state) => state.branches.bySha)
   const tagsBySha = useSelector((state) => state.tags.bySha)
   const { nodes, links } = useSelector((state) => state.graph)
@@ -26,9 +23,6 @@ export function Commit({ index, style, onClick, isSelected, columns }) {
     },
     [commit, onClick],
   )
-  const handleCheckoutCommit = useCallback(() => {
-    dispatch(checkoutCommit(commit.sha))
-  }, [commit.sha, dispatch])
 
   const refsForCommit = useMemo(
     () => [
@@ -78,8 +72,7 @@ export function Commit({ index, style, onClick, isSelected, columns }) {
       key={commit.sha}
       menuItems={menuItems}
       style={style}
-      onClick={handleClick}
-      onDoubleClick={handleCheckoutCommit}>
+      onClick={handleClick}>
       <Row
         commit={commit}
         columns={columns}
