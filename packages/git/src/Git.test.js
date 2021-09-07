@@ -596,4 +596,45 @@ describe('Git', () => {
       })
     })
   })
+
+  describe('getAllRemotes', () => {
+    it('has no repo', async () => {
+      const git = new Git(dir)
+
+      const remotes = await git.getAllRemotes()
+      expect(remotes).toEqual([])
+    })
+
+    it('has no remotes', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      const remotes = await git.getAllRemotes()
+      expect(remotes).toEqual([])
+    })
+
+    it('has one remote', async () => {
+      await spawn(['init'])
+      const remoteUri = await createRemote()
+      await spawn(['remote', 'add', 'origin', remoteUri])
+      const git = new Git(dir)
+
+      const remotes = await git.getAllRemotes()
+      expect(remotes).toEqual([{ name: 'origin' }])
+    })
+
+    it('has many remotes', async () => {
+      await spawn(['init'])
+      const remoteUri = await createRemote()
+      await spawn(['remote', 'add', 'origin', remoteUri])
+      const remoteUri2 = await createRemote()
+      await spawn(['remote', 'add', 'my-fork', remoteUri2])
+      const git = new Git(dir)
+
+      const remotes = await git.getAllRemotes()
+      expect(remotes).toEqual(
+        expect.arrayContaining([{ name: 'origin' }, { name: 'my-fork' }]),
+      )
+    })
+  })
 })
