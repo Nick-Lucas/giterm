@@ -37,7 +37,7 @@ describe('Git', () => {
 
   function rmFile(name) {
     const filePath = path.join(dir, name)
-    if (fs.existsSync(filePath)) {
+    if (!fs.existsSync(filePath)) {
       throw new `'${name}' does not exist in dir ${dir}`()
     }
 
@@ -78,13 +78,13 @@ describe('Git', () => {
 
       // We create a rebase conflict between two branches
       await spawn(['checkout', '-b', 'branch-a'])
-      writeFile('f1', 'abc')
+      writeFile('f1.txt', 'abc')
       await commit('First Commit')
       await spawn(['checkout', '-b', 'branch-b'])
-      writeFile('f1', 'cba')
+      writeFile('f1.txt', 'cba')
       await commit('Second Commit')
       await spawn(['checkout', 'branch-a'])
-      writeFile('f1', 'abccba')
+      writeFile('f1.txt', 'abccba')
       await commit('Third Commit')
       await spawn(['rebase', 'branch-b'])
 
@@ -98,13 +98,13 @@ describe('Git', () => {
 
       // We create a merge conflict between two branches
       await spawn(['checkout', '-b', 'branch-a'])
-      writeFile('f1', 'abc')
+      writeFile('f1.txt', 'abc')
       await commit('First Commit')
       await spawn(['checkout', '-b', 'branch-b'])
-      writeFile('f1', 'cba')
+      writeFile('f1.txt', 'cba')
       await commit('Second Commit')
       await spawn(['checkout', 'branch-a'])
-      writeFile('f1', 'abccba')
+      writeFile('f1.txt', 'abccba')
       await commit('Third Commit')
       await spawn(['merge', 'branch-b'])
 
@@ -118,13 +118,13 @@ describe('Git', () => {
 
       // We create a merge conflict between two branches
       await spawn(['checkout', '-b', 'branch-a'])
-      writeFile('f1', 'abc')
+      writeFile('f1.txt', 'abc')
       await commit('First Commit')
       await spawn(['checkout', '-b', 'branch-b'])
-      writeFile('f1', 'cba')
+      writeFile('f1.txt', 'cba')
       await commit('Second Commit')
       await spawn(['checkout', 'branch-a'])
-      writeFile('f1', 'abccba')
+      writeFile('f1.txt', 'abccba')
       await commit('Third Commit')
       await spawn(['cherry-pick', 'branch-b'])
 
@@ -139,7 +139,6 @@ describe('Git', () => {
 
   describe('getHeadSHA', () => {
     it('works for no repo', async () => {
-      // await spawn(['init'])
       const git = new Git(dir)
       const sha = await git.getHeadSHA()
       expect(sha).toBe('')
@@ -147,7 +146,7 @@ describe('Git', () => {
 
     it('returns sha on branch', async () => {
       await spawn(['init'])
-      writeFile('f1', 'abc')
+      writeFile('f1.txt', 'abc')
       const commitSha = await commit('Initial commit')
 
       const git = new Git(dir)
@@ -158,9 +157,9 @@ describe('Git', () => {
 
     it('returns sha when detached', async () => {
       await spawn(['init'])
-      writeFile('f1', 'abc')
+      writeFile('f1.txt', 'abc')
       await commit('Initial commit')
-      writeFile('f1', 'abcd')
+      writeFile('f1.txt', 'abcd')
       const commitSha = await commit('Second commit')
       await spawn(['checkout', commitSha])
 
@@ -168,6 +167,141 @@ describe('Git', () => {
       const sha = await git.getHeadSHA()
       expect(sha).toHaveLength(40)
       expect(sha).toBe(commitSha)
+    })
+  })
+
+  describe('getStatus', () => {
+    it('works for no repo', async () => {
+      const git = new Git(dir)
+
+      const status = await git.getStatus()
+      expect(status).toEqual([])
+    })
+
+    it.each(['staged', 'unstaged'])('lists %s new file', async (stagedKey) => {
+      await spawn(['init'])
+      const git = new Git(dir)
+      writeFile('f1.txt', 'abcdefg')
+      if (stagedKey === 'staged') {
+        await spawn(['add', '--all'])
+      }
+
+      const status = await git.getStatus()
+
+      delete status[0].raw
+      expect(status).toEqual([
+        {
+          path: 'f1.txt',
+          staged: stagedKey === 'staged',
+          unstaged: stagedKey === 'unstaged',
+          isNew: true,
+          isDeleted: false,
+          isModified: false,
+        },
+      ])
+    })
+
+    it.each(['staged', 'unstaged'])(
+      'lists %s modified file',
+      async (stagedKey) => {
+        await spawn(['init'])
+        const git = new Git(dir)
+
+        writeFile('f1.txt', 'abcdefg')
+        await commit('Initial Commit')
+        writeFile('f1.txt', 'abcdef')
+        if (stagedKey === 'staged') {
+          await spawn(['add', '--all'])
+        }
+
+        const status = await git.getStatus()
+
+        delete status[0].raw
+        expect(status).toEqual([
+          {
+            path: 'f1.txt',
+            staged: stagedKey === 'staged',
+            unstaged: stagedKey === 'unstaged',
+            isNew: false,
+            isDeleted: false,
+            isModified: true,
+          },
+        ])
+      },
+    )
+
+    it.each(['staged', 'unstaged'])(
+      'lists %s deleted file',
+      async (stagedKey) => {
+        await spawn(['init'])
+        const git = new Git(dir)
+
+        writeFile('f1.txt', 'abcdefg')
+        await commit('Initial Commit')
+        rmFile('f1.txt')
+        if (stagedKey === 'staged') {
+          await spawn(['add', '--all'])
+        }
+
+        const status = await git.getStatus()
+
+        delete status[0].raw
+        expect(status).toEqual([
+          {
+            path: 'f1.txt',
+            staged: stagedKey === 'staged',
+            unstaged: stagedKey === 'unstaged',
+            isNew: false,
+            isDeleted: true,
+            isModified: false,
+          },
+        ])
+      },
+    )
+
+    it('lists a combination of files', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('f1.txt', 'abcdefg')
+      writeFile('f2.txt', 'abcdefg')
+      writeFile('f3.txt', 'abcdefg')
+      await commit('Initial Commit')
+      rmFile('f1.txt')
+      writeFile('f2.txt', 'abc')
+      writeFile('f4.txt', 'jnasd')
+
+      const status = await git.getStatus()
+
+      for (const file of status) {
+        delete file.raw
+      }
+      expect(status).toEqual([
+        {
+          path: 'f1.txt',
+          staged: false,
+          unstaged: true,
+          isNew: false,
+          isDeleted: true,
+          isModified: false,
+        },
+        {
+          path: 'f2.txt',
+          staged: false,
+          unstaged: true,
+          isNew: false,
+          isDeleted: false,
+          isModified: true,
+        },
+        {
+          path: 'f4.txt',
+          staged: false,
+          unstaged: true,
+          isNew: true,
+          isDeleted: false,
+          isModified: false,
+        },
+      ])
     })
   })
 })

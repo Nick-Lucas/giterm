@@ -36,7 +36,7 @@ export class Git {
     this._watcher = null
   }
 
-  getGitDir = async () => {
+  _getGitDir = async () => {
     const dir = path.join(this.cwd, '.git')
 
     const exists = fs.existsSync(dir)
@@ -47,7 +47,7 @@ export class Git {
     return dir
   }
 
-  getSimple = () => {
+  _getSimple = () => {
     if (!this._simple) {
       if (this.cwd === '/') {
         return null
@@ -69,7 +69,7 @@ export class Git {
     return simple
   }
 
-  getIsoGit = () => {
+  _getIsoGit = () => {
     if (!this._isogit) {
       if (this.cwd === '/') {
         return null
@@ -87,7 +87,7 @@ export class Git {
     return this._isogit
   }
 
-  getSpawn = async () => {
+  _getSpawn = async () => {
     if (this.cwd === '/') {
       return null
     }
@@ -124,7 +124,7 @@ export class Git {
    * https://github.com/libgit2/libgit2/blob/3addb796d392ff6bbd3917a48d81848d40821c5b/src/repository.c#L2956
    */
   async getStateText() {
-    const gitDir = await this.getGitDir()
+    const gitDir = await this._getGitDir()
     if (!gitDir) {
       return STATE.NO_REPO // 'No Repository'
     }
@@ -163,7 +163,7 @@ export class Git {
   }
 
   getHeadSHA = async () => {
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return ''
     }
@@ -174,7 +174,7 @@ export class Git {
   }
 
   getAllBranches = async () => {
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return []
     }
@@ -261,7 +261,7 @@ export class Git {
   }
 
   getAllTags = async () => {
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return []
     }
@@ -313,7 +313,7 @@ export class Git {
   }
 
   getAllRemotes = async () => {
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return []
     }
@@ -338,7 +338,7 @@ export class Git {
       return [[], '']
     }
 
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return [[], '']
     }
@@ -412,7 +412,7 @@ export class Git {
 
   // FIXME: does not work, but also onDoubleClick on Commit is not working due to a conflict with onClick
   checkout = async (sha) => {
-    const simple = this.getSimple()
+    const simple = this._getSimple()
     if (!simple) {
       return
     }
@@ -430,7 +430,7 @@ export class Git {
   }
 
   getStatus = async () => {
-    const ig = this.getIsoGit()
+    const ig = this._getIsoGit()
     if (!ig) {
       return []
     }
@@ -501,7 +501,7 @@ export class Git {
     shaOld = null,
     { contextLines = 10 } = {},
   ) => {
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return null
     }
@@ -538,7 +538,7 @@ export class Git {
    * @returns {Promise<DiffResult>}
    */
   getDiffFromIndex = async ({ contextLines }) => {
-    const spawn = await this.getSpawn()
+    const spawn = await this._getSpawn()
     if (!spawn) {
       return null
     }
