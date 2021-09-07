@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import simpleGit from 'simple-git'
 import { parse } from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
@@ -45,28 +44,6 @@ export class Git {
     }
 
     return dir
-  }
-
-  _getSimple = () => {
-    if (!this._simple) {
-      if (this.cwd === '/') {
-        return null
-      }
-
-      try {
-        perfStart('GIT/open-simple')
-        this._simple = simpleGit(this.cwd)
-        perfEnd('GIT/open-simple')
-      } catch (err) {
-        console.error(err)
-        this._simple = null
-      }
-    }
-
-    /** @type {import("simple-git/typings/simple-git").SimpleGit} */
-    const simple = this._simple
-
-    return simple
   }
 
   _getIsoGit = () => {
@@ -408,25 +385,6 @@ export class Git {
     perfEnd('GIT/digest-finalise')
 
     return [commits, digest]
-  }
-
-  // FIXME: does not work, but also onDoubleClick on Commit is not working due to a conflict with onClick
-  checkout = async (sha) => {
-    const simple = this._getSimple()
-    if (!simple) {
-      return
-    }
-
-    const branches = await this.getAllBranches()
-    const branch = branches.find((b) => {
-      return b.headSHA === sha
-    })
-
-    if (branch) {
-      simple.checkoutBranch(branch.name)
-    } else {
-      simple.checkout(sha)
-    }
   }
 
   getStatus = async () => {
