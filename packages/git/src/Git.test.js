@@ -7,21 +7,27 @@ import { STATE } from './constants'
 
 const tmp = os.tmpdir()
 
-const getSpawn = (cwd) => async (args) => {
+const getSpawn = (cwd) => async (args, { errorOnNonZeroExit = true } = {}) => {
   const buffers = []
+  const stderr = []
   const child = child_process.spawn('git', args, { cwd })
 
-  return new Promise((resolve) => {
+  return new Promise((resolve, reject) => {
     child.stdout.on('data', (data) => {
       buffers.push(data)
     })
 
     child.stderr.on('data', (data) => {
       buffers.push(data)
+      stderr.push(data)
     })
 
-    child.on('close', () => {
-      resolve(String(Buffer.concat(buffers)))
+    child.on('close', (code) => {
+      if (code != 0 && errorOnNonZeroExit) {
+        reject(String(Buffer.concat(stderr)))
+      } else {
+        resolve(String(Buffer.concat(buffers)))
+      }
     })
   })
 }
@@ -50,6 +56,16 @@ describe('Git', () => {
     const sha = await spawn([`rev-parse`, `HEAD`])
 
     return sha.trim()
+  }
+
+  async function createRemote() {
+    const remoteDir = fs.mkdtempSync(path.join(tmp, 'giterm-git-remote-'))
+    const remoteFile = 'remote.git'
+
+    const remoteSpawn = getSpawn(remoteDir)
+    await remoteSpawn(['init', '--bare', remoteFile])
+
+    return path.join(remoteDir, remoteFile)
   }
 
   beforeEach(async () => {
@@ -86,7 +102,7 @@ describe('Git', () => {
       await spawn(['checkout', 'branch-a'])
       writeFile('f1.txt', 'abccba')
       await commit('Third Commit')
-      await spawn(['rebase', 'branch-b'])
+      await spawn(['rebase', 'branch-b'], { errorOnNonZeroExit: false })
 
       const result = await git.getStateText()
       expect(result).toBe(STATE.REBASING)
@@ -106,7 +122,7 @@ describe('Git', () => {
       await spawn(['checkout', 'branch-a'])
       writeFile('f1.txt', 'abccba')
       await commit('Third Commit')
-      await spawn(['merge', 'branch-b'])
+      await spawn(['merge', 'branch-b'], { errorOnNonZeroExit: false })
 
       const result = await git.getStateText()
       expect(result).toBe(STATE.MERGING)
@@ -126,7 +142,7 @@ describe('Git', () => {
       await spawn(['checkout', 'branch-a'])
       writeFile('f1.txt', 'abccba')
       await commit('Third Commit')
-      await spawn(['cherry-pick', 'branch-b'])
+      await spawn(['cherry-pick', 'branch-b'], { errorOnNonZeroExit: false })
 
       const result = await git.getStateText()
       expect(result).toBe(STATE.CHERRY_PICKING)
@@ -302,6 +318,245 @@ describe('Git', () => {
           isModified: false,
         },
       ])
+    })
+  })
+
+  describe('getAllBranches', () => {
+    it('works for no repo', async () => {
+      const git = new Git(dir)
+
+      const branches = await git.getAllBranches()
+      expect(branches).toEqual([])
+    })
+
+    it('lists branches', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('f1.txt', 'abc')
+      await spawn(['checkout', '-b', 'branch-a'])
+      await commit('Initial Commit')
+      await spawn(['checkout', '-b', 'branch-b'])
+
+      // Note: git doesn't create an initial branch until the first commit
+      // So to avoid global config issues for this test we initialise branch-a as the initial branch name
+      const branches = await git.getAllBranches()
+
+      expect(
+        branches.map((b) => ({
+          ...b,
+          authorDate: undefined,
+          date: undefined,
+          headSHA: undefined,
+        })),
+      ).toEqual([
+        {
+          authorDate: undefined,
+          date: undefined,
+          headSHA: undefined,
+          id: 'refs/heads/branch-a',
+          isHead: false,
+          isRemote: false,
+          name: 'branch-a',
+          upstream: null,
+        },
+        {
+          authorDate: undefined,
+          date: undefined,
+          headSHA: undefined,
+          id: 'refs/heads/branch-b',
+          isHead: true,
+          isRemote: false,
+          name: 'branch-b',
+          upstream: null,
+        },
+      ])
+
+      // Check that the deleted variable data meets correct rules
+      for (const branch of branches) {
+        expect(branch.authorDate).toHaveLength(10)
+        expect(branch.date).toHaveLength(10)
+        expect(branch.headSHA).toHaveLength(40)
+      }
+    })
+
+    describe('with remote', () => {
+      beforeEach(async () => {
+        await spawn(['init'])
+
+        writeFile('f1.txt', 'abc')
+        await spawn(['checkout', '-b', 'branch-a'])
+        await commit('Initial Commit')
+        await spawn(['checkout', '-b', 'branch-b'])
+
+        const remoteUri = await createRemote()
+        await spawn(['remote', 'add', 'origin', remoteUri])
+        await spawn(['push', '--set-upstream', 'origin', 'branch-b'])
+      })
+
+      it('lists branches with upstream', async () => {
+        const git = new Git(dir)
+
+        const branches = await git.getAllBranches()
+
+        expect(
+          branches.map((b) => ({
+            ...b,
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+          })),
+        ).toEqual([
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/heads/branch-a',
+            isHead: false,
+            isRemote: false,
+            name: 'branch-a',
+            upstream: null,
+          },
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/heads/branch-b',
+            isHead: true,
+            isRemote: false,
+            name: 'branch-b',
+            upstream: {
+              ahead: 0,
+              behind: 0,
+              id: 'refs/remotes/origin/branch-b',
+              name: 'origin/branch-b',
+            },
+          },
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/remotes/origin/branch-b',
+            isHead: false,
+            isRemote: true,
+            name: 'origin/branch-b',
+            upstream: null,
+          },
+        ])
+
+        // Check that the deleted variable data meets correct rules
+        for (const branch of branches) {
+          expect(branch.authorDate).toHaveLength(10)
+          expect(branch.date).toHaveLength(10)
+          expect(branch.headSHA).toHaveLength(40)
+        }
+      })
+
+      it('is behind upstream', async () => {
+        const git = new Git(dir)
+        await spawn(['branch', '--delete', 'branch-a'])
+
+        writeFile('f2.txt', 'ahead')
+        await commit('Pushed Commit')
+        await spawn(['push'])
+        await spawn(['reset', '--hard', 'HEAD~1'])
+
+        const branches = await git.getAllBranches()
+
+        expect(
+          branches.map((b) => ({
+            ...b,
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+          })),
+        ).toEqual([
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/heads/branch-b',
+            isHead: true,
+            isRemote: false,
+            name: 'branch-b',
+            upstream: {
+              ahead: 0,
+              behind: 1,
+              id: 'refs/remotes/origin/branch-b',
+              name: 'origin/branch-b',
+            },
+          },
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/remotes/origin/branch-b',
+            isHead: false,
+            isRemote: true,
+            name: 'origin/branch-b',
+            upstream: null,
+          },
+        ])
+
+        // Check that the deleted variable data meets correct rules
+        for (const branch of branches) {
+          expect(branch.authorDate).toHaveLength(10)
+          expect(branch.date).toHaveLength(10)
+          expect(branch.headSHA).toHaveLength(40)
+        }
+      })
+
+      it('is ahead of upstream', async () => {
+        const git = new Git(dir)
+        await spawn(['branch', '--delete', 'branch-a'])
+
+        writeFile('f2.txt', 'ahead')
+        await commit('Unpushed Commit')
+
+        const branches = await git.getAllBranches()
+
+        expect(
+          branches.map((b) => ({
+            ...b,
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+          })),
+        ).toEqual([
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/heads/branch-b',
+            isHead: true,
+            isRemote: false,
+            name: 'branch-b',
+            upstream: {
+              ahead: 1,
+              behind: 0,
+              id: 'refs/remotes/origin/branch-b',
+              name: 'origin/branch-b',
+            },
+          },
+          {
+            authorDate: undefined,
+            date: undefined,
+            headSHA: undefined,
+            id: 'refs/remotes/origin/branch-b',
+            isHead: false,
+            isRemote: true,
+            name: 'origin/branch-b',
+            upstream: null,
+          },
+        ])
+
+        // Check that the deleted variable data meets correct rules
+        for (const branch of branches) {
+          expect(branch.authorDate).toHaveLength(10)
+          expect(branch.date).toHaveLength(10)
+          expect(branch.headSHA).toHaveLength(40)
+        }
+      })
     })
   })
 })
