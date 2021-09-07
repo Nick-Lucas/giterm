@@ -19,12 +19,13 @@ const getSpawn = (cwd) => async (args, { errorOnNonZeroExit = true } = {}) => {
 
     child.stderr.on('data', (data) => {
       buffers.push(data)
-      stderr.push(data)
     })
 
     child.on('close', (code) => {
       if (code != 0 && errorOnNonZeroExit) {
-        reject(String(Buffer.concat(stderr)))
+        const text = String(Buffer.concat(buffers))
+        console.error(text)
+        reject(text)
       } else {
         resolve(String(Buffer.concat(buffers)))
       }
@@ -342,34 +343,21 @@ describe('Git', () => {
       // So to avoid global config issues for this test we initialise branch-a as the initial branch name
       const branches = await git.getAllBranches()
 
-      expect(
-        branches.map((b) => ({
-          ...b,
-          authorDate: undefined,
-          date: undefined,
-          headSHA: undefined,
-        })),
-      ).toEqual([
-        {
-          authorDate: undefined,
-          date: undefined,
-          headSHA: undefined,
+      expect(branches).toEqual([
+        expect.objectContaining({
           id: 'refs/heads/branch-a',
           isHead: false,
           isRemote: false,
           name: 'branch-a',
           upstream: null,
-        },
-        {
-          authorDate: undefined,
-          date: undefined,
-          headSHA: undefined,
+        }),
+        expect.objectContaining({
           id: 'refs/heads/branch-b',
           isHead: true,
           isRemote: false,
           name: 'branch-b',
           upstream: null,
-        },
+        }),
       ])
 
       // Check that the deleted variable data meets correct rules
@@ -399,28 +387,15 @@ describe('Git', () => {
 
         const branches = await git.getAllBranches()
 
-        expect(
-          branches.map((b) => ({
-            ...b,
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
-          })),
-        ).toEqual([
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+        expect(branches).toEqual([
+          expect.objectContaining({
             id: 'refs/heads/branch-a',
             isHead: false,
             isRemote: false,
             name: 'branch-a',
             upstream: null,
-          },
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+          }),
+          expect.objectContaining({
             id: 'refs/heads/branch-b',
             isHead: true,
             isRemote: false,
@@ -431,17 +406,14 @@ describe('Git', () => {
               id: 'refs/remotes/origin/branch-b',
               name: 'origin/branch-b',
             },
-          },
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+          }),
+          expect.objectContaining({
             id: 'refs/remotes/origin/branch-b',
             isHead: false,
             isRemote: true,
             name: 'origin/branch-b',
             upstream: null,
-          },
+          }),
         ])
 
         // Check that the deleted variable data meets correct rules
@@ -463,18 +435,8 @@ describe('Git', () => {
 
         const branches = await git.getAllBranches()
 
-        expect(
-          branches.map((b) => ({
-            ...b,
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
-          })),
-        ).toEqual([
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+        expect(branches).toEqual([
+          expect.objectContaining({
             id: 'refs/heads/branch-b',
             isHead: true,
             isRemote: false,
@@ -485,17 +447,14 @@ describe('Git', () => {
               id: 'refs/remotes/origin/branch-b',
               name: 'origin/branch-b',
             },
-          },
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+          }),
+          expect.objectContaining({
             id: 'refs/remotes/origin/branch-b',
             isHead: false,
             isRemote: true,
             name: 'origin/branch-b',
             upstream: null,
-          },
+          }),
         ])
 
         // Check that the deleted variable data meets correct rules
@@ -515,18 +474,8 @@ describe('Git', () => {
 
         const branches = await git.getAllBranches()
 
-        expect(
-          branches.map((b) => ({
-            ...b,
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
-          })),
-        ).toEqual([
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+        expect(branches).toEqual([
+          expect.objectContaining({
             id: 'refs/heads/branch-b',
             isHead: true,
             isRemote: false,
@@ -537,17 +486,14 @@ describe('Git', () => {
               id: 'refs/remotes/origin/branch-b',
               name: 'origin/branch-b',
             },
-          },
-          {
-            authorDate: undefined,
-            date: undefined,
-            headSHA: undefined,
+          }),
+          expect.objectContaining({
             id: 'refs/remotes/origin/branch-b',
             isHead: false,
             isRemote: true,
             name: 'origin/branch-b',
             upstream: null,
-          },
+          }),
         ])
 
         // Check that the deleted variable data meets correct rules
@@ -555,6 +501,97 @@ describe('Git', () => {
           expect(branch.authorDate).toHaveLength(10)
           expect(branch.date).toHaveLength(10)
           expect(branch.headSHA).toHaveLength(40)
+        }
+      })
+    })
+  })
+
+  describe('getAllTags', () => {
+    it('works for no repo', async () => {
+      const git = new Git(dir)
+
+      const tags = await git.getAllTags()
+      expect(tags).toEqual([])
+    })
+
+    it('shows local tags', async () => {
+      await spawn(['init'])
+      writeFile('f1.txt', 'abc')
+      const sha1 = await commit('First Commit')
+      writeFile('f2.txt', 'abc')
+      const sha2 = await commit('Second Commit')
+
+      const git = new Git(dir)
+
+      await spawn(['checkout', sha1])
+      await spawn(['tag', 'tag1'])
+      await spawn(['checkout', sha2])
+      await spawn(['tag', 'tag2'])
+
+      const tags = await git.getAllTags()
+      expect(tags).toEqual([
+        expect.objectContaining({
+          headSHA: sha1,
+          id: 'refs/tags/tag1',
+          name: 'tag1',
+        }),
+        expect.objectContaining({
+          headSHA: sha2,
+          id: 'refs/tags/tag2',
+          name: 'tag2',
+        }),
+      ])
+
+      // Check that the deleted variable data meets correct rules
+      for (const tag of tags) {
+        expect(tag.authorDate).toHaveLength(10)
+        expect(tag.date).toHaveLength(10)
+      }
+    })
+
+    describe('with remote', () => {
+      let sha1, sha2
+      const branchName = 'main'
+
+      beforeEach(async () => {
+        await spawn(['init'])
+        await spawn(['checkout', '-b', branchName])
+
+        writeFile('f1.txt', 'abc')
+        sha1 = await commit('First Commit')
+        writeFile('f2.txt', 'abc')
+        sha2 = await commit('Second Commit')
+
+        const remoteUri = await createRemote()
+        await spawn(['remote', 'add', 'origin', remoteUri])
+        await spawn(['push', '--set-upstream', 'origin', branchName])
+
+        await spawn(['checkout', sha1])
+        await spawn(['tag', 'tag1'])
+        await spawn(['checkout', branchName])
+        await spawn(['tag', 'tag2'])
+        await spawn(['push', '--tags'])
+      })
+
+      it('only local tags are listed', async () => {
+        // Remove tag1 locally
+        await spawn(['tag', '-d', 'tag1'])
+
+        const git = new Git(dir)
+
+        const tags = await git.getAllTags()
+        expect(tags).toEqual([
+          expect.objectContaining({
+            headSHA: sha2,
+            id: 'refs/tags/tag2',
+            name: 'tag2',
+          }),
+        ])
+
+        // Check that the deleted variable data meets correct rules
+        for (const tag of tags) {
+          expect(tag.authorDate).toHaveLength(10)
+          expect(tag.date).toHaveLength(10)
         }
       })
     })
