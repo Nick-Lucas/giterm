@@ -9,7 +9,6 @@ const tmp = os.tmpdir()
 
 const getSpawn = (cwd) => async (args, { errorOnNonZeroExit = true } = {}) => {
   const buffers = []
-  const stderr = []
   const child = child_process.spawn('git', args, { cwd })
 
   return new Promise((resolve, reject) => {

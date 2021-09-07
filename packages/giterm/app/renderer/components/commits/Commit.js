@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useSelector } from 'react-redux'
 import PropTypes from 'prop-types'
 import { RightClickArea } from 'app/lib/primitives'
 import { clipboard } from 'electron'
@@ -8,8 +8,6 @@ import { Row } from './Row'
 import { REF_TYPE_BRANCH, REF_TYPE_REMOTE_BRANCH, REF_TYPE_TAG } from './props'
 
 export function Commit({ index, style, onClick, isSelected, columns }) {
-  const dispatch = useDispatch()
-
   const branchesBySha = useSelector((state) => state.branches.bySha)
   const tagsBySha = useSelector((state) => state.tags.bySha)
   const { nodes, links } = useSelector((state) => state.graph)
