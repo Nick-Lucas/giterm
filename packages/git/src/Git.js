@@ -100,7 +100,7 @@ export class Git {
    * Loosely based on libgit2: `git_repository_state`
    * https://github.com/libgit2/libgit2/blob/3addb796d392ff6bbd3917a48d81848d40821c5b/src/repository.c#L2956
    */
-  async getStateText() {
+  getStateText = async () => {
     const gitDir = await this._getGitDir()
     if (!gitDir) {
       return STATE.NO_REPO // 'No Repository'
