@@ -8,7 +8,7 @@
     "plugin:import/errors",
     "plugin:import/warnings"
   ],
-  "parser": "@babel/eslint-parser",
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true,
@@ -55,6 +55,15 @@
     "react": {
       "pragma": "React",
       "version": "16.9"
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": [
+          "packages/*/tsconfig.json",
+          "packages/*/jsconfig.json"
+        ]
+      }
     }
   },
   "env": {

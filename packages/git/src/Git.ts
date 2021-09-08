@@ -8,7 +8,7 @@ import { createHash } from 'crypto'
 import fs from 'fs'
 import { spawn } from 'child_process'
 
-import {resolveRepo} from './resolve-repo'
+import { resolveRepo } from './resolve-repo'
 import { IsoGit } from './IsoGit'
 
 import { STATE, STATE_FILES } from './constants'
@@ -26,11 +26,15 @@ if (process.env.NODE_ENV !== 'development' || !PROFILING) {
   perfEnd = function() {}
 }
 
-
-export type WatcherEvent = 'add'|'unlink'|'change'|'repo-create'|'repo-remove'
+export type WatcherEvent =
+  | 'add'
+  | 'unlink'
+  | 'change'
+  | 'repo-create'
+  | 'repo-remove'
 export type WatcherCallback = (data: {
-  event: string,
-  ref: string,
+  event: string
+  ref: string
   isRemote: boolean
 }) => void
 
@@ -116,7 +120,8 @@ export class Git {
       return STATE.NO_REPO // 'No Repository'
     }
 
-    const exists = (fileOrDir: string) => fs.existsSync(path.join(gitDir, fileOrDir))
+    const exists = (fileOrDir: string) =>
+      fs.existsSync(path.join(gitDir, fileOrDir))
 
     if (exists(STATE_FILES.REBASE_MERGE_INTERACTIVE_FILE)) {
       return STATE.REBASING
@@ -319,7 +324,11 @@ export class Git {
       })
   }
 
-  loadAllCommits = async (showRemote: boolean, startIndex = 0, number = 500) => {
+  loadAllCommits = async (
+    showRemote: boolean,
+    startIndex = 0,
+    number = 500,
+  ) => {
     const headSha = await this.getHeadSHA()
     if (!headSha) {
       return [[], '']
@@ -407,7 +416,6 @@ export class Git {
   }
 
   watchRefs = (callback: WatcherCallback) => {
-
     const cwd = this.cwd === '/' ? this.rawCwd : this.cwd
     const gitDir = path.join(cwd, '.git')
     const refsPath = path.join(gitDir, 'refs')
@@ -467,7 +475,7 @@ export class Git {
    */
   getDiffFromShas = async (
     shaNew: string,
-    shaOld: string|null = null,
+    shaOld: string | null = null,
     { contextLines = 10 } = {},
   ) => {
     const spawn = await this._getSpawn()

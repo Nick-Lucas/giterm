@@ -4,7 +4,7 @@
   "description": "Wrapper for Git operations",
   "license": "UNLICENSED",
   "private": true,
-  "module": "dist/index.module.js",
+  "module": "dist/git.module.js",
   "scripts": {
     "build": "microbundle --target node -f es --tsconfig=tsconfig.app.json",
     "dev": "yarn run build -w"
