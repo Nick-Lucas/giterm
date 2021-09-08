@@ -1,4 +1,12 @@
 {
   "extends": "./tsconfig.json",
-  "include": ["src/**/*.test.js", "src/**/*.test.ts"]
+  "compilerOptions": {
+    "noEmit": true
+  },
+  "include": ["src/**/*.test.js", "src/**/*.test.ts"],
+  "typeAcquisition": {
+    "include": [
+      "@types/jest"
+    ]
+  }
 }

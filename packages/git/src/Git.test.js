@@ -204,7 +204,6 @@ describe('Git', () => {
 
       const status = await git.getStatus()
 
-      delete status[0].raw
       expect(status).toEqual([
         {
           path: 'f1.txt',

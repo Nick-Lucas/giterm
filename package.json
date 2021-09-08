@@ -15,6 +15,7 @@
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.4",
+    "@types/jest": "^27.0.1",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-import-resolver-alias": "^1.1.2",
@@ -27,6 +28,7 @@
     "jest": "^27.1.0",
     "rimraf": "^3.0.2",
     "run-script-os": "^1.1.1",
+    "ts-jest": "^27.0.5",
     "tslib": "^2.3.1",
     "typescript": "^4.4.2",
     "wsrun": "^5.2.1"
