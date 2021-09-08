@@ -27,8 +27,16 @@ const stage = {
   differentToWorkdir: 3,
 }
 
+interface Props {
+  fs: typeof fs
+  dir: string
+  gitdir: string
+}
+
 export class IsoGit {
-  constructor(dir) {
+  props: Props
+
+  constructor(dir: string) {
     this.props = {
       fs: fs,
       dir: dir,
@@ -39,7 +47,7 @@ export class IsoGit {
   status = async () => {
     // Docs: https://isomorphic-git.org/docs/en/statusMatrix
     const matrix = await igit.statusMatrix({
-      ...this.props,
+      ...this.props
     })
 
     return matrix

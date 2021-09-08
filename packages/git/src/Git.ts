@@ -8,16 +8,16 @@ import { createHash } from 'crypto'
 import fs from 'fs'
 import { spawn } from 'child_process'
 
-import repoResolver from './repo-resolver'
+import {resolveRepo} from './resolve-repo'
 import { IsoGit } from './IsoGit'
 
 import { STATE, STATE_FILES } from './constants'
 
 const PROFILING = true
-function perfStart(name) {
+let perfStart = (name: string) => {
   performance.mark(name + '/start')
 }
-function perfEnd(name) {
+let perfEnd = (name: string) => {
   performance.mark(name + '/end')
   performance.measure(name, name + '/start', name + '/end')
 }
@@ -26,13 +26,23 @@ if (process.env.NODE_ENV !== 'development' || !PROFILING) {
   perfEnd = function() {}
 }
 
+
+export type WatcherEvent = 'add'|'unlink'|'change'|'repo-create'|'repo-remove'
+export type WatcherCallback = (data: {
+  event: string,
+  ref: string,
+  isRemote: boolean
+}) => void
+
 export class Git {
-  constructor(cwd) {
+  rawCwd: string
+  cwd: string
+  _watcher: chokidar.FSWatcher | null = null
+  _isogit: IsoGit | null = null
+
+  constructor(cwd: string) {
     this.rawCwd = cwd
-    this.cwd = repoResolver(cwd)
-    this._simple = null
-    this._complex = null
-    this._watcher = null
+    this.cwd = resolveRepo(cwd)
   }
 
   _getGitDir = async () => {
@@ -69,8 +79,8 @@ export class Git {
       return null
     }
 
-    return async (args) => {
-      const buffers = []
+    return async (args: string[]): Promise<string> => {
+      const buffers: Buffer[] = []
       const child = spawn('git', args, { cwd: this.cwd })
 
       return new Promise((resolve, reject) => {
@@ -106,7 +116,7 @@ export class Git {
       return STATE.NO_REPO // 'No Repository'
     }
 
-    const exists = (fileOrDir) => fs.existsSync(path.join(gitDir, fileOrDir))
+    const exists = (fileOrDir: string) => fs.existsSync(path.join(gitDir, fileOrDir))
 
     if (exists(STATE_FILES.REBASE_MERGE_INTERACTIVE_FILE)) {
       return STATE.REBASING
@@ -210,8 +220,8 @@ export class Git {
         upstream = {
           id: upstreamId,
           name: upstreamName,
-          ahead: parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? 0),
-          behind: parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? 0),
+          ahead: parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? '0'),
+          behind: parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? '0'),
         }
       }
 
@@ -309,8 +319,8 @@ export class Git {
       })
   }
 
-  loadAllCommits = async (showRemote, startIndex = 0, number = 500) => {
-    const headSha = this.getHeadSHA()
+  loadAllCommits = async (showRemote: boolean, startIndex = 0, number = 500) => {
+    const headSha = await this.getHeadSHA()
     if (!headSha) {
       return [[], '']
     }
@@ -331,7 +341,7 @@ export class Git {
       showRemote && '--remotes=*',
       `--skip=${startIndex}`,
       `--max-count=${number}`,
-    ].filter(Boolean)
+    ].filter(Boolean) as string[]
 
     perfStart('GIT/log/spawn')
     const result = await spawn(cmd)
@@ -396,7 +406,8 @@ export class Git {
     return await ig.status()
   }
 
-  watchRefs = (callback) => {
+  watchRefs = (callback: WatcherCallback) => {
+
     const cwd = this.cwd === '/' ? this.rawCwd : this.cwd
     const gitDir = path.join(cwd, '.git')
     const refsPath = path.join(gitDir, 'refs')
@@ -413,8 +424,8 @@ export class Git {
     })
 
     // Watch individual refs
-    function processChange(event) {
-      return (path) =>
+    function processChange(event: WatcherEvent) {
+      return (path: string) =>
         void callback({
           event,
           ref: path,
@@ -426,8 +437,8 @@ export class Git {
     watcher.on('change', processChange('change'))
 
     // Watch for repo destruction and creation
-    function repoChange(event) {
-      return function(path) {
+    function repoChange(event: WatcherEvent) {
+      return function(path: string) {
         if (path === 'refs') {
           processChange(event)(path)
         }
@@ -455,8 +466,8 @@ export class Git {
    * @returns {Promise<DiffResult>}
    */
   getDiffFromShas = async (
-    shaNew,
-    shaOld = null,
+    shaNew: string,
+    shaOld: string|null = null,
     { contextLines = 10 } = {},
   ) => {
     const spawn = await this._getSpawn()
@@ -495,7 +506,7 @@ export class Git {
   /**
    * @returns {Promise<DiffResult>}
    */
-  getDiffFromIndex = async ({ contextLines }) => {
+  getDiffFromIndex = async ({ contextLines = 5 }) => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
@@ -509,7 +520,7 @@ export class Git {
     return diff
   }
 
-  _processDiff = (diffText) => {
+  _processDiff = (diffText: string) => {
     const files = parse(diffText)
 
     return {
