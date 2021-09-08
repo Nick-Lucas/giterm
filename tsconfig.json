@@ -1,0 +1,16 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "checkJs": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "incremental": true,
+    "module": "ESNext",
+    "target": "ES2020"
+  },
+  "typeAcquisition": {
+    "enable": true
+  }
+}
