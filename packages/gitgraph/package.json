@@ -4,11 +4,10 @@
   "description": "Calculates a stable graph data structure for building git GUI applications",
   "license": "UNLICENSED",
   "private": true,
-  "source": "src/index.js",
-  "main": "dist/index.js",
-  "module": "dist/index.module.js",
+  "main": "dist/gitgraph.js",
+  "module": "dist/gitgraph.module.js",
   "scripts": {
-    "build": "microbundle --target node -f modern,es,cjs",
+    "build": "microbundle --target node -f es,cjs",
     "dev": "yarn run build -w"
   },
   "dependencies": {
