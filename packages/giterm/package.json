@@ -11,8 +11,8 @@
   "repository": "",
   "license": "UNLICENSED",
   "scripts": {
-    "dev": "npm run private:compile && run-p -r private:watch private:serve",
-    "dev:nowatch": "NOWATCH=true npm run private:compile && npm run private:serve",
+    "dev": "yarn run private:compile && run-p -r private:watch private:serve",
+    "dev:nowatch": "NOWATCH=true yarn run private:compile && yarn run private:serve",
     "pack:mac": "run-s private:clean private:compile private:build:mac",
     "pack:win": "run-s private:clean private:compile private:build:win",
     "pack:linux": "run-s private:clean private:compile private:build:linux",
@@ -22,9 +22,9 @@
     "private:build:mac": "electron-builder --mac --publish=never",
     "private:build:win": "electron-builder --win --publish=never",
     "private:build:linux": "electron-builder --linux --publish=never",
-    "private:watch": "npm run private:compile --watch",
+    "private:watch": "yarn run private:compile --watch --skip-initial-build",
     "private:serve": "babel-node scripts/serve.js",
-    "private:compile": "babel app/ --copy-files --out-dir build/",
+    "private:compile": "babel app/ --copy-files --out-dir build/ --source-maps",
     "private:clean": "rimraf build"
   },
   "dependencies": {

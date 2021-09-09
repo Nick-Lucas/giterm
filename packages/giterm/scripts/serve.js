@@ -1,7 +1,7 @@
 import { spawn } from 'child_process'
 import electron from 'electron'
 import browserSync from 'browser-sync'
-import browserSyncConnectUtils from 'browser-sync/dist/connect-utils.js'
+import browserSyncConnectUtils from 'browser-sync/dist/connect-utils'
 
 const bsync = browserSync.create()
 
@@ -31,7 +31,9 @@ bsync.init(
     },
   },
   (err, bs) => {
-    if (err) return console.error(err)
+    if (err) {
+      return console.error('bsync error', err)
+    }
 
     const child = spawn(electron, ['.', '--enable-logging'], {
       env: {
@@ -50,7 +52,11 @@ bsync.init(
 
     if (!process.env.NOWATCH) {
       bsync.watch('build/**/*').on('change', bsync.reload)
-      // bsync.watch('../../node_modules/@giterm/**/*').on('change', bsync.reload)
+      bsync
+        .watch('../../node_modules/@giterm/**/dist/**/*', {
+          followSymlinks: true,
+        })
+        .on('change', bsync.reload)
     }
   },
 )

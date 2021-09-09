@@ -412,7 +412,12 @@ export class Git {
       return []
     }
 
-    return await ig.status()
+    try {
+      perfStart('GIT/getStatus')
+      return await ig.status()
+    } finally {
+      perfEnd('GIT/getStatus')
+    }
   }
 
   watchRefs = (callback: WatcherCallback) => {
