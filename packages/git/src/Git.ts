@@ -21,6 +21,17 @@ let perfEnd = (name: string) => {
   performance.mark(name + '/end')
   performance.measure(name, name + '/start', name + '/end')
 }
+const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
+  name: string,
+  func: F,
+): F => {
+  return async function(...args: A): Promise<R> {
+    perfStart(name)
+    const result = await func(...args)
+    perfEnd(name)
+    return result
+  } as F
+}
 if (process.env.NODE_ENV !== 'development' || !PROFILING) {
   perfStart = function() {}
   perfEnd = function() {}
@@ -47,6 +58,19 @@ export class Git {
   constructor(cwd: string) {
     this.rawCwd = cwd
     this.cwd = resolveRepo(cwd)
+
+    // Instrument all methods on this class
+    const instance = this as Record<string, any>
+    for (const key in Object.getOwnPropertyDescriptors(instance)) {
+      if (
+        key.startsWith('_') || // Don't care about internals
+        key === 'watchRefs' || // Disable this one. It should be extracted out at some point
+        typeof instance[key] !== 'function' // Only care about functions
+      ) {
+        continue
+      }
+      instance[key] = perfTrace(`GIT/${key}`, instance[key])
+    }
   }
 
   _getGitDir = async () => {
@@ -412,15 +436,10 @@ export class Git {
       return []
     }
 
-    try {
-      perfStart('GIT/getStatus')
-      return await ig.status()
-    } finally {
-      perfEnd('GIT/getStatus')
-    }
+    return await ig.status()
   }
 
-  watchRefs = (callback: WatcherCallback) => {
+  watchRefs = (callback: WatcherCallback): (() => void) => {
     const cwd = this.cwd === '/' ? this.rawCwd : this.cwd
     const gitDir = path.join(cwd, '.git')
     const refsPath = path.join(gitDir, 'refs')
