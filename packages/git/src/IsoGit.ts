@@ -34,11 +34,11 @@ interface Props {
 }
 
 export interface FileStatus {
-  path: string,
-  staged: boolean,
-  unstaged: boolean,
-  isNew: boolean,
-  isDeleted: boolean,
+  path: string
+  staged: boolean
+  unstaged: boolean
+  isNew: boolean
+  isDeleted: boolean
   isModified: boolean
 }
 
@@ -56,7 +56,7 @@ export class IsoGit {
   status = async (): Promise<FileStatus[]> => {
     // Docs: https://isomorphic-git.org/docs/en/statusMatrix
     const matrix = await igit.statusMatrix({
-      ...this.props
+      ...this.props,
     })
 
     return matrix
@@ -95,7 +95,7 @@ export class IsoGit {
           unstaged: unstaged,
           isNew: isNew,
           isDeleted: isDeleted,
-          isModified: isModified
+          isModified: isModified,
         }
       })
   }
