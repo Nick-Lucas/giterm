@@ -32,13 +32,6 @@ const installExtensions = async () => {
   }
 }
 
-// crashReporter.start({
-//   productName: 'YourName',
-//   companyName: 'YourCompany',
-//   submitURL: 'https://your-domain.com/url-to-submit',
-//   uploadToServer: false,
-// })
-
 app.allowRendererProcessReuse = false
 
 app.on('window-all-closed', () => {
