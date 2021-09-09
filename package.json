@@ -11,7 +11,7 @@
     "lint": "eslint .",
     "test": "jest",
     "test:dev": "yarn run test --watch",
-    "clean": "rimraf **/node_modules/ **/dist/"
+    "clean": "rimraf **/node_modules/ **/dist/ **/build/"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.4",
