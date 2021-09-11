@@ -176,7 +176,7 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
         const cwd = await getCWD(ptyProcess.pid)
         dispatch(terminalChanged(cwd))
       },
-      150,
+      2000,
       { leading: true, trailing: true },
     )
 
