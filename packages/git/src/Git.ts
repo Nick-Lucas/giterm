@@ -9,7 +9,6 @@ import fs from 'fs'
 import { spawn } from 'child_process'
 
 import { resolveRepo } from './resolve-repo'
-import { IsoGit } from './IsoGit'
 
 import { STATE, STATE_FILES } from './constants'
 
@@ -49,6 +48,15 @@ export type WatcherCallback = (data: {
   isRemote: boolean
 }) => void
 
+export interface StatusFile {
+  path: string
+  staged: boolean
+  unstaged: boolean
+  isNew: boolean
+  isDeleted: boolean
+  isModified: boolean
+}
+
 export class Git {
   rawCwd: string
   cwd: string
@@ -82,24 +90,6 @@ export class Git {
     }
 
     return dir
-  }
-
-  _getIsoGit = () => {
-    if (!this._isogit) {
-      if (this.cwd === '/') {
-        return null
-      }
-
-      try {
-        perfStart('GIT/open-complex')
-        this._isogit = new IsoGit(this.cwd)
-        perfEnd('GIT/open-complex')
-      } catch (err) {
-        console.error(err)
-        this._isogit = null
-      }
-    }
-    return this._isogit
   }
 
   _getSpawn = async () => {
@@ -430,13 +420,61 @@ export class Git {
     return [commits, digest]
   }
 
-  getStatus = async () => {
-    const ig = this._getIsoGit()
-    if (!ig) {
+  // TODO: before first commit, unstaged files will not show up, as DIFF cannot compare to the initial git repo
+  getStatus = async (): Promise<StatusFile[]> => {
+    const spawn = await this._getSpawn()
+    if (!spawn) {
       return []
     }
 
-    return await ig.status()
+    const mapWithStaged = (staged: boolean) => (output: string) =>
+      output
+        .trim()
+        .split(/\r\n|\r|\n/g)
+        .filter(Boolean)
+        .map((line) => ({
+          staged,
+          line: line.trim(),
+        }))
+
+    const stagedPromise = spawn(['diff', '--name-status', '--staged']).then(
+      mapWithStaged(true),
+    )
+    const unstagedPromise = spawn(['diff', '--name-status']).then(
+      mapWithStaged(false),
+    )
+
+    const results = await Promise.all([stagedPromise, unstagedPromise])
+    console.warn(JSON.stringify(results, null, 2))
+    return _(results)
+      .flatMap()
+      .map((file): StatusFile | null => {
+        type Op =
+          | 'A' // Added
+          | 'C' // Copied
+          | 'D' // Deleted
+          | 'M' // Modified
+          | 'R' // Renamed
+          | 'T' // Type changed
+          | 'U' // Unmerged
+          | 'X' // Unknown
+          | 'B' // Broken
+          | undefined
+
+        const operation = file.line.slice(0, 1) as Op
+        const filePath = file.line.slice(1).trim() as string
+
+        return {
+          path: filePath,
+          staged: file.staged,
+          unstaged: !file.staged,
+          isDeleted: operation === 'D',
+          isModified: operation === 'M',
+          isNew: operation === 'A',
+        }
+      })
+      .filter((file) => file != null)
+      .value() as StatusFile[]
   }
 
   watchRefs = (callback: WatcherCallback): (() => void) => {

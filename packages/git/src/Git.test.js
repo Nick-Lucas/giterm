@@ -196,6 +196,9 @@ describe('Git', () => {
 
     it.each(['staged', 'unstaged'])('lists %s new file', async (stagedKey) => {
       await spawn(['init'])
+      writeFile('init.txt', 'abcdefg')
+      await commit('Initial Commit')
+
       const git = new Git(dir)
       writeFile('f1.txt', 'abcdefg')
       if (stagedKey === 'staged') {
@@ -203,7 +206,7 @@ describe('Git', () => {
       }
 
       const status = await git.getStatus()
-
+      console.warn('DIR', dir)
       expect(status).toEqual([
         {
           path: 'f1.txt',
@@ -220,6 +223,9 @@ describe('Git', () => {
       'lists %s modified file',
       async (stagedKey) => {
         await spawn(['init'])
+        writeFile('init.txt', 'abcdefg')
+        await commit('Initial Commit')
+
         const git = new Git(dir)
 
         writeFile('f1.txt', 'abcdefg')
@@ -249,6 +255,9 @@ describe('Git', () => {
       'lists %s deleted file',
       async (stagedKey) => {
         await spawn(['init'])
+        writeFile('init.txt', 'abcdefg')
+        await commit('Initial Commit')
+
         const git = new Git(dir)
 
         writeFile('f1.txt', 'abcdefg')

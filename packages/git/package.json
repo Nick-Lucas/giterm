@@ -12,7 +12,6 @@
   },
   "dependencies": {
     "chokidar": "^3.3.1",
-    "isomorphic-git": "^1.10.0",
     "lodash": "^4.17.19",
     "moment": "^2.24.0",
     "simple-git": "^2.45.0"
