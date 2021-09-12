@@ -61,7 +61,6 @@ export class Git {
   rawCwd: string
   cwd: string
   _watcher: chokidar.FSWatcher | null = null
-  _isogit: IsoGit | null = null
 
   constructor(cwd: string) {
     this.rawCwd = cwd
@@ -420,32 +419,51 @@ export class Git {
     return [commits, digest]
   }
 
-  // TODO: before first commit, unstaged files will not show up, as DIFF cannot compare to the initial git repo
   getStatus = async (): Promise<StatusFile[]> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return []
     }
 
-    const mapWithStaged = (staged: boolean) => (output: string) =>
+    const mapWithStaged = (
+      staged: boolean,
+      onMapLine: (line: string) => string = (str) => str,
+    ) => (output: string) =>
       output
         .trim()
         .split(/\r\n|\r|\n/g)
         .filter(Boolean)
+        .map(onMapLine)
         .map((line) => ({
           staged,
           line: line.trim(),
         }))
 
-    const stagedPromise = spawn(['diff', '--name-status', '--staged']).then(
-      mapWithStaged(true),
-    )
-    const unstagedPromise = spawn(['diff', '--name-status']).then(
-      mapWithStaged(false),
-    )
+    const stagedPromise = spawn([
+      'diff',
+      '--name-status',
+      '--staged',
+      '--no-renames', // TODO: support renames & copied files, disabled for now as extra parsing logic is needed
+    ]).then(mapWithStaged(true))
+    const unstagedPromise = spawn([
+      'diff',
+      '--name-status',
+      '--no-renames', // TODO: support renames & copied files, disabled for now as extra parsing logic is needed
+    ]).then(mapWithStaged(false))
 
-    const results = await Promise.all([stagedPromise, unstagedPromise])
-    console.warn(JSON.stringify(results, null, 2))
+    // Git Diff cannot show untracked files, so they must be listed separately
+    const untrackedPromise = spawn([
+      'ls-files',
+      '--others',
+      '--exclude-standard',
+    ]).then(mapWithStaged(false, (line) => 'A       ' + line))
+
+    const results = await Promise.all([
+      stagedPromise,
+      unstagedPromise,
+      untrackedPromise,
+    ])
+
     return _(results)
       .flatMap()
       .map((file): StatusFile | null => {
