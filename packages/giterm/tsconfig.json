@@ -1,0 +1,24 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "CommonJS",
+    "paths": {
+      "app/*": ["./app/renderer/*"],
+      "@qflow/*": ["../*/src"]
+    }
+  },
+  "files": [],
+  "include": [],
+  "references": [
+    {
+      "path": "./tsconfig.app.json"
+    },
+    {
+      "path": "./tsconfig.test.json"
+    },
+  ]
+}

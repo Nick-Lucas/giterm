@@ -11,22 +11,30 @@
     "lint": "eslint .",
     "test": "jest",
     "test:dev": "yarn run test --watch",
-    "clean": "rimraf **/node_modules/ **/dist/"
+    "clean": "rimraf **/dist/ **/build/ **/node_modules/"
   },
   "devDependencies": {
     "@babel/eslint-parser": "^7.15.4",
+    "@types/jest": "^27.0.1",
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
     "eslint": "^7.32.0",
     "eslint-config-prettier": "^6.11.0",
     "eslint-import-resolver-alias": "^1.1.2",
+    "eslint-import-resolver-node": "^0.3.6",
+    "eslint-import-resolver-typescript": "^2.4.0",
     "eslint-plugin-import": "^2.22.0",
     "eslint-plugin-jest": "^23.18.0",
-    "eslint-plugin-prettier": "^3.1.4",
+    "eslint-plugin-prettier": "^4.0.0",
     "eslint-plugin-react": "^7.20.3",
     "eslint-plugin-react-hooks": "^4.2.0",
     "eslint-plugin-redux-saga": "^1.1.3",
     "jest": "^27.1.0",
     "rimraf": "^3.0.2",
     "run-script-os": "^1.1.1",
+    "ts-jest": "^27.0.5",
+    "tslib": "^2.3.1",
+    "typescript": "^4.4.2",
     "wsrun": "^5.2.1"
   }
 }

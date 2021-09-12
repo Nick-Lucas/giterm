@@ -1,0 +1,12 @@
+{
+  "extends": "./tsconfig.json",
+  "compilerOptions": {
+    "outDir": "dist"
+  },
+  "include": ["app/**/*.test.js", "app/**/*.test.ts"],
+  "typeAcquisition": {
+    "include": [
+      "@types/jest"
+    ]
+  }
+}

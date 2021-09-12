@@ -32,13 +32,6 @@ const installExtensions = async () => {
   }
 }
 
-// crashReporter.start({
-//   productName: 'YourName',
-//   companyName: 'YourCompany',
-//   submitURL: 'https://your-domain.com/url-to-submit',
-//   uploadToServer: false,
-// })
-
 app.allowRendererProcessReuse = false
 
 app.on('window-all-closed', () => {
@@ -76,9 +69,8 @@ app.on('ready', async () => {
 
   mainWindow.maximize()
 
-  mainWindow.loadFile(
-    path.resolve(path.join(__dirname, '../renderer/index.html')),
-  )
+  const html = path.join(__dirname, '../renderer/index.html')
+  mainWindow.loadFile(path.resolve(html))
 
   // show window once on first load
   mainWindow.webContents.once('did-finish-load', () => {

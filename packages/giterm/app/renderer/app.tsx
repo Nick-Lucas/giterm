@@ -20,16 +20,23 @@ import { ErrorBoundary } from '@sentry/react'
 const initialState = {}
 const routerHistory = createMemoryHistory()
 const store = configureStore(initialState)
-const history = syncHistoryWithStore(routerHistory, store)
+const history = syncHistoryWithStore(routerHistory as any, store)
 
-/**
- * @param {KeyboardEvent} ev
- * @param {KeyboardEvent.code} key
- */
+interface Modifiers {
+  ctrl: boolean
+  alt: boolean
+  meta: boolean
+  shift: boolean
+}
 function combo(
-  ev,
+  ev: KeyboardEvent,
   pressed = false,
-  { ctrl = false, alt = false, meta = false, shift = false } = {},
+  {
+    ctrl = false,
+    alt = false,
+    meta = false,
+    shift = false,
+  }: Partial<Modifiers> = {},
 ) {
   return (
     pressed &&
@@ -44,12 +51,12 @@ function combo(
 window.addEventListener(
   'keydown',
   (ev) => {
-    if (combo(ev, ev.code === 'Tab', { useCode: true, ctrl: true })) {
+    if (combo(ev, ev.code === 'Tab', { ctrl: true })) {
       store.dispatch(flipUserTerminalFullscreen())
       ev.stopImmediatePropagation()
       return
     }
-    if (combo(ev, ev.code === 'Digit1', { useCode: true, ctrl: true })) {
+    if (combo(ev, ev.code === 'Digit1', { ctrl: true })) {
       store.dispatch(diffToggleShow())
       ev.stopImmediatePropagation()
       return
@@ -78,13 +85,15 @@ window.addEventListener(
 )
 
 // DOM Init
-const rootElement = document.querySelector(
-  document.currentScript.getAttribute('data-container'),
-)
+const rootElementSelector = document.currentScript?.getAttribute(
+  'data-container',
+) as string
+const rootElement = document.querySelector(rootElementSelector)
+
 ReactDOM.render(
   <ErrorBoundary fallback="An error occurred and has been reported. Please restart the app">
     <Provider store={store}>
-      <Router history={history}>
+      <Router history={history as any}>
         <Switch>
           <Route exact path="/" component={Home} />
         </Switch>

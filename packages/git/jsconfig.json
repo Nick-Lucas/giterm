@@ -1,9 +1,0 @@
-{
-  "extends": "../../jsconfig.json",
-  "compilerOptions": {
-    "baseUrl": ".",
-    "paths": {
-      "@qflow/*": ["../*/src"]
-    }
-  }
-}

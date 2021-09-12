@@ -8,7 +8,7 @@
     "plugin:import/errors",
     "plugin:import/warnings"
   ],
-  "parser": "@babel/eslint-parser",
+  "parser": "@typescript-eslint/parser",
   "parserOptions": {
     "ecmaFeatures": {
       "jsx": true,
@@ -21,40 +21,83 @@
     "jest",
     "import",
     "react-hooks",
-    "redux-saga"
+    "redux-saga",
+    "@typescript-eslint"
   ],
-  "rules": {
-    "prefer-const": "warn",
-    "no-console": "off",
-    "no-loop-func": "warn",
-    "new-cap": "off",
-    "no-param-reassign": "off",
-    "func-names": "off",
-    "block-scoped-var": "error",
-    "react/prop-types": "off",
-    "prettier/prettier": "error",
-    "no-redeclare": "error",
-    "no-undef": "error",
-    "no-unused-vars": [
-      "error",
-      {
-        "ignoreRestSiblings": true
+  "overrides": [
+    {
+      "files": [
+        "*.ts",
+        "*.tsx",
+        "*.js",
+        "*.jsx"
+      ],
+      "rules": {
+        "prefer-const": "warn",
+        "no-console": "off",
+        "no-loop-func": "warn",
+        "new-cap": "off",
+        "no-param-reassign": "off",
+        "func-names": "off",
+        "block-scoped-var": "error",
+        "react/prop-types": "off",
+        "prettier/prettier": "error",
+        "no-redeclare": "error",
+        "no-undef": "error",
+        "no-unused-vars": [
+          "error",
+          {
+            "ignoreRestSiblings": true
+          }
+        ],
+        "react-hooks/rules-of-hooks": "error",
+        "react-hooks/exhaustive-deps": [
+          "error",
+          {
+            "enableDangerousAutofixThisMayCauseInfiniteLoops": true
+          }
+        ],
+        "redux-saga/yield-effects": "error",
+        "redux-saga/no-yield-in-race": "error"
       }
-    ],
-    "react-hooks/rules-of-hooks": "error",
-    "react-hooks/exhaustive-deps": [
-      "error",
-      {
-        "enableDangerousAutofixThisMayCauseInfiniteLoops": true
+    },
+    {
+      "files": [
+        "*.ts",
+        "*.tsx"
+      ],
+      "extends": [
+        "plugin:@typescript-eslint/recommended"
+      ],
+      "rules": {
+        "@typescript-eslint/no-empty-function": "off",
+        "@typescript-eslint/explicit-module-boundary-types": "off",
+        "@typescript-eslint/no-inferrable-types": "off",
+        "@typescript-eslint/no-explicit-any": "off"
       }
-    ],
-    "redux-saga/yield-effects": "error",
-    "redux-saga/no-yield-in-race": "error"
-  },
+    },
+    {
+      "files": [
+        "*.js",
+        "*.jsx"
+      ],
+      "extends": [],
+      "rules": {}
+    }
+  ],
   "settings": {
     "react": {
       "pragma": "React",
       "version": "16.9"
+    },
+    "import/resolver": {
+      "typescript": {
+        "alwaysTryTypes": true,
+        "project": [
+          "packages/*/tsconfig.json",
+          "packages/*/jsconfig.json"
+        ]
+      }
     }
   },
   "env": {

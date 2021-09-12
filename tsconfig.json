@@ -1,0 +1,17 @@
+{
+  "compileOnSave": true,
+  "compilerOptions": {
+    "allowJs": true,
+    "alwaysStrict": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    "incremental": true,
+    "module": "ESNext",
+    "target": "ES2020",
+    "moduleResolution": "node",
+    "resolveJsonModule": true
+  },
+  "typeAcquisition": {
+    "enable": true
+  }
+}

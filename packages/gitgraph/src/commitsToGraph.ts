@@ -1,6 +1,37 @@
 import _ from 'lodash'
 
-function commitToNode(commit, column, primaryColour, secondaryColour = null) {
+type PrimaryColour = number
+type SecondaryColour = number | null
+
+export interface Commit {
+  sha: string
+  parents: string[]
+}
+
+export interface Node {
+  type: 'node'
+  sha: string
+  primaryColour: PrimaryColour
+  secondaryColour: SecondaryColour
+  column: number
+}
+
+export interface Link {
+  x1: number
+  x2: number
+  colour: PrimaryColour
+  childSha: string
+  parentSha: string
+  nodeAtStart: boolean
+  nodeAtEnd: boolean
+}
+
+function commitToNode(
+  commit: Commit,
+  column: number,
+  primaryColour: PrimaryColour,
+  secondaryColour: SecondaryColour = null,
+): Node {
   return {
     type: 'node',
     sha: commit.sha,
@@ -11,13 +42,13 @@ function commitToNode(commit, column, primaryColour, secondaryColour = null) {
 }
 
 export function _link(
-  x1,
-  x2,
-  colour,
-  childSha,
-  parentSha,
+  x1: number,
+  x2: number,
+  colour: PrimaryColour,
+  childSha: string,
+  parentSha: string,
   { nodeAtStart = true, nodeAtEnd = true } = {},
-) {
+): Link {
   return {
     x1,
     x2,
@@ -29,15 +60,26 @@ export function _link(
   }
 }
 
+interface TrackedBranch {
+  isNode: boolean
+  sha: string
+  parentSha: string
+  orphan: boolean
+  parentFound: boolean
+  parentIndex: number
+  colour: PrimaryColour
+  symlink: number | null
+}
+
+type MaybeTrackedBranch = TrackedBranch | undefined
+
 class BranchTracker {
-  constructor() {
-    this._commitedLayer = []
-    this._workingLayer = []
-  }
+  _commitedLayer: MaybeTrackedBranch[] = []
+  _workingLayer: MaybeTrackedBranch[] = []
 
   /** Find the first child of a given sha, prioritised by its closeness by lineage */
-  findFirstChild = (parentSha) => {
-    const children = []
+  findFirstChild = (parentSha: string) => {
+    const children: [number, MaybeTrackedBranch][] = []
     for (const column in this._commitedLayer) {
       const trackedCommit = this._commitedLayer[column]
       if (trackedCommit && trackedCommit.parentSha === parentSha) {
@@ -47,7 +89,7 @@ class BranchTracker {
 
     const firstChild = _.first(
       _.sortBy(children, ([childColumn, child]) => [
-        child.parentIndex,
+        child?.parentIndex,
         childColumn,
       ]),
     )
@@ -56,7 +98,7 @@ class BranchTracker {
   }
 
   /** Mark all children as found for a given parent */
-  markParentFound = (parentSha) => {
+  markParentFound = (parentSha: string) => {
     for (const child of this._workingLayer) {
       if (child && child.parentSha === parentSha) {
         child.parentFound = true
@@ -67,10 +109,12 @@ class BranchTracker {
   /** Unassign all children which have been found from the tracker */
   immediatelyUnassignFoundColumns = () => {
     for (const index in this._workingLayer) {
-      if (!this._workingLayer[index]) {
+      const child = this._workingLayer[index]
+      if (child == undefined) {
         continue
       }
-      const { parentFound, orphan } = this._workingLayer[index]
+
+      const { parentFound, orphan } = child
       if (parentFound || orphan) {
         this._workingLayer[index] = undefined
       }
@@ -79,11 +123,11 @@ class BranchTracker {
 
   /** Update a child with its direct parent and look for its grand-parent instead */
   updateColumn = (
-    column,
-    parentSha,
-    commit,
-    colour,
-    { symlink = null } = {},
+    column: number,
+    parentSha: string,
+    commit: Commit,
+    colour: PrimaryColour,
+    { symlink = null }: { symlink: number | null } = { symlink: null },
   ) => {
     this._workingLayer[column] = {
       isNode: true,
@@ -100,7 +144,12 @@ class BranchTracker {
   }
 
   /** Assign a column to a newly found child and look for its parent */
-  assignColumn = (parentSha, commit, colour, { symlink = null } = {}) => {
+  assignColumn = (
+    parentSha: string,
+    commit: Commit,
+    colour: PrimaryColour,
+    { symlink = null }: { symlink: number | null } = { symlink: null },
+  ) => {
     let column = 0
     for (; column <= this._workingLayer.length; column++) {
       if (this._workingLayer[column] === undefined) {
@@ -161,38 +210,34 @@ class BranchTracker {
 }
 
 class ColourTracker {
-  constructor() {
-    this._colourIndex = -1
-  }
+  _colourIndex: number = -1
 
   next = () => ++this._colourIndex
 }
 
 class GraphState {
-  constructor() {
-    this.nodes = []
-    this.links = []
-    this._linksForNextRow = []
-  }
+  nodes: (Node | null)[] = []
+  links: Link[][] = []
+  _linksForNextRow: Link[] = []
 
-  setNode = (node) => {
+  setNode = (node: Node) => {
     this.nodes[this.nodes.length - 1] = node
   }
 
   /** Buffers a link which has been discovered for the next layer. Will be appended in the next layer */
-  addLinkForNextRow(link) {
+  addLinkForNextRow(link: Link) {
     this._linksForNextRow.push(link)
   }
 
   /** Once a parent is found, generated links from the current layer need updating to point to it */
-  setChildLinkDestinations(destinationNode) {
+  setChildLinkDestinations(destinationNode: Node) {
     if (_.last(this.nodes) !== destinationNode) {
       throw new Error(
         'Coding Error: destination node is not the latest node in the graph',
       )
     }
 
-    for (const link of _.last(this.links)) {
+    for (const link of _.last(this.links) as Link[]) {
       if (link.parentSha === destinationNode.sha) {
         link.nodeAtEnd = true
         link.x2 = destinationNode.column
@@ -201,7 +246,7 @@ class GraphState {
   }
 
   /** Prepare the graph for a new commit to be worked on */
-  prepareNextRow = (branchTracker) => {
+  prepareNextRow = (branchTracker: BranchTracker) => {
     // Finalise iteration
     if (this.nodes.length > 0 && _.last(this.nodes) == null) {
       throw new Error(
@@ -216,7 +261,7 @@ class GraphState {
     }
 
     // Move branch tracking foward and generate initial links
-    const autoLinks = branchTracker.next(this.nodes.length)
+    const autoLinks = branchTracker.next()
     const rowLinks = [...this._linksForNextRow, ...autoLinks]
 
     // Update state for next cycle
@@ -247,13 +292,16 @@ function rehydrate({
   }
 }
 
-export function commitsToGraph(commits = [], rehydrationPackage = {}) {
+export function commitsToGraph(
+  commits: Commit[] = [],
+  rehydrationPackage = {},
+) {
   const { graph, branchTracker, colours } = rehydrate(rehydrationPackage)
 
   for (const commit of commits) {
     graph.prepareNextRow(branchTracker)
 
-    function trackOtherParents(node) {
+    function trackOtherParents(node: Node) {
       branchTracker.immediatelyUnassignFoundColumns()
 
       const otherParentShas = commit.parents.slice(1)
@@ -262,7 +310,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
           parentSha,
         )
 
-        if (firstChild) {
+        if (firstChild && typeof firstChildColumn === 'number') {
           // If this is a merge in from another branch with a colour already chosen
           const colour = firstChild.colour
 
@@ -307,7 +355,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       return node
     }
 
-    function updateTrackedBranch(childColumn, child) {
+    function updateTrackedBranch(childColumn: number, child: TrackedBranch) {
       const colour = child.colour
 
       const node = commitToNode(commit, childColumn, colour)
@@ -324,12 +372,7 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
     }
 
     const [childColumn, child] = branchTracker.findFirstChild(commit.sha)
-    if (child == null) {
-      const node = trackNewBranch()
-      if (commit.parents.length > 1) {
-        trackOtherParents(node)
-      }
-    } else {
+    if (child != null && typeof childColumn === 'number') {
       branchTracker.markParentFound(commit.sha)
 
       const node = updateTrackedBranch(childColumn, child)
@@ -338,6 +381,11 @@ export function commitsToGraph(commits = [], rehydrationPackage = {}) {
       }
 
       graph.setChildLinkDestinations(node)
+    } else {
+      const node = trackNewBranch()
+      if (commit.parents.length > 1) {
+        trackOtherParents(node)
+      }
     }
   }
 

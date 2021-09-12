@@ -4,19 +4,16 @@
   "description": "Wrapper for Git operations",
   "license": "UNLICENSED",
   "private": true,
-  "source": "src/index.js",
-  "main": "dist/index.js",
-  "module": "dist/index.module.js",
+  "main": "dist/git.js",
+  "module": "dist/git.module.js",
   "scripts": {
-    "build": "microbundle --target node -f modern,es,cjs",
+    "build": "microbundle --target node -f es,cjs --tsconfig=tsconfig.app.json",
     "dev": "yarn run build -w"
   },
   "dependencies": {
     "chokidar": "^3.3.1",
-    "isomorphic-git": "^1.10.0",
     "lodash": "^4.17.19",
-    "moment": "^2.24.0",
-    "simple-git": "^2.45.0"
+    "moment": "^2.24.0"
   },
   "devDependencies": {
     "microbundle": "^0.13.3"
