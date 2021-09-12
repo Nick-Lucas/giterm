@@ -203,7 +203,6 @@ describe('Git', () => {
       }
 
       const status = await git.getStatus()
-      console.warn('DIR', dir)
       expect(status).toEqual([
         {
           path: 'f1.txt',
