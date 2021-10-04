@@ -11,6 +11,7 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
+import type { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
 
 const PROFILING = true
 let perfStart = (name: string) => {
@@ -36,26 +37,6 @@ if (process.env.NODE_ENV !== 'development' || !PROFILING) {
   perfEnd = function() {}
 }
 
-export type WatcherEvent =
-  | 'add'
-  | 'unlink'
-  | 'change'
-  | 'repo-create'
-  | 'repo-remove'
-export type WatcherCallback = (data: {
-  event: string
-  ref: string
-  isRemote: boolean
-}) => void
-
-export interface StatusFile {
-  path: string
-  staged: boolean
-  unstaged: boolean
-  isNew: boolean
-  isDeleted: boolean
-  isModified: boolean
-}
 
 export class Git {
   rawCwd: string
@@ -338,10 +319,10 @@ export class Git {
   }
 
   loadAllCommits = async (
-    showRemote: boolean,
+    showRemote: boolean = true,
     startIndex = 0,
     number = 500,
-  ) => {
+  ): Promise<[commits: Commit[], digest: string]> => {
     const headSha = await this.getHeadSHA()
     if (!headSha) {
       return [[], '']
@@ -377,7 +358,7 @@ export class Git {
     perfEnd('GIT/log/sanitise-result')
 
     perfStart('GIT/log/deserialise')
-    const commits = new Array(tuples.length)
+    const commits = new Array<Commit>(tuples.length)
     const hash = createHash('sha1')
     for (let i = 0; i < tuples.length; i++) {
       const formatSegments = tuples[i]

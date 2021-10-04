@@ -4,11 +4,15 @@ import path from 'path'
 import child_process from 'child_process'
 import { Git } from './Git'
 import { STATE } from './constants'
+import { Commit } from './types'
 
 const tmp = os.tmpdir()
 
-const getSpawn = (cwd) => async (args, { errorOnNonZeroExit = true } = {}) => {
-  const buffers = []
+const getSpawn = (cwd: string) => async (
+  args: string[],
+  { errorOnNonZeroExit = true } = {},
+): Promise<string> => {
+  const buffers: Buffer[] = []
   const child = child_process.spawn('git', args, { cwd })
 
   return new Promise((resolve, reject) => {
@@ -36,21 +40,21 @@ describe('Git', () => {
   let dir = ''
   let spawn = getSpawn(dir)
 
-  function writeFile(name, text) {
+  function writeFile(name: string, text: string) {
     const filePath = path.join(dir, name)
     fs.writeFileSync(filePath, text, { encoding: 'utf8' })
   }
 
-  function rmFile(name) {
+  function rmFile(name: string) {
     const filePath = path.join(dir, name)
     if (!fs.existsSync(filePath)) {
-      throw new `'${name}' does not exist in dir ${dir}`()
+      throw `'${name}' does not exist in dir ${dir}`
     }
 
     fs.unlinkSync(filePath)
   }
 
-  async function commit(text) {
+  async function commit(text: string) {
     await spawn(['add', '--all'])
     await spawn([`commit`, `-m "${text}"`])
     const sha = await spawn([`rev-parse`, `HEAD`])
@@ -230,7 +234,6 @@ describe('Git', () => {
 
         const status = await git.getStatus()
 
-        delete status[0].raw
         expect(status).toEqual([
           {
             path: 'f1.txt',
@@ -259,7 +262,6 @@ describe('Git', () => {
 
         const status = await git.getStatus()
 
-        delete status[0].raw
         expect(status).toEqual([
           {
             path: 'f1.txt',
@@ -287,9 +289,6 @@ describe('Git', () => {
 
       const status = await git.getStatus()
 
-      for (const file of status) {
-        delete file.raw
-      }
       expect(status).toEqual([
         {
           path: 'f1.txt',
@@ -547,7 +546,7 @@ describe('Git', () => {
     })
 
     describe('with remote', () => {
-      let sha1, sha2
+      let sha1: string, sha2: string
       const branchName = 'main'
 
       beforeEach(async () => {
@@ -633,5 +632,44 @@ describe('Git', () => {
         expect.arrayContaining([{ name: 'origin' }, { name: 'my-fork' }]),
       )
     })
+  })
+
+  describe('loadAllCommits', () => {
+    const commitMatcher = (commit: Partial<Commit>) =>
+      expect.objectContaining({
+        sha: expect.stringMatching(/.{40}/),
+        sha7: expect.stringMatching(/.{7}/),
+        ...commit,
+      } as Partial<Commit>)
+
+    it('has no repo', async () => {
+      const git = new Git(dir)
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([[], ''])
+    })
+
+    it('has one local commit', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('a.txt', 'abcd')
+      await commit('Commit 1')
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([
+        [
+          commitMatcher({
+            message: 'Commit 1',
+            isHead: true,
+          }),
+        ],
+        expect.stringMatching(/.+/),
+      ])
+    })
+
+    // TODO: add test with parent commits
+
+    // TODO: add failing test where commits are wrong order
   })
 })
