@@ -8,33 +8,35 @@ import { Commit } from './types'
 
 const tmp = os.tmpdir()
 
-const getSpawn = (cwd: string) => async (
-  args: string[],
-  { errorOnNonZeroExit = true } = {},
-): Promise<string> => {
-  const buffers: Buffer[] = []
-  const child = child_process.spawn('git', args, { cwd })
+const getSpawn =
+  (cwd: string) =>
+  async (
+    args: string[],
+    { errorOnNonZeroExit = true } = {},
+  ): Promise<string> => {
+    const buffers: Buffer[] = []
+    const child = child_process.spawn('git', args, { cwd })
 
-  return new Promise((resolve, reject) => {
-    child.stdout.on('data', (data) => {
-      buffers.push(data)
-    })
+    return new Promise((resolve, reject) => {
+      child.stdout.on('data', (data) => {
+        buffers.push(data)
+      })
 
-    child.stderr.on('data', (data) => {
-      buffers.push(data)
-    })
+      child.stderr.on('data', (data) => {
+        buffers.push(data)
+      })
 
-    child.on('close', (code) => {
-      if (code != 0 && errorOnNonZeroExit) {
-        const text = String(Buffer.concat(buffers))
-        console.error(text)
-        reject(text)
-      } else {
-        resolve(String(Buffer.concat(buffers)))
-      }
+      child.on('close', (code) => {
+        if (code != 0 && errorOnNonZeroExit) {
+          const text = String(Buffer.concat(buffers))
+          console.error(text)
+          reject(text)
+        } else {
+          resolve(String(Buffer.concat(buffers)))
+        }
+      })
     })
-  })
-}
+  }
 
 describe('Git', () => {
   let dir = ''

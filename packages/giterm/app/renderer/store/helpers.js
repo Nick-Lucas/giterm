@@ -2,7 +2,7 @@ import { call } from 'redux-saga/effects'
 import * as Sentry from '@sentry/electron'
 
 export function updateReducer(updateType, initialState) {
-  return function(state = initialState, action) {
+  return function (state = initialState, action) {
     switch (action.type) {
       case updateType: {
         const { type, ...payload } = action

@@ -306,9 +306,8 @@ export function commitsToGraph(
 
       const otherParentShas = commit.parents.slice(1)
       for (const parentSha of otherParentShas) {
-        const [firstChildColumn, firstChild] = branchTracker.findFirstChild(
-          parentSha,
-        )
+        const [firstChildColumn, firstChild] =
+          branchTracker.findFirstChild(parentSha)
 
         if (firstChild && typeof firstChildColumn === 'number') {
           // If this is a merge in from another branch with a colour already chosen

@@ -3,8 +3,7 @@
   "extends": [
     "plugin:prettier/recommended",
     "plugin:react/recommended",
-    "prettier/react",
-    "prettier/standard",
+    "prettier",
     "plugin:import/errors",
     "plugin:import/warnings"
   ],
@@ -67,6 +66,7 @@
         "*.tsx"
       ],
       "extends": [
+        "plugin:@typescript-eslint/eslint-recommended",    
         "plugin:@typescript-eslint/recommended"
       ],
       "rules": {

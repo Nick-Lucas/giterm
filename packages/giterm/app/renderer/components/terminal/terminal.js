@@ -138,7 +138,7 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
       ptyProcess.write(data)
     })
 
-    const onDataPTYDisposable = ptyProcess.onData(function(data) {
+    const onDataPTYDisposable = ptyProcess.onData(function (data) {
       terminal.write(data)
     })
 

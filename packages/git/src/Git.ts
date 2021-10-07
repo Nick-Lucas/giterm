@@ -11,7 +11,7 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
+import type { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
 
 const PROFILING = true
 let perfStart = (name: string) => {
@@ -25,7 +25,7 @@ const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
   name: string,
   func: F,
 ): F => {
-  return async function(...args: A): Promise<R> {
+  return async function (...args: A): Promise<R> {
     perfStart(name)
     const result = await func(...args)
     perfEnd(name)
@@ -33,10 +33,9 @@ const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
   } as F
 }
 if (process.env.NODE_ENV !== 'development' || !PROFILING) {
-  perfStart = function() {}
-  perfEnd = function() {}
+  perfStart = function () {}
+  perfEnd = function () {}
 }
-
 
 export class Git {
   rawCwd: string
@@ -344,7 +343,7 @@ export class Git {
       showRemote && '--remotes=*',
       `--skip=${startIndex}`,
       `--max-count=${number}`,
-      `--date-order`
+      `--date-order`,
     ].filter(Boolean) as string[]
 
     perfStart('GIT/log/spawn')
@@ -407,19 +406,18 @@ export class Git {
       return []
     }
 
-    const mapWithStaged = (
-      staged: boolean,
-      onMapLine: (line: string) => string = (str) => str,
-    ) => (output: string) =>
-      output
-        .trim()
-        .split(/\r\n|\r|\n/g)
-        .filter(Boolean)
-        .map(onMapLine)
-        .map((line) => ({
-          staged,
-          line: line.trim(),
-        }))
+    const mapWithStaged =
+      (staged: boolean, onMapLine: (line: string) => string = (str) => str) =>
+      (output: string) =>
+        output
+          .trim()
+          .split(/\r\n|\r|\n/g)
+          .filter(Boolean)
+          .map(onMapLine)
+          .map((line) => ({
+            staged,
+            line: line.trim(),
+          }))
 
     const stagedPromise = spawn([
       'diff',
@@ -508,7 +506,7 @@ export class Git {
 
     // Watch for repo destruction and creation
     function repoChange(event: WatcherEvent) {
-      return function(path: string) {
+      return function (path: string) {
         if (path === 'refs') {
           processChange(event)(path)
         }

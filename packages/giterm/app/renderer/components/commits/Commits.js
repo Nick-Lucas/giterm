@@ -43,9 +43,10 @@ export function Commits() {
   }, [graphWidth])
 
   const [selectedCommits, setSelectedCommits] = useState([])
-  const selectedShas = useMemo(() => selectedCommits.map((c) => c.sha), [
-    selectedCommits,
-  ])
+  const selectedShas = useMemo(
+    () => selectedCommits.map((c) => c.sha),
+    [selectedCommits],
+  )
   const handleSelect = useCallback(
     (e, commit) => {
       let nextState = []
