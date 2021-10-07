@@ -11,6 +11,7 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
+import type { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
 
 const PROFILING = true
 let perfStart = (name: string) => {
@@ -24,7 +25,7 @@ const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
   name: string,
   func: F,
 ): F => {
-  return async function(...args: A): Promise<R> {
+  return async function (...args: A): Promise<R> {
     perfStart(name)
     const result = await func(...args)
     perfEnd(name)
@@ -32,29 +33,8 @@ const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
   } as F
 }
 if (process.env.NODE_ENV !== 'development' || !PROFILING) {
-  perfStart = function() {}
-  perfEnd = function() {}
-}
-
-export type WatcherEvent =
-  | 'add'
-  | 'unlink'
-  | 'change'
-  | 'repo-create'
-  | 'repo-remove'
-export type WatcherCallback = (data: {
-  event: string
-  ref: string
-  isRemote: boolean
-}) => void
-
-export interface StatusFile {
-  path: string
-  staged: boolean
-  unstaged: boolean
-  isNew: boolean
-  isDeleted: boolean
-  isModified: boolean
+  perfStart = function () {}
+  perfEnd = function () {}
 }
 
 export class Git {
@@ -338,10 +318,10 @@ export class Git {
   }
 
   loadAllCommits = async (
-    showRemote: boolean,
+    showRemote: boolean = true,
     startIndex = 0,
     number = 500,
-  ) => {
+  ): Promise<[commits: Commit[], digest: string]> => {
     const headSha = await this.getHeadSHA()
     if (!headSha) {
       return [[], '']
@@ -363,6 +343,7 @@ export class Git {
       showRemote && '--remotes=*',
       `--skip=${startIndex}`,
       `--max-count=${number}`,
+      `--date-order`,
     ].filter(Boolean) as string[]
 
     perfStart('GIT/log/spawn')
@@ -377,7 +358,7 @@ export class Git {
     perfEnd('GIT/log/sanitise-result')
 
     perfStart('GIT/log/deserialise')
-    const commits = new Array(tuples.length)
+    const commits = new Array<Commit>(tuples.length)
     const hash = createHash('sha1')
     for (let i = 0; i < tuples.length; i++) {
       const formatSegments = tuples[i]
@@ -398,8 +379,8 @@ export class Git {
 
       commits[i] = {
         sha: sha,
-        sha7: sha.substring(0, 6),
-        message: subject,
+        sha7: sha.substring(0, 7),
+        message: subject.trim(),
         dateISO: authorDateISO,
         email: authorEmail,
         author: authorName,
@@ -425,19 +406,18 @@ export class Git {
       return []
     }
 
-    const mapWithStaged = (
-      staged: boolean,
-      onMapLine: (line: string) => string = (str) => str,
-    ) => (output: string) =>
-      output
-        .trim()
-        .split(/\r\n|\r|\n/g)
-        .filter(Boolean)
-        .map(onMapLine)
-        .map((line) => ({
-          staged,
-          line: line.trim(),
-        }))
+    const mapWithStaged =
+      (staged: boolean, onMapLine: (line: string) => string = (str) => str) =>
+      (output: string) =>
+        output
+          .trim()
+          .split(/\r\n|\r|\n/g)
+          .filter(Boolean)
+          .map(onMapLine)
+          .map((line) => ({
+            staged,
+            line: line.trim(),
+          }))
 
     const stagedPromise = spawn([
       'diff',
@@ -526,7 +506,7 @@ export class Git {
 
     // Watch for repo destruction and creation
     function repoChange(event: WatcherEvent) {
-      return function(path: string) {
+      return function (path: string) {
         if (path === 'refs') {
           processChange(event)(path)
         }

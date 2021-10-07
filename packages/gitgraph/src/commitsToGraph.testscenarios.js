@@ -1,7 +1,7 @@
 import { TestGitBuilder } from './TestGitBuilder'
 
 export const scenarios = {
-  experiments: function() {
+  experiments: function () {
     // const git = new TestGitBuilder()
 
     // git.addCommit({ id: 'a1', parentId: 'root' })
@@ -36,31 +36,31 @@ export const scenarios = {
     ]
   },
 
-  'standard.a': (function() {
+  'standard.a': (function () {
     const git = new TestGitBuilder()
     git.addCommit()
     git.addCommit()
     return git.getCommits()
   })(),
-  'standard.b': (function() {
+  'standard.b': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'branch_a', parentId: 'root' })
     git.addCommit({ id: 'branch_b', parentId: 'root' })
     return git.getCommits()
   })(),
-  'standard.c': (function() {
+  'standard.c': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'branch_a', parentId: 'root' })
     git.addMerge({ parentId1: 'root', parentId2: 'branch_a' })
     return git.getCommits()
   })(),
-  'standard.d': (function() {
+  'standard.d': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'branch_b', orphan: true })
     git.addCommit({ id: 'branch_a', parentId: 'root' })
     return git.getCommits()
   })(),
-  'standard.e': (function() {
+  'standard.e': (function () {
     const git = new TestGitBuilder()
     git.addMerge({
       id: 'branch_a',
@@ -70,7 +70,7 @@ export const scenarios = {
     })
     return git.getCommits()
   })(),
-  'standard.f': (function() {
+  'standard.f': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addMerge({ id: 'root1', parentId1: 'root', parentId2: 'a1' })
@@ -79,7 +79,7 @@ export const scenarios = {
     return git.getCommits()
   })(),
 
-  'repeated-merging.a': (function() {
+  'repeated-merging.a': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'branch_b_1', parentId: 'root' })
     git.addCommit({ id: 'root_2', parentId: 'root' })
@@ -87,7 +87,7 @@ export const scenarios = {
     git.addCommit({ id: 'root_3', parentId: 'root_2' })
     return git.getCommits()
   })(),
-  'repeated-merging.b': (function() {
+  'repeated-merging.b': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'branch_b_1', parentId: 'root' })
     git.addMerge({ id: 'root_2', parentId1: 'root', parentId2: 'branch_b_1' })
@@ -96,7 +96,7 @@ export const scenarios = {
     return git.getCommits()
   })(),
 
-  'multi-branch.a': (function() {
+  'multi-branch.a': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addCommit({ id: 'b1', parentId: 'root' })
@@ -104,7 +104,7 @@ export const scenarios = {
     git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'b1' })
     return git.getCommits()
   })(),
-  'multi-branch.b': (function() {
+  'multi-branch.b': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addCommit({ id: 'b1', parentId: 'root' })
@@ -228,14 +228,14 @@ export const scenarios = {
     },
   ],
 
-  'rehydration.a': (function() {
+  'rehydration.a': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addCommit({ id: 'root2', parentId: 'root' })
     git.addMerge({ parentId1: 'root2', parentId2: 'a1' })
     return git.getCommits()
   })(),
-  'rehydration.b': (function() {
+  'rehydration.b': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addCommit({ id: 'b1', parentId: 'root' })
@@ -243,7 +243,7 @@ export const scenarios = {
     git.addMerge({ id: 'm2', parentId1: 'm1', parentId2: 'b1' })
     return git.getCommits()
   })(),
-  'rehydration.c': (function() {
+  'rehydration.c': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addCommit({ id: 'b1', parentId: 'root' })
@@ -254,7 +254,7 @@ export const scenarios = {
     git.addMerge({ id: 'm3', parentId1: 'm2', parentId2: 'c1' })
     return git.getCommits()
   })(),
-  'rehydration.d': (function() {
+  'rehydration.d': (function () {
     const git = new TestGitBuilder()
     git.addCommit({ id: 'a1', parentId: 'root' })
     git.addCommit({ id: 'a2', parentId: 'a1' })

@@ -4,55 +4,65 @@ import path from 'path'
 import child_process from 'child_process'
 import { Git } from './Git'
 import { STATE } from './constants'
+import { Commit } from './types'
 
 const tmp = os.tmpdir()
 
-const getSpawn = (cwd) => async (args, { errorOnNonZeroExit = true } = {}) => {
-  const buffers = []
-  const child = child_process.spawn('git', args, { cwd })
+const getSpawn =
+  (cwd: string) =>
+  async (
+    args: string[],
+    { errorOnNonZeroExit = true } = {},
+  ): Promise<string> => {
+    const buffers: Buffer[] = []
+    const child = child_process.spawn('git', args, { cwd })
 
-  return new Promise((resolve, reject) => {
-    child.stdout.on('data', (data) => {
-      buffers.push(data)
-    })
+    return new Promise((resolve, reject) => {
+      child.stdout.on('data', (data) => {
+        buffers.push(data)
+      })
 
-    child.stderr.on('data', (data) => {
-      buffers.push(data)
-    })
+      child.stderr.on('data', (data) => {
+        buffers.push(data)
+      })
 
-    child.on('close', (code) => {
-      if (code != 0 && errorOnNonZeroExit) {
-        const text = String(Buffer.concat(buffers))
-        console.error(text)
-        reject(text)
-      } else {
-        resolve(String(Buffer.concat(buffers)))
-      }
+      child.on('close', (code) => {
+        if (code != 0 && errorOnNonZeroExit) {
+          const text = String(Buffer.concat(buffers))
+          console.error(text)
+          reject(text)
+        } else {
+          resolve(String(Buffer.concat(buffers)))
+        }
+      })
     })
-  })
-}
+  }
 
 describe('Git', () => {
   let dir = ''
   let spawn = getSpawn(dir)
 
-  function writeFile(name, text) {
+  async function waitToFixGitTime() {
+    await new Promise((r) => setTimeout(r, 500))
+  }
+
+  function writeFile(name: string, text: string) {
     const filePath = path.join(dir, name)
     fs.writeFileSync(filePath, text, { encoding: 'utf8' })
   }
 
-  function rmFile(name) {
+  function rmFile(name: string) {
     const filePath = path.join(dir, name)
     if (!fs.existsSync(filePath)) {
-      throw new `'${name}' does not exist in dir ${dir}`()
+      throw `'${name}' does not exist in dir ${dir}`
     }
 
     fs.unlinkSync(filePath)
   }
 
-  async function commit(text) {
+  async function commit(text: string) {
     await spawn(['add', '--all'])
-    await spawn([`commit`, `-m "${text}"`])
+    await spawn([`commit`, `-m`, text])
     const sha = await spawn([`rev-parse`, `HEAD`])
 
     return sha.trim()
@@ -230,7 +240,6 @@ describe('Git', () => {
 
         const status = await git.getStatus()
 
-        delete status[0].raw
         expect(status).toEqual([
           {
             path: 'f1.txt',
@@ -259,7 +268,6 @@ describe('Git', () => {
 
         const status = await git.getStatus()
 
-        delete status[0].raw
         expect(status).toEqual([
           {
             path: 'f1.txt',
@@ -287,9 +295,6 @@ describe('Git', () => {
 
       const status = await git.getStatus()
 
-      for (const file of status) {
-        delete file.raw
-      }
       expect(status).toEqual([
         {
           path: 'f1.txt',
@@ -547,7 +552,7 @@ describe('Git', () => {
     })
 
     describe('with remote', () => {
-      let sha1, sha2
+      let sha1: string, sha2: string
       const branchName = 'main'
 
       beforeEach(async () => {
@@ -632,6 +637,146 @@ describe('Git', () => {
       expect(remotes).toEqual(
         expect.arrayContaining([{ name: 'origin' }, { name: 'my-fork' }]),
       )
+    })
+  })
+
+  describe('loadAllCommits', () => {
+    const commitMatcher = (commit: Partial<Commit>) =>
+      expect.objectContaining({
+        sha: expect.stringMatching(/.{40}/),
+        sha7: expect.stringMatching(/.{7}/),
+        ...commit,
+      } as Partial<Commit>)
+
+    it('has no repo', async () => {
+      const git = new Git(dir)
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([[], ''])
+    })
+
+    it('has one local commit', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('a.txt', 'abcd')
+      await commit('Commit 1')
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([
+        [
+          commitMatcher({
+            message: 'Commit 1',
+            isHead: true,
+          }),
+        ],
+        expect.stringMatching(/.+/),
+      ])
+    })
+
+    it('has a merge commit', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('a.txt', 'abcd')
+      const shaCommit1 = await commit('Commit 1')
+      await spawn(['checkout', '-b', 'branch-a'])
+      await spawn(['checkout', '-b', 'branch-b'])
+
+      await waitToFixGitTime()
+      writeFile('b.txt', 'abcd')
+      const shaBranchCommit = await commit('Branch Commit')
+
+      await waitToFixGitTime()
+      await spawn(['checkout', 'branch-a'])
+      writeFile('a.txt', 'abcdefg')
+      const shaCommit2 = await commit('Commit 2')
+
+      await waitToFixGitTime()
+      await spawn(['merge', '--no-ff', 'branch-b'])
+      const shaMerge = (await spawn([`rev-parse`, `HEAD`])).trim()
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([
+        [
+          commitMatcher({
+            message: `Merge branch 'branch-b' into branch-a`,
+            isHead: true,
+            sha: shaMerge,
+            parents: [shaCommit2, shaBranchCommit],
+          }),
+          commitMatcher({
+            message: 'Commit 2',
+            isHead: false,
+            sha: shaCommit2,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Branch Commit',
+            isHead: false,
+            sha: shaBranchCommit,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Commit 1',
+            isHead: false,
+            sha: shaCommit1,
+            parents: [],
+          }),
+        ],
+        expect.stringMatching(/.+/),
+      ])
+    })
+
+    it("git is commited to so fast that commit times can't be sorted with --date-order child-parent rules", async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('a.txt', 'abcd')
+      const shaCommit1 = await commit('Commit 1')
+      await spawn(['checkout', '-b', 'branch-a'])
+      await spawn(['checkout', '-b', 'branch-b'])
+
+      writeFile('b.txt', 'abcd')
+      const shaBranchCommit = await commit('Branch Commit')
+
+      await spawn(['checkout', 'branch-a'])
+      writeFile('a.txt', 'abcdefg')
+      const shaCommit2 = await commit('Commit 2')
+
+      await spawn(['merge', '--no-ff', 'branch-b'])
+      const shaMerge = (await spawn([`rev-parse`, `HEAD`])).trim()
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([
+        [
+          commitMatcher({
+            message: `Merge branch 'branch-b' into branch-a`,
+            isHead: true,
+            sha: shaMerge,
+            parents: [shaCommit2, shaBranchCommit],
+          }),
+          commitMatcher({
+            message: 'Commit 2',
+            isHead: false,
+            sha: shaCommit2,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Branch Commit',
+            isHead: false,
+            sha: shaBranchCommit,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Commit 1',
+            isHead: false,
+            sha: shaCommit1,
+            parents: [],
+          }),
+        ],
+        expect.stringMatching(/.+/),
+      ])
     })
   })
 })

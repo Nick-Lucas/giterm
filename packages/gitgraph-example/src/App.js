@@ -44,7 +44,7 @@ export default function App() {
   const { nodes, links } = useMemo(() => {
     return !rehydrateFrom
       ? commitsToGraph(commits)
-      : (function() {
+      : (function () {
           // return commitsToGraph(commits.slice(0, rehydrateFrom))
           const { rehydrationPackage } = commitsToGraph(
             commits.slice(0, rehydrateFrom),

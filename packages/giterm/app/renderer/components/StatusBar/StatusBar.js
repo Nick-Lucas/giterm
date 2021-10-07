@@ -52,9 +52,10 @@ export function StatusBar() {
     [config.showRemoteBranches, dispatch],
   )
 
-  const [stateProps, stateText] = useMemo(() => mapStateToDisplay(state), [
-    state,
-  ])
+  const [stateProps, stateText] = useMemo(
+    () => mapStateToDisplay(state),
+    [state],
+  )
 
   const isAheadBehind =
     currentBranch?.upstream?.ahead > 0 ||

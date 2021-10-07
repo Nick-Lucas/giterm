@@ -5,6 +5,6 @@ semi: false
 singleQuote: true
 trailingComma: all
 bracketSpacing: true
-jsxBracketSameLine: true
+bracketSameLine: true
 arrowParens: always
 proseWrap: always
