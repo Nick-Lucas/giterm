@@ -11,7 +11,7 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import type { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
+import { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
 
 const PROFILING = true
 let perfStart = (name: string) => {
