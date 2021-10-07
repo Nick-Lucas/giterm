@@ -40,6 +40,10 @@ describe('Git', () => {
   let dir = ''
   let spawn = getSpawn(dir)
 
+  async function waitToFixGitTime() {
+    await new Promise((r) => setTimeout(r, 500))
+  }
+
   function writeFile(name: string, text: string) {
     const filePath = path.join(dir, name)
     fs.writeFileSync(filePath, text, { encoding: 'utf8' })
@@ -56,7 +60,7 @@ describe('Git', () => {
 
   async function commit(text: string) {
     await spawn(['add', '--all'])
-    await spawn([`commit`, `-m "${text}"`])
+    await spawn([`commit`, `-m`, text])
     const sha = await spawn([`rev-parse`, `HEAD`])
 
     return sha.trim()
@@ -668,8 +672,109 @@ describe('Git', () => {
       ])
     })
 
-    // TODO: add test with parent commits
+    it('has a merge commit', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
 
-    // TODO: add failing test where commits are wrong order
+      writeFile('a.txt', 'abcd')
+      const shaCommit1 = await commit('Commit 1')
+      await spawn(['checkout', '-b', 'branch-a'])
+      await spawn(['checkout', '-b', 'branch-b'])
+
+      await waitToFixGitTime()
+      writeFile('b.txt', 'abcd')
+      const shaBranchCommit = await commit('Branch Commit')
+
+      await waitToFixGitTime()
+      await spawn(['checkout', 'branch-a'])
+      writeFile('a.txt', 'abcdefg')
+      const shaCommit2 = await commit('Commit 2')
+
+      await waitToFixGitTime()
+      await spawn(['merge', '--no-ff', 'branch-b'])
+      const shaMerge = (await spawn([`rev-parse`, `HEAD`])).trim()
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([
+        [
+          commitMatcher({
+            message: `Merge branch 'branch-b' into branch-a`,
+            isHead: true,
+            sha: shaMerge,
+            parents: [shaCommit2, shaBranchCommit],
+          }),
+          commitMatcher({
+            message: 'Commit 2',
+            isHead: false,
+            sha: shaCommit2,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Branch Commit',
+            isHead: false,
+            sha: shaBranchCommit,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Commit 1',
+            isHead: false,
+            sha: shaCommit1,
+            parents: [],
+          }),
+        ],
+        expect.stringMatching(/.+/),
+      ])
+    })
+
+    it("git is commited to so fast that commit times can't be sorted with --date-order child-parent rules", async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('a.txt', 'abcd')
+      const shaCommit1 = await commit('Commit 1')
+      await spawn(['checkout', '-b', 'branch-a'])
+      await spawn(['checkout', '-b', 'branch-b'])
+
+      writeFile('b.txt', 'abcd')
+      const shaBranchCommit = await commit('Branch Commit')
+
+      await spawn(['checkout', 'branch-a'])
+      writeFile('a.txt', 'abcdefg')
+      const shaCommit2 = await commit('Commit 2')
+
+      await spawn(['merge', '--no-ff', 'branch-b'])
+      const shaMerge = (await spawn([`rev-parse`, `HEAD`])).trim()
+
+      const commits = await git.loadAllCommits()
+      expect(commits).toEqual([
+        [
+          commitMatcher({
+            message: `Merge branch 'branch-b' into branch-a`,
+            isHead: true,
+            sha: shaMerge,
+            parents: [shaCommit2, shaBranchCommit],
+          }),
+          commitMatcher({
+            message: 'Commit 2',
+            isHead: false,
+            sha: shaCommit2,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Branch Commit',
+            isHead: false,
+            sha: shaBranchCommit,
+            parents: [shaCommit1],
+          }),
+          commitMatcher({
+            message: 'Commit 1',
+            isHead: false,
+            sha: shaCommit1,
+            parents: [],
+          }),
+        ],
+        expect.stringMatching(/.+/),
+      ])
+    })
   })
 })

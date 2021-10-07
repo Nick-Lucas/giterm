@@ -344,6 +344,7 @@ export class Git {
       showRemote && '--remotes=*',
       `--skip=${startIndex}`,
       `--max-count=${number}`,
+      `--date-order`
     ].filter(Boolean) as string[]
 
     perfStart('GIT/log/spawn')
@@ -379,8 +380,8 @@ export class Git {
 
       commits[i] = {
         sha: sha,
-        sha7: sha.substring(0, 6),
-        message: subject,
+        sha7: sha.substring(0, 7),
+        message: subject.trim(),
         dateISO: authorDateISO,
         email: authorEmail,
         author: authorName,
