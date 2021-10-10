@@ -83,7 +83,7 @@ export class Git {
       return null
     }
 
-    return async (args: string[]): Promise<string> => {
+    return async (args: string[], { okCodes = [0] } = {}): Promise<string> => {
       const buffers: Buffer[] = []
       const child = spawn('git', args, { cwd: this.cwd })
 
@@ -93,14 +93,17 @@ export class Git {
         })
 
         child.stderr.on('data', (data) => {
-          console.error('STDERR', String(data))
+          buffers.push(data)
         })
 
         child.on('close', (code) => {
-          if (code == 0) {
-            resolve(String(Buffer.concat(buffers)))
+          const stdtxt = String(Buffer.concat(buffers))
+          if (okCodes.includes(code ?? 0)) {
+            resolve(stdtxt)
           } else {
-            reject()
+            const message = `Spawn failed (status code ${code}) with output:\n\n${stdtxt}`
+            console.error(message)
+            reject(message)
           }
         })
       })
@@ -569,16 +572,36 @@ export class Git {
 
   getDiffFromIndex = async ({
     contextLines = 5,
-  }): Promise<DiffResult | null> => {
+  } = {}): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
     }
 
-    const cmd = ['diff', '--unified=' + contextLines]
+    const statusFiles = await this.getStatus()
 
-    const patchText = await spawn(cmd)
-    const diff = this.processDiff(patchText)
+    const diffTexts = await Promise.all(
+      statusFiles.map(async (statusFile) => {
+        const cmd = ['diff', '--unified=' + contextLines]
+
+        if (statusFile.isNew) {
+          // Has to be compared to an empty file
+          cmd.push('/dev/null', statusFile.path)
+        } else if (statusFile.isDeleted) {
+          // Has to be compared to current HEAD tree
+          cmd.push('HEAD', '--', statusFile.path)
+        } else if (statusFile.isModified) {
+          // Compare back to head
+          cmd.push('HEAD', statusFile.path)
+        }
+
+        return await spawn(cmd, { okCodes: [0, 1] })
+      }),
+    )
+
+    const diffText = diffTexts.join('\n')
+
+    const diff = this.processDiff(diffText)
 
     return diff
   }
