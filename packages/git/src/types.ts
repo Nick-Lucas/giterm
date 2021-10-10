@@ -1,3 +1,5 @@
+import * as Diff2Html from 'diff2html/lib-esm/types'
+
 export type WatcherEvent =
   | 'add'
   | 'unlink'
@@ -29,4 +31,13 @@ export interface Commit {
   authorStr: string
   parents: string[]
   isHead: boolean
+}
+
+export interface DiffResult {
+  stats: {
+    insertions: number
+    deletions: number
+    filesChanged: number
+  }
+  files: Diff2Html.DiffFile[]
 }

@@ -11,7 +11,13 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import type { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
+import type {
+  Commit,
+  DiffResult,
+  StatusFile,
+  WatcherCallback,
+  WatcherEvent,
+} from './types'
 
 const PROFILING = true
 let perfStart = (name: string) => {
@@ -522,22 +528,11 @@ export class Git {
     }
   }
 
-  /**
-   * @typedef DiffResult
-   * @property { {insertions: number, deletions: number, filesChanges: number} } stats
-   * @property {import("diff2html/lib-esm/types").DiffFile[]} files
-   */
-
-  /**
-   * @param {string} shaOld
-   * @param {string} shaNew
-   * @returns {Promise<DiffResult>}
-   */
   getDiffFromShas = async (
     shaNew: string,
     shaOld: string | null = null,
     { contextLines = 10 } = {},
-  ) => {
+  ): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
@@ -566,15 +561,14 @@ export class Git {
     }
 
     const patchText = await spawn(cmd)
-    const diff = this._processDiff(patchText)
+    const diff = this.processDiff(patchText)
 
     return diff
   }
 
-  /**
-   * @returns {Promise<DiffResult>}
-   */
-  getDiffFromIndex = async ({ contextLines = 5 }) => {
+  getDiffFromIndex = async ({
+    contextLines = 5,
+  }): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
@@ -583,12 +577,12 @@ export class Git {
     const cmd = ['diff', '--unified=' + contextLines]
 
     const patchText = await spawn(cmd)
-    const diff = this._processDiff(patchText)
+    const diff = this.processDiff(patchText)
 
     return diff
   }
 
-  _processDiff = (diffText: string) => {
+  private processDiff = async (diffText: string): Promise<DiffResult> => {
     const files = parse(diffText)
 
     return {
