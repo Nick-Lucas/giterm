@@ -42,8 +42,8 @@ describe('Git', () => {
   let dir = ''
   let spawn = getSpawn(dir)
 
-  async function waitToFixGitTime() {
-    await new Promise((r) => setTimeout(r, 500))
+  async function waitToFixGitTime(ms = 500) {
+    await new Promise((r) => setTimeout(r, ms))
   }
 
   function writeFile(name: string, text: string) {
@@ -679,6 +679,7 @@ describe('Git', () => {
       await spawn(['init'])
       writeFile('f1.txt', 'abc')
       const sha1 = await commit('First Commit')
+      await waitToFixGitTime(1000)
       writeFile('f2.txt', 'abc')
       const sha2 = await commit('Second Commit')
 
@@ -692,14 +693,14 @@ describe('Git', () => {
       const tags = await git.getAllTags()
       expect(tags).toEqual([
         expect.objectContaining({
-          headSHA: sha1,
-          id: 'refs/tags/tag1',
-          name: 'tag1',
-        }),
-        expect.objectContaining({
           headSHA: sha2,
           id: 'refs/tags/tag2',
           name: 'tag2',
+        }),
+        expect.objectContaining({
+          headSHA: sha1,
+          id: 'refs/tags/tag1',
+          name: 'tag1',
         }),
       ])
 
@@ -729,6 +730,7 @@ describe('Git', () => {
 
         await spawn(['checkout', sha1])
         await spawn(['tag', 'tag1'])
+        await waitToFixGitTime()
         await spawn(['checkout', branchName])
         await spawn(['tag', 'tag2'])
         await spawn(['push', '--tags'])
