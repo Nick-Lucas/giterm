@@ -12,7 +12,6 @@ export const Files = ({ patches, filePath, onChange }) => {
       } else if (file.isDeleted) {
         return colours.TEXT.NEGATIVE
       } else {
-        // TODO: use typescript type and check isModified
         return colours.TEXT.ACTION
       }
     })
@@ -21,13 +20,15 @@ export const Files = ({ patches, filePath, onChange }) => {
   return (
     <FilesContainer>
       {patches.map((patch, i) => {
+        const name = patch.newName ?? patch.oldName
+
         return (
           <List.Row
-            active={patch.newName === filePath}
-            key={patch.newName}
-            onClick={() => onChange(patch.newName)}>
+            active={name === filePath}
+            key={name}
+            onClick={() => onChange(name)}>
             <List.Label trimStart colour={colourByIndex[i]}>
-              {patch.newName}
+              {name}
             </List.Label>
           </List.Row>
         )

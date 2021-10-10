@@ -507,7 +507,7 @@ export class Git {
           isDeleted: file.operation === 'D',
           isModified: file.operation === 'M',
           isNew: file.operation === 'A',
-          isRename: file.operation === 'R',
+          isRenamed: file.operation === 'R',
         }
       })
       .sortBy((file) => file.path)
@@ -622,7 +622,7 @@ export class Git {
         } else if (statusFile.isModified) {
           // Compare back to head
           cmd.push('HEAD', statusFile.path)
-        } else if (statusFile.isRename) {
+        } else if (statusFile.isRenamed) {
           // Have to tell git diff about the rename
           cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
         }

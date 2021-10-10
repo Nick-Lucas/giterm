@@ -33,7 +33,7 @@ export function Changes() {
         colour = colours.TEXT.POSITIVE
       } else if (file.isDeleted) {
         colour = colours.TEXT.NEGATIVE
-      } else if (file.isModified) {
+      } else if (file.isModified || file.isRenamed) {
         colour = colours.TEXT.ACTION
       }
 

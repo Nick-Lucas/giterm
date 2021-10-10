@@ -226,7 +226,7 @@ describe('Git', () => {
           isNew: true,
           isDeleted: false,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
       ])
     })
@@ -255,7 +255,7 @@ describe('Git', () => {
             isNew: false,
             isDeleted: false,
             isModified: true,
-            isRename: false,
+            isRenamed: false,
           },
         ])
       },
@@ -285,7 +285,7 @@ describe('Git', () => {
             isNew: false,
             isDeleted: true,
             isModified: false,
-            isRename: false,
+            isRenamed: false,
           },
         ])
       },
@@ -310,7 +310,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: true,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f2.txt',
@@ -320,7 +320,7 @@ describe('Git', () => {
           isNew: true,
           isDeleted: false,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
       ])
     })
@@ -345,7 +345,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: false,
           isModified: false,
-          isRename: true,
+          isRenamed: true,
         },
       ])
     })
@@ -375,7 +375,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: true,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f renamed.txt',
@@ -385,7 +385,7 @@ describe('Git', () => {
           isNew: true,
           isDeleted: false,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f1.txt',
@@ -395,7 +395,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: true,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f2.txt',
@@ -405,7 +405,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: false,
           isModified: true,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f4.txt',
@@ -415,7 +415,7 @@ describe('Git', () => {
           isNew: true,
           isDeleted: false,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
       ])
     })
@@ -447,7 +447,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: false,
           isModified: false,
-          isRename: true,
+          isRenamed: true,
         },
         {
           path: 'f1.txt',
@@ -457,7 +457,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: true,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f2.txt',
@@ -467,7 +467,7 @@ describe('Git', () => {
           isNew: false,
           isDeleted: false,
           isModified: true,
-          isRename: false,
+          isRenamed: false,
         },
         {
           path: 'f4.txt',
@@ -477,7 +477,7 @@ describe('Git', () => {
           isNew: true,
           isDeleted: false,
           isModified: false,
-          isRename: false,
+          isRenamed: false,
         },
       ])
     })

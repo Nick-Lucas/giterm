@@ -20,7 +20,7 @@ export interface StatusFile {
   isNew: boolean
   isDeleted: boolean
   isModified: boolean
-  isRename: boolean
+  isRenamed: boolean
 }
 
 export interface Commit {

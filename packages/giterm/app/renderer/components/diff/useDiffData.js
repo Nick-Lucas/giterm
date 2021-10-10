@@ -51,7 +51,9 @@ export function useDiffData({ contextLines = 5 } = {}) {
   const filePath = useMemo(() => {
     if (
       !_filePath ||
-      !diff?.files?.some((patch) => patch.newName === _filePath)
+      !diff?.files?.some(
+        (patch) => (patch.newName ?? patch.oldName) === _filePath,
+      )
     ) {
       return diff?.files[0]?.newName ?? null
     } else {
