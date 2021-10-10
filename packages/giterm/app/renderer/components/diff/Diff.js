@@ -6,14 +6,15 @@ import { Hunk } from './Hunk'
 import { List } from 'app/lib/primitives'
 
 export function Diff({ filePatch }) {
+  const isRenamed =
+    filePatch.oldName !== filePatch.newName &&
+    !!filePatch.oldName &&
+    !!filePatch.newName
+
   return (
     <DiffContainer>
       <PatchName>
-        {filePatch.oldName === filePatch.newName ? (
-          <List.Label trimStart textAlign="center">
-            {filePatch.oldName ?? filePatch.selectedFileName}
-          </List.Label>
-        ) : (
+        {isRenamed ? (
           <>
             <List.Label trimStart textAlign="right">
               {filePatch.newName}
@@ -21,6 +22,10 @@ export function Diff({ filePatch }) {
             <PatchNameSeparator>{'->'}</PatchNameSeparator>
             <List.Label trimStart>{filePatch.oldName}</List.Label>
           </>
+        ) : (
+          <List.Label trimStart textAlign="center">
+            {filePatch.oldName ?? filePatch.selectedFileName}
+          </List.Label>
         )}
       </PatchName>
 
@@ -51,7 +56,7 @@ const DiffContainer = styled.div`
 `
 
 const PatchName = styled.div`
-  display: block;
+  display: flex;
   flex: 0 0 auto;
 
   flex-direction: row;
@@ -59,6 +64,8 @@ const PatchName = styled.div`
   justify-content: center;
 
   padding: 0 1rem;
+
+  font-style: italic;
 `
 
 const PatchNameSeparator = styled.div`

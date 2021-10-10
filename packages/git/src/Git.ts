@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { parse } from 'diff2html'
+import * as Diff2Html from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
 
@@ -11,7 +11,15 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import type { Commit, StatusFile, WatcherCallback, WatcherEvent } from './types'
+import type {
+  Commit,
+  DiffFile,
+  DiffResult,
+  GitFileOp,
+  StatusFile,
+  WatcherCallback,
+  WatcherEvent,
+} from './types'
 
 const PROFILING = true
 let perfStart = (name: string) => {
@@ -76,7 +84,7 @@ export class Git {
       return null
     }
 
-    return async (args: string[]): Promise<string> => {
+    return async (args: string[], { okCodes = [0] } = {}): Promise<string> => {
       const buffers: Buffer[] = []
       const child = spawn('git', args, { cwd: this.cwd })
 
@@ -86,14 +94,17 @@ export class Git {
         })
 
         child.stderr.on('data', (data) => {
-          console.error('STDERR', String(data))
+          buffers.push(data)
         })
 
         child.on('close', (code) => {
-          if (code == 0) {
-            resolve(String(Buffer.concat(buffers)))
+          const stdtxt = String(Buffer.concat(buffers))
+          if (okCodes.includes(code ?? 0)) {
+            resolve(stdtxt)
           } else {
-            reject()
+            const message = `Spawn failed (status code ${code}) with output:\n\n${stdtxt}`
+            console.error(message)
+            reject(message)
           }
         })
       })
@@ -406,37 +417,69 @@ export class Git {
       return []
     }
 
-    const mapWithStaged =
-      (staged: boolean, onMapLine: (line: string) => string = (str) => str) =>
-      (output: string) =>
-        output
-          .trim()
-          .split(/\r\n|\r|\n/g)
-          .filter(Boolean)
-          .map(onMapLine)
-          .map((line) => ({
-            staged,
-            line: line.trim(),
-          }))
+    interface FileInfo {
+      staged: boolean
+      operation: GitFileOp
+      path1: string
+      path2?: string
+    }
+
+    const parseNamesWithStaged =
+      (staged: boolean) =>
+      (output: string): FileInfo[] => {
+        const segments = output.split('\0').filter(Boolean)
+
+        const lines: [GitFileOp, string, string?][] = []
+        while (segments.length > 0) {
+          const operation = segments.shift() as string
+          const operationKey = operation?.slice(0, 1) as GitFileOp
+          if (operationKey === 'R' || operationKey === 'C') {
+            const path1 = segments.shift()!
+            const path2 = segments.shift()!
+            lines.push([operationKey, path1, path2])
+          } else if (operationKey) {
+            const path1 = segments.shift()!
+            lines.push([operationKey, path1])
+          }
+        }
+
+        return lines.map((line) => ({
+          staged,
+          operation: line[0],
+          path1: line[1],
+          path2: line[2],
+        }))
+      }
 
     const stagedPromise = spawn([
       'diff',
       '--name-status',
       '--staged',
-      '--no-renames', // TODO: support renames & copied files, disabled for now as extra parsing logic is needed
-    ]).then(mapWithStaged(true))
+      '-z', // Terminate columns with NUL
+    ]).then(parseNamesWithStaged(true))
+
     const unstagedPromise = spawn([
       'diff',
       '--name-status',
-      '--no-renames', // TODO: support renames & copied files, disabled for now as extra parsing logic is needed
-    ]).then(mapWithStaged(false))
+      '-z', // Terminate columns with NUL
+    ]).then(parseNamesWithStaged(false))
 
     // Git Diff cannot show untracked files, so they must be listed separately
     const untrackedPromise = spawn([
       'ls-files',
       '--others',
       '--exclude-standard',
-    ]).then(mapWithStaged(false, (line) => 'A       ' + line))
+      '-z', // Terminate items with NUL
+    ]).then((output) => {
+      return output
+        .split('\0')
+        .filter(Boolean)
+        .map<FileInfo>((filepath) => ({
+          staged: false,
+          operation: 'A',
+          path1: filepath,
+        }))
+    })
 
     const results = await Promise.all([
       stagedPromise,
@@ -446,33 +489,29 @@ export class Git {
 
     return _(results)
       .flatMap()
-      .map((file): StatusFile | null => {
-        type Op =
-          | 'A' // Added
-          | 'C' // Copied
-          | 'D' // Deleted
-          | 'M' // Modified
-          | 'R' // Renamed
-          | 'T' // Type changed
-          | 'U' // Unmerged
-          | 'X' // Unknown
-          | 'B' // Broken
-          | undefined
-
-        const operation = file.line.slice(0, 1) as Op
-        const filePath = file.line.slice(1).trim() as string
+      .map<StatusFile>((file: FileInfo) => {
+        let filePath = null
+        let oldFilePath = null
+        if (file.operation === 'R') {
+          oldFilePath = file.path1.trim()
+          filePath = file.path2!.trim()
+        } else {
+          filePath = file.path1.trim()
+        }
 
         return {
           path: filePath,
+          oldPath: oldFilePath,
           staged: file.staged,
           unstaged: !file.staged,
-          isDeleted: operation === 'D',
-          isModified: operation === 'M',
-          isNew: operation === 'A',
+          isDeleted: file.operation === 'D',
+          isModified: file.operation === 'M',
+          isNew: file.operation === 'A',
+          isRenamed: file.operation === 'R',
         }
       })
-      .filter((file) => file != null)
-      .value() as StatusFile[]
+      .sortBy((file) => file.path)
+      .value()
   }
 
   watchRefs = (callback: WatcherCallback): (() => void) => {
@@ -522,22 +561,11 @@ export class Git {
     }
   }
 
-  /**
-   * @typedef DiffResult
-   * @property { {insertions: number, deletions: number, filesChanges: number} } stats
-   * @property {import("diff2html/lib-esm/types").DiffFile[]} files
-   */
-
-  /**
-   * @param {string} shaOld
-   * @param {string} shaNew
-   * @returns {Promise<DiffResult>}
-   */
   getDiffFromShas = async (
     shaNew: string,
     shaOld: string | null = null,
     { contextLines = 10 } = {},
-  ) => {
+  ): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
@@ -566,30 +594,67 @@ export class Git {
     }
 
     const patchText = await spawn(cmd)
-    const diff = this._processDiff(patchText)
+    const diff = await this.processDiff(patchText)
 
     return diff
   }
 
-  /**
-   * @returns {Promise<DiffResult>}
-   */
-  getDiffFromIndex = async ({ contextLines = 5 }) => {
+  getDiffFromIndex = async ({
+    contextLines = 5,
+  } = {}): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
     }
 
-    const cmd = ['diff', '--unified=' + contextLines]
+    const statusFiles = await this.getStatus()
 
-    const patchText = await spawn(cmd)
-    const diff = this._processDiff(patchText)
+    const diffTexts = await Promise.all(
+      statusFiles.map(async (statusFile) => {
+        const cmd = ['diff', '--unified=' + contextLines]
+
+        if (statusFile.isNew) {
+          // Has to be compared to an empty file
+          cmd.push('/dev/null', statusFile.path)
+        } else if (statusFile.isDeleted) {
+          // Has to be compared to current HEAD tree
+          cmd.push('HEAD', '--', statusFile.path)
+        } else if (statusFile.isModified) {
+          // Compare back to head
+          cmd.push('HEAD', statusFile.path)
+        } else if (statusFile.isRenamed) {
+          // Have to tell git diff about the rename
+          cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
+        }
+
+        return await spawn(cmd, { okCodes: [0, 1] })
+      }),
+    )
+
+    const diffText = diffTexts.join('\n')
+
+    const diff = await this.processDiff(diffText)
 
     return diff
   }
 
-  _processDiff = (diffText: string) => {
-    const files = parse(diffText)
+  private processDiff = async (diffText: string): Promise<DiffResult> => {
+    const files = Diff2Html.parse(diffText) as DiffFile[]
+
+    for (const file of files) {
+      if (file.oldName === '/dev/null') {
+        file.oldName = null
+      }
+      if (file.newName === '/dev/null') {
+        file.newName = null
+      }
+
+      // Diff2Html doesn't attach false values, so patch these on
+      file.isNew = !!file.isNew
+      file.isDeleted = !!file.isDeleted
+      file.isRename = !!file.isRename
+      file.isModified = !file.isNew && !file.isDeleted
+    }
 
     return {
       stats: {
