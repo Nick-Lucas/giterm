@@ -53,3 +53,15 @@ export interface DiffResult {
   stats: DiffStats
   files: DiffFile[]
 }
+
+export type GitFileOp =
+  | 'A' // Added
+  | 'C' // Copied
+  | 'D' // Deleted
+  | 'M' // Modified
+  | 'R' // Renamed
+  | 'T' // Type changed
+  | 'U' // Unmerged
+  | 'X' // Unknown
+  | 'B' // Broken
+  | undefined

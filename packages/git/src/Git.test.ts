@@ -200,7 +200,7 @@ describe('Git', () => {
     })
   })
 
-  describe.only('getStatus', () => {
+  describe('getStatus', () => {
     it('works for no repo', async () => {
       const git = new Git(dir)
 
@@ -350,21 +350,43 @@ describe('Git', () => {
       ])
     })
 
-    it('lists a combination of files', async () => {
+    it('lists a combination of unstaged files', async () => {
       await spawn(['init'])
       const git = new Git(dir)
 
       writeFile('f1.txt', 'abcdefg')
       writeFile('f2.txt', 'abcdefg')
       writeFile('f3.txt', 'abcdefg')
+      writeFile('f rename.txt', 'abcdefg')
       await commit('Initial Commit')
       rmFile('f1.txt')
       writeFile('f2.txt', 'abc')
       writeFile('f4.txt', 'jnasd')
+      renameFile('f rename.txt', 'f renamed.txt')
 
       const status = await git.getStatus()
 
       expect(status).toEqual<StatusFile[]>([
+        {
+          path: 'f rename.txt',
+          oldPath: null,
+          staged: false,
+          unstaged: true,
+          isNew: false,
+          isDeleted: true,
+          isModified: false,
+          isRename: false,
+        },
+        {
+          path: 'f renamed.txt',
+          oldPath: null,
+          staged: false,
+          unstaged: true,
+          isNew: true,
+          isDeleted: false,
+          isModified: false,
+          isRename: false,
+        },
         {
           path: 'f1.txt',
           oldPath: null,
@@ -390,6 +412,68 @@ describe('Git', () => {
           oldPath: null,
           staged: false,
           unstaged: true,
+          isNew: true,
+          isDeleted: false,
+          isModified: false,
+          isRename: false,
+        },
+      ])
+    })
+
+    it('lists a combination of staged files', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('f1.txt', 'abcdefg')
+      writeFile('f2.txt', 'abcdefg')
+      writeFile('f3.txt', 'abcdefg')
+      writeFile('f rename.txt', 'abcdefg')
+      await commit('Initial Commit')
+      rmFile('f1.txt')
+      writeFile('f2.txt', 'abc')
+      writeFile('f4.txt', 'jnasd')
+      renameFile('f rename.txt', 'f renamed.txt')
+
+      await spawn(['add', '--all'])
+
+      const status = await git.getStatus()
+
+      expect(status).toEqual<StatusFile[]>([
+        {
+          path: 'f renamed.txt',
+          oldPath: 'f rename.txt',
+          staged: true,
+          unstaged: false,
+          isNew: false,
+          isDeleted: false,
+          isModified: false,
+          isRename: true,
+        },
+        {
+          path: 'f1.txt',
+          oldPath: null,
+          staged: true,
+          unstaged: false,
+          isNew: false,
+          isDeleted: true,
+          isModified: false,
+          isRename: false,
+        },
+        {
+          path: 'f2.txt',
+          oldPath: null,
+          staged: true,
+          unstaged: false,
+          isNew: false,
+          isDeleted: false,
+          isModified: true,
+          isRename: false,
+        },
+        {
+          path: 'f4.txt',
+          oldPath: null,
+          staged: true,
+          unstaged: false,
           isNew: true,
           isDeleted: false,
           isModified: false,

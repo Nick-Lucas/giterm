@@ -15,6 +15,7 @@ import type {
   Commit,
   DiffFile,
   DiffResult,
+  GitFileOp,
   StatusFile,
   WatcherCallback,
   WatcherEvent,
@@ -416,18 +417,38 @@ export class Git {
       return []
     }
 
-    const mapWithStaged =
-      (staged: boolean, onMapLine: (line: string) => string = (str) => str) =>
-      (output: string) => {
-        return output
-          .trim()
-          .split(/\r\n|\r|\n/g)
-          .filter(Boolean)
-          .map(onMapLine)
-          .map((line) => ({
-            staged,
-            line: line.trim(),
-          }))
+    interface FileInfo {
+      staged: boolean
+      operation: GitFileOp
+      path1: string
+      path2?: string
+    }
+
+    const parseNamesWithStaged =
+      (staged: boolean) =>
+      (output: string): FileInfo[] => {
+        const segments = output.split('\0').filter(Boolean)
+
+        const lines: [GitFileOp, string, string?][] = []
+        while (segments.length > 0) {
+          const operation = segments.shift() as string
+          const operationKey = operation?.slice(0, 1) as GitFileOp
+          if (operationKey === 'R' || operationKey === 'C') {
+            const path1 = segments.shift()!
+            const path2 = segments.shift()!
+            lines.push([operationKey, path1, path2])
+          } else if (operationKey) {
+            const path1 = segments.shift()!
+            lines.push([operationKey, path1])
+          }
+        }
+
+        return lines.map((line) => ({
+          staged,
+          operation: line[0],
+          path1: line[1],
+          path2: line[2],
+        }))
       }
 
     const stagedPromise = spawn([
@@ -435,19 +456,30 @@ export class Git {
       '--name-status',
       '--staged',
       '-z', // Terminate columns with NUL
-    ]).then(mapWithStaged(true))
+    ]).then(parseNamesWithStaged(true))
+
     const unstagedPromise = spawn([
       'diff',
       '--name-status',
       '-z', // Terminate columns with NUL
-    ]).then(mapWithStaged(false))
+    ]).then(parseNamesWithStaged(false))
 
     // Git Diff cannot show untracked files, so they must be listed separately
     const untrackedPromise = spawn([
       'ls-files',
       '--others',
       '--exclude-standard',
-    ]).then(mapWithStaged(false, (line) => 'A\0' + line))
+      '-z', // Terminate items with NUL
+    ]).then((output) => {
+      return output
+        .split('\0')
+        .filter(Boolean)
+        .map<FileInfo>((filepath) => ({
+          staged: false,
+          operation: 'A',
+          path1: filepath,
+        }))
+    })
 
     const results = await Promise.all([
       stagedPromise,
@@ -457,29 +489,14 @@ export class Git {
 
     return _(results)
       .flatMap()
-      .map((file): StatusFile | null => {
-        type Op =
-          | 'A' // Added
-          | 'C' // Copied
-          | 'D' // Deleted
-          | 'M' // Modified
-          | 'R' // Renamed
-          | 'T' // Type changed
-          | 'U' // Unmerged
-          | 'X' // Unknown
-          | 'B' // Broken
-          | undefined
-
-        const segments = file.line.split('\0')
-        const operation = file.line.slice(0, 1) as Op
-
+      .map<StatusFile>((file: FileInfo) => {
         let filePath = null
         let oldFilePath = null
-        if (operation === 'R') {
-          oldFilePath = segments[1].trim()
-          filePath = segments[2].trim()
+        if (file.operation === 'R') {
+          oldFilePath = file.path1.trim()
+          filePath = file.path2!.trim()
         } else {
-          filePath = segments[1].trim()
+          filePath = file.path1.trim()
         }
 
         return {
@@ -487,14 +504,14 @@ export class Git {
           oldPath: oldFilePath,
           staged: file.staged,
           unstaged: !file.staged,
-          isDeleted: operation === 'D',
-          isModified: operation === 'M',
-          isNew: operation === 'A',
-          isRename: operation === 'R',
+          isDeleted: file.operation === 'D',
+          isModified: file.operation === 'M',
+          isNew: file.operation === 'A',
+          isRename: file.operation === 'R',
         }
       })
-      .filter((file) => file != null)
-      .value() as StatusFile[]
+      .sortBy((file) => file.path)
+      .value()
   }
 
   watchRefs = (callback: WatcherCallback): (() => void) => {
