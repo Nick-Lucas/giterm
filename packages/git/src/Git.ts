@@ -418,8 +418,8 @@ export class Git {
 
     const mapWithStaged =
       (staged: boolean, onMapLine: (line: string) => string = (str) => str) =>
-      (output: string) =>
-        output
+      (output: string) => {
+        return output
           .trim()
           .split(/\r\n|\r|\n/g)
           .filter(Boolean)
@@ -428,17 +428,18 @@ export class Git {
             staged,
             line: line.trim(),
           }))
+      }
 
     const stagedPromise = spawn([
       'diff',
       '--name-status',
       '--staged',
-      '--no-renames', // TODO: support renames & copied files, disabled for now as extra parsing logic is needed
+      '-z', // Terminate columns with NUL
     ]).then(mapWithStaged(true))
     const unstagedPromise = spawn([
       'diff',
       '--name-status',
-      '--no-renames', // TODO: support renames & copied files, disabled for now as extra parsing logic is needed
+      '-z', // Terminate columns with NUL
     ]).then(mapWithStaged(false))
 
     // Git Diff cannot show untracked files, so they must be listed separately
@@ -446,7 +447,7 @@ export class Git {
       'ls-files',
       '--others',
       '--exclude-standard',
-    ]).then(mapWithStaged(false, (line) => 'A       ' + line))
+    ]).then(mapWithStaged(false, (line) => 'A\0' + line))
 
     const results = await Promise.all([
       stagedPromise,
@@ -469,16 +470,27 @@ export class Git {
           | 'B' // Broken
           | undefined
 
+        const segments = file.line.split('\0')
         const operation = file.line.slice(0, 1) as Op
-        const filePath = file.line.slice(1).trim() as string
+
+        let filePath = null
+        let oldFilePath = null
+        if (operation === 'R') {
+          oldFilePath = segments[1].trim()
+          filePath = segments[2].trim()
+        } else {
+          filePath = segments[1].trim()
+        }
 
         return {
           path: filePath,
+          oldPath: oldFilePath,
           staged: file.staged,
           unstaged: !file.staged,
           isDeleted: operation === 'D',
           isModified: operation === 'M',
           isNew: operation === 'A',
+          isRename: operation === 'R',
         }
       })
       .filter((file) => file != null)

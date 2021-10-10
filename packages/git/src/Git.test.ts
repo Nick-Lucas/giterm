@@ -4,7 +4,7 @@ import path from 'path'
 import child_process from 'child_process'
 import { Git } from './Git'
 import { STATE } from './constants'
-import { Commit, DiffResult, DiffFile } from './types'
+import { Commit, DiffResult, DiffFile, StatusFile } from './types'
 
 const tmp = os.tmpdir()
 
@@ -200,12 +200,12 @@ describe('Git', () => {
     })
   })
 
-  describe('getStatus', () => {
+  describe.only('getStatus', () => {
     it('works for no repo', async () => {
       const git = new Git(dir)
 
       const status = await git.getStatus()
-      expect(status).toEqual([])
+      expect(status).toEqual<StatusFile[]>([])
     })
 
     it.each(['staged', 'unstaged'])('lists %s new file', async (stagedKey) => {
@@ -217,14 +217,16 @@ describe('Git', () => {
       }
 
       const status = await git.getStatus()
-      expect(status).toEqual([
+      expect(status).toEqual<StatusFile[]>([
         {
           path: 'f1.txt',
+          oldPath: null,
           staged: stagedKey === 'staged',
           unstaged: stagedKey === 'unstaged',
           isNew: true,
           isDeleted: false,
           isModified: false,
+          isRename: false,
         },
       ])
     })
@@ -244,14 +246,16 @@ describe('Git', () => {
 
         const status = await git.getStatus()
 
-        expect(status).toEqual([
+        expect(status).toEqual<StatusFile[]>([
           {
             path: 'f1.txt',
+            oldPath: null,
             staged: stagedKey === 'staged',
             unstaged: stagedKey === 'unstaged',
             isNew: false,
             isDeleted: false,
             isModified: true,
+            isRename: false,
           },
         ])
       },
@@ -272,18 +276,79 @@ describe('Git', () => {
 
         const status = await git.getStatus()
 
-        expect(status).toEqual([
+        expect(status).toEqual<StatusFile[]>([
           {
             path: 'f1.txt',
+            oldPath: null,
             staged: stagedKey === 'staged',
             unstaged: stagedKey === 'unstaged',
             isNew: false,
             isDeleted: true,
             isModified: false,
+            isRename: false,
           },
         ])
       },
     )
+
+    it('lists unstaged renamed file', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('f1.txt', 'abcdefg')
+      await commit('Initial Commit')
+      renameFile('f1.txt', 'f2.txt')
+
+      const status = await git.getStatus()
+
+      expect(status).toEqual<StatusFile[]>([
+        {
+          path: 'f1.txt',
+          oldPath: null,
+          staged: false,
+          unstaged: true,
+          isNew: false,
+          isDeleted: true,
+          isModified: false,
+          isRename: false,
+        },
+        {
+          path: 'f2.txt',
+          oldPath: null,
+          staged: false,
+          unstaged: true,
+          isNew: true,
+          isDeleted: false,
+          isModified: false,
+          isRename: false,
+        },
+      ])
+    })
+
+    it('lists staged renamed file', async () => {
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      writeFile('f1.txt', 'abcdefg')
+      await commit('Initial Commit')
+      renameFile('f1.txt', 'f2.txt')
+      await spawn(['add', '--all'])
+
+      const status = await git.getStatus()
+
+      expect(status).toEqual<StatusFile[]>([
+        {
+          path: 'f2.txt',
+          oldPath: 'f1.txt',
+          staged: true,
+          unstaged: false,
+          isNew: false,
+          isDeleted: false,
+          isModified: false,
+          isRename: true,
+        },
+      ])
+    })
 
     it('lists a combination of files', async () => {
       await spawn(['init'])
@@ -299,30 +364,36 @@ describe('Git', () => {
 
       const status = await git.getStatus()
 
-      expect(status).toEqual([
+      expect(status).toEqual<StatusFile[]>([
         {
           path: 'f1.txt',
+          oldPath: null,
           staged: false,
           unstaged: true,
           isNew: false,
           isDeleted: true,
           isModified: false,
+          isRename: false,
         },
         {
           path: 'f2.txt',
+          oldPath: null,
           staged: false,
           unstaged: true,
           isNew: false,
           isDeleted: false,
           isModified: true,
+          isRename: false,
         },
         {
           path: 'f4.txt',
+          oldPath: null,
           staged: false,
           unstaged: true,
           isNew: true,
           isDeleted: false,
           isModified: false,
+          isRename: false,
         },
       ])
     })

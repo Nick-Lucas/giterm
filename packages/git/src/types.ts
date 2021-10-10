@@ -14,11 +14,13 @@ export type WatcherCallback = (data: {
 
 export interface StatusFile {
   path: string
+  oldPath: string | null
   staged: boolean
   unstaged: boolean
   isNew: boolean
   isDeleted: boolean
   isModified: boolean
+  isRename: boolean
 }
 
 export interface Commit {
