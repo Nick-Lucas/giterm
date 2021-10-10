@@ -51,7 +51,7 @@ const DiffContainer = styled.div`
 `
 
 const PatchName = styled.div`
-  display: block;
+  display: flex;
   flex: 0 0 auto;
 
   flex-direction: row;
