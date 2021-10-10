@@ -33,11 +33,21 @@ export interface Commit {
   isHead: boolean
 }
 
-export interface DiffResult {
-  stats: {
-    insertions: number
-    deletions: number
-    filesChanged: number
+type Modify<T, R> = Omit<T, keyof R> & R
+export interface DiffStats {
+  insertions: number
+  deletions: number
+  filesChanged: number
+}
+export type DiffFile = Modify<
+  Diff2Html.DiffFile,
+  {
+    newName: string | null
+    oldName: string | null
+    isModified: boolean
   }
-  files: Diff2Html.DiffFile[]
+>
+export interface DiffResult {
+  stats: DiffStats
+  files: DiffFile[]
 }

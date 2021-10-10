@@ -12,6 +12,7 @@ export const Files = ({ patches, filePath, onChange }) => {
       } else if (file.isDeleted) {
         return colours.TEXT.NEGATIVE
       } else {
+        // TODO: use typescript type and check isModified
         return colours.TEXT.ACTION
       }
     })

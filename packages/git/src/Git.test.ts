@@ -4,7 +4,7 @@ import path from 'path'
 import child_process from 'child_process'
 import { Git } from './Git'
 import { STATE } from './constants'
-import { Commit } from './types'
+import { Commit, DiffResult, DiffFile } from './types'
 
 const tmp = os.tmpdir()
 
@@ -49,6 +49,10 @@ describe('Git', () => {
   function writeFile(name: string, text: string) {
     const filePath = path.join(dir, name)
     fs.writeFileSync(filePath, text, { encoding: 'utf8' })
+  }
+
+  function renameFile(name: string, newName: string) {
+    fs.renameSync(path.join(dir, name), path.join(dir, newName))
   }
 
   function rmFile(name: string) {
@@ -777,6 +781,155 @@ describe('Git', () => {
         ],
         expect.stringMatching(/.+/),
       ])
+    })
+  })
+
+  describe('getDiffFromShas', () => {
+    async function getBaseCommit(): Promise<string> {
+      await spawn(['init'])
+      writeFile('onlyfile', 'abc')
+      return await commit('Base Commit')
+    }
+
+    describe.each([
+      ['one commit', false],
+      ['two commits', true],
+    ])('fetching diff for %s', (caseName: string, useOldSha: boolean) => {
+      it('added file', async () => {
+        const baseSha = await getBaseCommit()
+        const git = new Git(dir)
+
+        writeFile('a.txt', 'line 1\nline 2')
+        const sha = await commit('Commit 1')
+
+        const diff = (await git.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 0,
+            filesChanged: 1,
+            insertions: 2,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: null,
+              newName: 'a.txt',
+              addedLines: 2,
+              deletedLines: 0,
+              isNew: true,
+              isRename: false,
+              isDeleted: false,
+              isModified: false,
+            }),
+          ],
+        })
+      })
+
+      it('renamed file', async () => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        writeFile('a.txt', 'line 1\nline 2')
+        const baseSha = await commit('Commit 1')
+        renameFile('a.txt', 'b.txt')
+        const sha = await commit('Commit 2')
+
+        const diff = (await git.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 0,
+            filesChanged: 1,
+            insertions: 0,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: 'b.txt',
+              addedLines: 0,
+              isNew: false,
+              isRename: true,
+              isModified: true,
+              isDeleted: false,
+            }),
+          ],
+        })
+      })
+
+      it('modified file', async () => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        writeFile('a.txt', 'line 1\nline 3')
+        const baseSha = await commit('Commit 1')
+        writeFile('a.txt', 'line 1\nline 2')
+        const sha = await commit('Commit 2')
+
+        const diff = (await git.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 1,
+            filesChanged: 1,
+            insertions: 1,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: 'a.txt',
+              addedLines: 1,
+              deletedLines: 1,
+              isNew: false,
+              isRename: false,
+              isModified: true,
+              isDeleted: false,
+            }),
+          ],
+        })
+      })
+
+      it('deleted file', async () => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        writeFile('a.txt', 'line 1\nline 2')
+        const baseSha = await commit('Commit 1')
+        rmFile('a.txt')
+        const sha = await commit('Commit 2')
+
+        const diff = (await git.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 2,
+            filesChanged: 1,
+            insertions: 0,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: null,
+              addedLines: 0,
+              isNew: false,
+              isRename: false,
+              isModified: false,
+              isDeleted: true,
+            }),
+          ],
+        })
+      })
     })
   })
 })

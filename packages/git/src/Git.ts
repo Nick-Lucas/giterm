@@ -1,5 +1,5 @@
 import _ from 'lodash'
-import { parse } from 'diff2html'
+import * as Diff2Html from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
 
@@ -13,6 +13,7 @@ import { resolveRepo } from './resolve-repo'
 import { STATE, STATE_FILES } from './constants'
 import type {
   Commit,
+  DiffFile,
   DiffResult,
   StatusFile,
   WatcherCallback,
@@ -583,7 +584,22 @@ export class Git {
   }
 
   private processDiff = async (diffText: string): Promise<DiffResult> => {
-    const files = parse(diffText)
+    const files = Diff2Html.parse(diffText) as DiffFile[]
+
+    for (const file of files) {
+      if (file.oldName === '/dev/null') {
+        file.oldName = null
+      }
+      if (file.newName === '/dev/null') {
+        file.newName = null
+      }
+
+      // Diff2Html doesn't attach false values, so patch these on
+      file.isNew = !!file.isNew
+      file.isDeleted = !!file.isDeleted
+      file.isRename = !!file.isRename
+      file.isModified = !file.isNew && !file.isDeleted
+    }
 
     return {
       stats: {
