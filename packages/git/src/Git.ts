@@ -594,7 +594,7 @@ export class Git {
     }
 
     const patchText = await spawn(cmd)
-    const diff = this.processDiff(patchText)
+    const diff = await this.processDiff(patchText)
 
     return diff
   }
@@ -622,6 +622,9 @@ export class Git {
         } else if (statusFile.isModified) {
           // Compare back to head
           cmd.push('HEAD', statusFile.path)
+        } else if (statusFile.isRename) {
+          // Have to tell git diff about the rename
+          cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
         }
 
         return await spawn(cmd, { okCodes: [0, 1] })
@@ -630,7 +633,7 @@ export class Git {
 
     const diffText = diffTexts.join('\n')
 
-    const diff = this.processDiff(diffText)
+    const diff = await this.processDiff(diffText)
 
     return diff
   }

@@ -1318,8 +1318,8 @@ describe('Git', () => {
       const git = new Git(dir)
 
       renameFile('a.txt', 'b.txt')
-      await spawn(['add', '--all'])
       writeFile('b.txt', 'line 1\nline 3')
+      await spawn(['add', '--all'])
 
       const diff = (await git.getDiffFromIndex())!
 
