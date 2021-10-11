@@ -30,7 +30,7 @@ export function DiffPanel() {
 
       {/* <Diff filePatch={filePatch} /> */}
 
-      <DiffEditor original={JSON.stringify(filePatch, null, 2)} modified={JSON.stringify(filePatch, null, 2)} theme="vs-dark" />
+      <DiffEditor original={JSON.stringify(filePatch, null, 2)} modified={JSON.stringify({foo: filePatch}, null, 2)} theme="vs-dark" />
     </StyledPanel>
   )
 }
