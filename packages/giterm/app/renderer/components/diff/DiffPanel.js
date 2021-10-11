@@ -9,6 +9,8 @@ import { Files } from './Files'
 import { Diff } from './Diff'
 import { useDiffData } from './useDiffData'
 
+import { DiffEditor } from "app/lib/monaco";
+
 export function DiffPanel() {
   const { loading, filePath, setFilePath, filePatch, diff } = useDiffData()
 
@@ -26,7 +28,9 @@ export function DiffPanel() {
 
       <Files patches={diff.files} filePath={filePath} onChange={setFilePath} />
 
-      <Diff filePatch={filePatch} />
+      {/* <Diff filePatch={filePatch} /> */}
+
+      <DiffEditor original={JSON.stringify(filePatch, null, 2)} modified={JSON.stringify(filePatch, null, 2)} theme="vs-dark" />
     </StyledPanel>
   )
 }
