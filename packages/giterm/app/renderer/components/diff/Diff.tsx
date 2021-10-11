@@ -4,8 +4,8 @@ import styled from 'styled-components'
 
 import { List } from 'app/lib/primitives'
 
-import { DiffEditor } from "app/lib/monaco"
-import type { editor } from "monaco-editor"
+import { DiffEditor } from 'app/lib/monaco'
+import type { editor } from 'monaco-editor'
 
 export function Diff({ filePatch }) {
   const isRenamed =
@@ -15,7 +15,7 @@ export function Diff({ filePatch }) {
 
   const options: editor.IDiffEditorOptions = {
     renderSideBySide: false,
-    renderOverviewRuler: false
+    renderOverviewRuler: false,
   }
 
   return (
@@ -35,8 +35,13 @@ export function Diff({ filePatch }) {
           </List.Label>
         )}
       </PatchName>
-      
-      <DiffEditor original={JSON.stringify(filePatch, null, 2)} modified={JSON.stringify({foo: filePatch}, null, 2)} theme="vs-dark" options={options} />
+
+      <DiffEditor
+        original={JSON.stringify(filePatch, null, 2)}
+        modified={JSON.stringify({ foo: filePatch }, null, 2)}
+        theme="vs-dark"
+        options={options}
+      />
     </DiffContainer>
   )
 }
