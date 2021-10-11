@@ -2,14 +2,21 @@ import React from 'react'
 import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
-import { Hunk } from './Hunk'
 import { List } from 'app/lib/primitives'
+
+import { DiffEditor } from "app/lib/monaco"
+import type { editor } from "monaco-editor"
 
 export function Diff({ filePatch }) {
   const isRenamed =
     filePatch.oldName !== filePatch.newName &&
     !!filePatch.oldName &&
     !!filePatch.newName
+
+  const options: editor.IDiffEditorOptions = {
+    renderSideBySide: false,
+    renderOverviewRuler: false
+  }
 
   return (
     <DiffContainer>
@@ -28,16 +35,8 @@ export function Diff({ filePatch }) {
           </List.Label>
         )}
       </PatchName>
-
-      <HunksContainer>
-        {filePatch.blocks.length === 0 && (
-          <MessageText>Nothing to display!</MessageText>
-        )}
-
-        {filePatch.blocks.map((hunk, i) => (
-          <Hunk key={`hunk_${i}`} hunk={hunk} index={i} />
-        ))}
-      </HunksContainer>
+      
+      <DiffEditor original={JSON.stringify(filePatch, null, 2)} modified={JSON.stringify({foo: filePatch}, null, 2)} theme="vs-dark" options={options} />
     </DiffContainer>
   )
 }
@@ -70,16 +69,4 @@ const PatchName = styled.div`
 
 const PatchNameSeparator = styled.div`
   padding: 0 0.5rem;
-`
-
-const HunksContainer = styled.div`
-  display: flex;
-  flex-direction: column;
-  flex: 0 0 auto;
-
-  margin-top: 1rem;
-`
-
-const MessageText = styled.div`
-  text-align: center;
 `

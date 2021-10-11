@@ -1,7 +1,11 @@
 import styled from 'styled-components'
 import { colours } from 'app/lib/theme'
 
-export const Row = styled.div`
+export interface RowProps {
+  active?: boolean
+}
+
+export const Row = styled.div<RowProps>`
   display: flex;
   flex-direction: row;
   align-items: center;
