@@ -19,10 +19,13 @@ export function Diff({ left, right }: Props) {
   const editorRef = useRef<editor.IStandaloneDiffEditor>()
   const isRenamed = left.path !== right.path
 
-  const options: editor.IDiffEditorOptions = {
-    renderSideBySide: true,
-    readOnly: true,
-  }
+  const options: editor.IDiffEditorOptions = useMemo(() => {
+    return {
+      renderSideBySide: true,
+      readOnly: true,
+      renderIndicators: false,
+    }
+  }, [])
 
   const [leftLang, rightLang] = useMemo(() => {
     if (!monaco) {
