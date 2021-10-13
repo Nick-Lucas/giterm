@@ -7,7 +7,13 @@ import { List } from 'app/lib/primitives'
 import { DiffEditor } from 'app/lib/monaco'
 import type { editor } from 'monaco-editor'
 
-export function Diff({ filePatch }) {
+import { FilePatch } from './types'
+
+interface Props {
+  filePatch: FilePatch
+}
+
+export function Diff({ filePatch }: Props) {
   const isRenamed =
     filePatch.oldName !== filePatch.newName &&
     !!filePatch.oldName &&
@@ -41,6 +47,7 @@ export function Diff({ filePatch }) {
         modified={JSON.stringify({ foo: filePatch }, null, 2)}
         theme="vs-dark"
         options={options}
+        language="json"
       />
     </DiffContainer>
   )

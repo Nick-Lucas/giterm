@@ -1,17 +1,27 @@
 import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Git } from '@giterm/git'
+import { Git, DiffResult } from '@giterm/git'
 
 import { diffFileSelected } from 'app/store/diff/actions'
 
-export function useDiffData({ contextLines = 5 } = {}) {
+import { DiffLine, FilePatch } from './types'
+
+export interface DiffData {
+  loading: boolean
+  filePath: string | null
+  setFilePath: (path: string) => void
+  diff: DiffResult | null
+  filePatch: FilePatch | null
+}
+
+export function useDiffData({ contextLines = 5 } = {}): DiffData {
   const dispatch = useDispatch()
-  const cwd = useSelector((state) => state.config.cwd)
+  const cwd = useSelector((state: any) => state.config.cwd)
   const {
     mode,
     shas: [shaNew, shaOld = null] = [],
     filePath: _filePath,
-  } = useSelector((state) => state.diff)
+  } = useSelector((state: any) => state.diff)
 
   const setFilePath = useCallback(
     (filePath) => {
@@ -21,7 +31,7 @@ export function useDiffData({ contextLines = 5 } = {}) {
   )
 
   const [loading, setLoading] = useState(true)
-  const [diff, setDiff] = useState(null)
+  const [diff, setDiff] = useState<DiffResult | null>(null)
   useEffect(() => {
     let cancelled = false
 
@@ -48,7 +58,7 @@ export function useDiffData({ contextLines = 5 } = {}) {
     }
   }, [contextLines, cwd, mode, shaNew, shaOld])
 
-  const filePath = useMemo(() => {
+  const filePath = useMemo<string | null>(() => {
     if (
       !_filePath ||
       !diff?.files?.some(
@@ -61,22 +71,31 @@ export function useDiffData({ contextLines = 5 } = {}) {
     }
   }, [_filePath, diff?.files])
 
-  const filePatch = useMemo(() => {
-    if (!diff) return null
+  const filePatch = useMemo<FilePatch | null>(() => {
+    if (!diff || !filePath) {
+      return null
+    }
     const file = diff.files.find(
       (file) => file.oldName === filePath || file.newName === filePath,
     )
+    if (!file) {
+      return null
+    }
 
-    const filePatch = { ...file, selectedFileName: filePath, blocks: [] }
-    if (!file) return filePatch
+    const filePatch: FilePatch = {
+      ...file,
+      selectedFileName: filePath,
+      blocks: [],
+    }
 
     for (const block of file.blocks) {
-      const linesLeft = []
-      const linesRight = []
+      const linesLeft: DiffLine[] = []
+      const linesRight: DiffLine[] = []
 
       for (const line of block.lines) {
-        const isLeft = line.oldNumber >= 0
-        const isRight = line.newNumber >= 0
+        const isLeft = typeof line.oldNumber === 'number' && line.oldNumber >= 0
+        const isRight =
+          typeof line.newNumber === 'number' && line.newNumber >= 0
 
         // Where line has not changed at-all we fix the row to the same index in both columns
         if (isLeft && isRight) {

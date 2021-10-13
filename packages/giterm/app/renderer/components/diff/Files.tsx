@@ -4,7 +4,15 @@ import styled from 'styled-components'
 import { List } from 'app/lib/primitives'
 import { colours } from 'app/lib/theme'
 
-export const Files = ({ patches, filePath, onChange }) => {
+import { DiffResult } from './types'
+
+interface Props {
+  patches: DiffResult['files']
+  filePath: string
+  onChange: (path: string) => void
+}
+
+export const Files = ({ patches, filePath, onChange }: Props) => {
   const colourByIndex = useMemo(() => {
     return patches.map((file) => {
       if (file.isNew) {
@@ -20,7 +28,7 @@ export const Files = ({ patches, filePath, onChange }) => {
   return (
     <FilesContainer>
       {patches.map((patch, i) => {
-        const name = patch.newName ?? patch.oldName
+        const name = patch.newName ?? patch.oldName ?? ''
 
         return (
           <List.Row

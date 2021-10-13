@@ -8,7 +8,7 @@
     "module": "CommonJS",
     "paths": {
       "app/*": ["./app/renderer/*"],
-      "@qflow/*": ["../*/src"]
+      "@giterm/*": ["../*/src"]
     }
   },
   "files": [],
