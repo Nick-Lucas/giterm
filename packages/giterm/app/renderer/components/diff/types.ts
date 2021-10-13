@@ -15,5 +15,7 @@ export type FilePatch = Modify<
   {
     selectedFileName: string
     blocks: FilePatchBlock[]
+    originalText: string
+    modifiedText: string
   }
 >

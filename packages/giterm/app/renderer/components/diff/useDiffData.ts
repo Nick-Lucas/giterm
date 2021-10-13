@@ -1,17 +1,18 @@
 import { useMemo, useState, useEffect, useCallback } from 'react'
 import { useSelector, useDispatch } from 'react-redux'
-import { Git, DiffResult } from '@giterm/git'
+import { Git, DiffResult, DiffFile, FileText } from '@giterm/git'
 
 import { diffFileSelected } from 'app/store/diff/actions'
 
-import { DiffLine, FilePatch } from './types'
+export type { FileText }
 
 export interface DiffData {
   loading: boolean
-  filePath: string | null
+  filePath: string
   setFilePath: (path: string) => void
   diff: DiffResult | null
-  filePatch: FilePatch | null
+  left: FileText | null
+  right: FileText | null
 }
 
 export function useDiffData({ contextLines = 5 } = {}): DiffData {
@@ -32,6 +33,8 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
 
   const [loading, setLoading] = useState(true)
   const [diff, setDiff] = useState<DiffResult | null>(null)
+  const [left, setLeft] = useState<FileText | null>(null)
+  const [right, setRight] = useState<FileText | null>(null)
   useEffect(() => {
     let cancelled = false
 
@@ -46,7 +49,10 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
           : await git.getDiffFromIndex({ contextLines })
 
       if (!cancelled) {
-        diff != null && setDiff(diff)
+        if (diff) {
+          setDiff(diff)
+        }
+
         setLoading(false)
       }
     }
@@ -58,73 +64,66 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     }
   }, [contextLines, cwd, mode, shaNew, shaOld])
 
-  const filePath = useMemo<string | null>(() => {
-    if (
-      !_filePath ||
-      !diff?.files?.some(
+  const fileDiff = useMemo<DiffFile | null>(() => {
+    if (_filePath) {
+      const fileDiff = diff?.files?.find(
         (patch) => (patch.newName ?? patch.oldName) === _filePath,
       )
-    ) {
-      return diff?.files[0]?.newName ?? null
+      return fileDiff ?? null
     } else {
-      return _filePath
+      return diff?.files[0] ?? null
     }
   }, [_filePath, diff?.files])
 
-  const filePatch = useMemo<FilePatch | null>(() => {
-    if (!diff || !filePath) {
-      return null
-    }
-    const file = diff.files.find(
-      (file) => file.oldName === filePath || file.newName === filePath,
-    )
-    if (!file) {
-      return null
+  useEffect(() => {
+    if (!fileDiff) {
+      return
     }
 
-    const filePatch: FilePatch = {
-      ...file,
-      selectedFileName: filePath,
-      blocks: [],
-    }
+    let cancelled = false
 
-    for (const block of file.blocks) {
-      const linesLeft: DiffLine[] = []
-      const linesRight: DiffLine[] = []
+    const leftName = fileDiff.oldName
+    const rightName = fileDiff.newName
 
-      for (const line of block.lines) {
-        const isLeft = typeof line.oldNumber === 'number' && line.oldNumber >= 0
-        const isRight =
-          typeof line.newNumber === 'number' && line.newNumber >= 0
+    async function fetch() {
+      const git = new Git(cwd)
 
-        // Where line has not changed at-all we fix the row to the same index in both columns
-        if (isLeft && isRight) {
-          const headIndex = Math.max(linesLeft.length, linesRight.length)
-          linesLeft[headIndex] = line
-          linesRight[headIndex] = line
-          continue
-        }
-
-        // Otherwise push one at a time to keep the diff compact
-        if (isLeft) {
-          linesLeft.push(line)
-        }
-        if (isRight) {
-          linesRight.push(line)
-        }
+      let left: FileText | null
+      let right: FileText | null
+      if (mode === 'shas') {
+        const shaOldRelative = shaOld ?? `${shaNew}~1`
+        left = await git.getFilePlainText(leftName, shaOldRelative)
+        right = await git.getFilePlainText(rightName, shaNew)
+      } else {
+        left = await git.getFilePlainText(leftName, 'HEAD')
+        right = await git.getFilePlainText(rightName)
       }
 
-      filePatch.blocks.push({ ...block, linesLeft, linesRight })
+      if (!cancelled) {
+        if (left && right) {
+          setLeft(left)
+          setRight(right)
+        }
+
+        setLoading(false)
+      }
     }
 
-    return filePatch
-  }, [diff, filePath])
+    fetch().catch((e) => {
+      throw e
+    })
+
+    return () => {
+      cancelled = true
+    }
+  }, [cwd, fileDiff, mode, shaNew, shaOld])
 
   return {
     loading,
-    filePath,
+    filePath: _filePath,
     setFilePath,
     diff,
-    filePatch,
+    left,
+    right,
   }
 }
