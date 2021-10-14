@@ -78,6 +78,7 @@
     "@babel/preset-env": "^7.10.4",
     "@babel/preset-react": "^7.10.4",
     "@babel/preset-typescript": "^7.15.0",
+    "@types/color": "3",
     "@types/history": "^4.7.9",
     "@types/jest": "^24.0.23",
     "@types/react-dom": "^16.9.14",

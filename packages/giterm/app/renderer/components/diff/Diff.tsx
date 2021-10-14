@@ -24,6 +24,8 @@ export function Diff({ left, right }: Props) {
       renderSideBySide: true,
       readOnly: true,
       renderIndicators: false,
+      codeLens: false,
+      contextmenu: false,
     }
   }, [])
 
@@ -84,7 +86,7 @@ export function Diff({ left, right }: Props) {
       <DiffEditor
         original={left.text}
         modified={right.text}
-        theme="vs-dark" //TODO: custom giterm theme
+        theme="giterm-dark" //TODO: custom giterm theme
         options={options}
         originalLanguage={leftLang}
         modifiedLanguage={rightLang}
