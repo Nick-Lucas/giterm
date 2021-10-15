@@ -3,7 +3,7 @@ import styled from 'styled-components'
 
 import { List } from 'app/lib/primitives'
 
-import { DiffEditor, useMonaco } from 'app/lib/monaco'
+import { DiffEditor, useMonaco, getLanguageByFileType } from 'app/lib/monaco'
 import type { editor } from 'monaco-editor'
 
 import { FileText } from './useDiffData'
@@ -34,26 +34,7 @@ export function Diff({ left, right }: Props) {
       return ['', '']
     }
 
-    const allLanguages = monaco.languages.getLanguages()
-
-    let leftLang = ''
-    let rightLang = ''
-    for (const language of allLanguages) {
-      if (leftLang && rightLang) {
-        break
-      }
-
-      const extensions = language.extensions ?? []
-
-      if (extensions.includes(left.type)) {
-        leftLang = language.id
-      }
-      if (extensions.includes(right.type)) {
-        rightLang = language.id
-      }
-    }
-
-    return [leftLang, rightLang]
+    return getLanguageByFileType(monaco, [left.type, right.type])
   }, [left.type, monaco, right.type])
 
   useValueEffect(
@@ -86,7 +67,7 @@ export function Diff({ left, right }: Props) {
       <DiffEditor
         original={left.text}
         modified={right.text}
-        theme="giterm-dark" //TODO: custom giterm theme
+        theme="giterm-dark"
         options={options}
         originalLanguage={leftLang}
         modifiedLanguage={rightLang}
@@ -100,7 +81,7 @@ const DiffContainer = styled.div`
   display: flex;
   flex-direction: column;
 
-  overflow: auto;
+  overflow: hidden;
 
   flex: 3 3 0;
 `

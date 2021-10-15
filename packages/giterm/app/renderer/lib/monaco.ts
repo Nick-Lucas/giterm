@@ -5,6 +5,8 @@ import { colours } from 'app/lib/theme'
 // Export for usage
 export * from '@monaco-editor/react'
 
+export type Editor = Awaited<ReturnType<typeof loader.init>>
+
 // Patch Monaco state to prevent load error on electron:
 // https://github.com/microsoft/monaco-editor-samples/blob/b9969d41cba002c7e6b9faca33e7b452a49d4545/electron-amd-nodeIntegration/electron-index.html#L36
 self.module = undefined as unknown as NodeModule
@@ -89,3 +91,34 @@ export const initialisation = loader.init().then((monaco) => {
     ],
   })
 })
+
+type Awaited<T> = T extends PromiseLike<infer U> ? U : T
+
+export const getLanguageByFileType = (
+  monaco: Editor,
+  filetypes: string[],
+): string[] => {
+  const allLanguages = monaco.languages.getLanguages()
+
+  const results = filetypes.map(() => '')
+  filetypes = filetypes.map((ft) => (ft.startsWith('.') ? ft : '.' + ft))
+  for (const language of allLanguages) {
+    if (results.every((r) => !!r)) {
+      break
+    }
+
+    const extensions = language.extensions ?? []
+
+    for (let i = 0; i < filetypes.length; i++) {
+      if (!!results[i]) {
+        continue
+      }
+
+      if (extensions.includes(filetypes[i])) {
+        results[i] = language.id
+      }
+    }
+  }
+
+  return results
+}

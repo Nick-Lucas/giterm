@@ -38,7 +38,7 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
   useEffect(() => {
     let cancelled = false
 
-    async function fetch() {
+    async function fetchDiff() {
       const git = new Git(cwd)
 
       const diff =
@@ -57,7 +57,7 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
       }
     }
 
-    fetch()
+    fetchDiff()
 
     return () => {
       cancelled = true
@@ -110,7 +110,7 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     }
 
     fetch().catch((e) => {
-      throw e
+      console.warn(e)
     })
 
     return () => {

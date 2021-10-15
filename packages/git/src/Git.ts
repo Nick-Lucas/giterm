@@ -589,11 +589,7 @@ export class Git {
       const absoluteFilePath = path.join(this.cwd, filePath)
       plainText = await new Promise<string>((resolve, reject) => {
         fs.readFile(absoluteFilePath, (err, data) => {
-          if (err) {
-            reject(err)
-          } else {
-            resolve(data.toString())
-          }
+          err ? reject(err) : resolve(data.toString())
         })
       })
     }
