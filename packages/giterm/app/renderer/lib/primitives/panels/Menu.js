@@ -43,3 +43,8 @@ export const Item = styled.div`
     margin-right: 0;
   }
 `
+
+export const Divider = styled.div`
+  margin-right: 0.25rem;
+  margin-right: 0.25rem;
+`

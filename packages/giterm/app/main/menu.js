@@ -31,6 +31,18 @@ export default function menu(mainWindow) {
       ],
     },
     {
+      label: 'Diff',
+      submenu: [
+        {
+          label: 'Toggle Diff mode',
+          accelerator: 'Control+i',
+          click() {
+            // app.js
+          },
+        },
+      ],
+    },
+    {
       label: 'View',
       submenu: [
         {

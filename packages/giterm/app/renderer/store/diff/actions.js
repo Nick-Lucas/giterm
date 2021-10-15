@@ -21,6 +21,11 @@ export const diffToggleShow = () => ({
   type: DIFF_TOGGLE_SHOW,
 })
 
+export const DIFF_TOGGLE_DIFF_MODE = 'diff/toggle_diff_mode'
+export const diffToggleDiffMode = () => ({
+  type: DIFF_TOGGLE_DIFF_MODE,
+})
+
 export const DIFF_FILE_SELECTED = 'diff/file_selected'
 export const diffFileSelected = (filePath) => ({
   type: DIFF_FILE_SELECTED,

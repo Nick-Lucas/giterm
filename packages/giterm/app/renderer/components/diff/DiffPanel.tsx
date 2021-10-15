@@ -13,9 +13,13 @@ export function DiffPanel() {
 
   if (loading || !diff || !left || !right) {
     return (
-      <DiffContainer>
-        <MessageText>Loading</MessageText>
-      </DiffContainer>
+      <StyledPanel>
+        <LowerPanelMenu />
+
+        <DiffContainer>
+          <MessageText>Loading</MessageText>
+        </DiffContainer>
+      </StyledPanel>
     )
   }
 

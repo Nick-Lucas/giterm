@@ -4,17 +4,27 @@ import {
   DIFF_COMPLETE,
   DIFF_TOGGLE_SHOW,
   DIFF_FILE_SELECTED,
+  DIFF_TOGGLE_DIFF_MODE,
 } from './actions'
 import produce from 'immer'
 
-const initialState = {
+export interface Reducer {
+  show: boolean
+  mode: 'shas' | 'index' | null
+  shas: string[]
+  filePath: string | null
+  diffMode: 'split' | 'inline'
+}
+
+const initialState: Reducer = {
   show: false,
   mode: null,
   shas: [],
   filePath: null,
+  diffMode: 'split',
 }
 
-export function reducer(state = initialState, action) {
+export function reducer(state = initialState, action: any) {
   return produce(state, (draft) => {
     switch (action.type) {
       case DIFF_COMPLETE: {
@@ -23,6 +33,7 @@ export function reducer(state = initialState, action) {
 
       case DIFF_INDEX: {
         return {
+          ...draft,
           show: true,
           mode: 'index',
           shas: [],
@@ -34,6 +45,7 @@ export function reducer(state = initialState, action) {
         const { shas } = action
 
         return {
+          ...draft,
           show: true,
           mode: 'shas',
           shas: shas,
@@ -43,6 +55,11 @@ export function reducer(state = initialState, action) {
 
       case DIFF_TOGGLE_SHOW: {
         draft.show = !draft.show
+        return
+      }
+
+      case DIFF_TOGGLE_DIFF_MODE: {
+        draft.diffMode = draft.diffMode === 'inline' ? 'split' : 'inline'
         return
       }
 

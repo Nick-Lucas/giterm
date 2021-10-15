@@ -1,8 +1,11 @@
 import React, { useCallback, useMemo, useRef } from 'react'
 import styled from 'styled-components'
+import { useSelector } from 'react-redux'
 
 import { DiffEditor, useMonaco, getLanguageByFileType } from 'app/lib/monaco'
 import type { editor } from 'monaco-editor'
+
+import type { Store } from 'app/store/reducers.types'
 
 import { FileText } from './useDiffData'
 import { useValueEffect } from 'app/lib/hooks'
@@ -15,16 +18,19 @@ interface Props {
 export function Diff({ left, right }: Props) {
   const monaco = useMonaco()
   const editorRef = useRef<editor.IStandaloneDiffEditor>()
+  const diffMode = useSelector<Store, Store['diff']['diffMode']>(
+    (store) => store.diff.diffMode,
+  )
 
   const options: editor.IDiffEditorOptions = useMemo(() => {
     return {
-      renderSideBySide: true,
+      renderSideBySide: diffMode === 'split',
       readOnly: true,
       renderIndicators: false,
       codeLens: false,
       contextmenu: false,
     }
-  }, [])
+  }, [diffMode])
 
   const [leftLang, rightLang] = useMemo(() => {
     if (!monaco) {
