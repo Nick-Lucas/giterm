@@ -1,6 +1,12 @@
 import styled from 'styled-components'
 
-export const Label = styled.div`
+export interface LabelProps {
+  colour?: string
+  trimStart?: boolean
+  textAlign?: 'left' | 'right' | 'center' | 'justify' | 'match-parent'
+}
+
+export const Label = styled.div<LabelProps>`
   flex: 1;
 
   color: ${({ colour }) => colour || 'inherit'};

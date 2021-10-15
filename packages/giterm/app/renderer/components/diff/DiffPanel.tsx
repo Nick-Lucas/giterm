@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import styled from 'styled-components'
 
 import { Panel } from 'app/lib/primitives'
@@ -10,13 +9,17 @@ import { Diff } from './Diff'
 import { useDiffData } from './useDiffData'
 
 export function DiffPanel() {
-  const { loading, filePath, setFilePath, filePatch, diff } = useDiffData()
+  const { loading, filePath, setFilePath, diff, left, right } = useDiffData()
 
-  if (loading || !diff) {
+  if (loading || !diff || !left || !right) {
     return (
-      <DiffContainer>
-        <MessageText>Loading</MessageText>
-      </DiffContainer>
+      <StyledPanel>
+        <LowerPanelMenu />
+
+        <DiffContainer>
+          <MessageText>Loading</MessageText>
+        </DiffContainer>
+      </StyledPanel>
     )
   }
 
@@ -26,15 +29,9 @@ export function DiffPanel() {
 
       <Files patches={diff.files} filePath={filePath} onChange={setFilePath} />
 
-      <Diff filePatch={filePatch} />
+      <Diff left={left} right={right} />
     </StyledPanel>
   )
-}
-
-DiffPanel.propTypes = {
-  mode: PropTypes.oneOf(['shas', 'index']),
-  shaNew: PropTypes.string,
-  shaOld: PropTypes.string,
 }
 
 const StyledPanel = styled(Panel)`

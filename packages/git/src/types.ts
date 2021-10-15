@@ -65,3 +65,9 @@ export type GitFileOp =
   | 'X' // Unknown
   | 'B' // Broken
   | undefined
+
+export interface FileText {
+  path: string
+  text: string
+  type: string
+}

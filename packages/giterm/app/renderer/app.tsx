@@ -11,7 +11,7 @@ import configureStore from './store'
 import { Home } from './containers/home'
 import { showRemoteBranches, showBranchTags } from './store/config/actions'
 import { flipUserTerminalFullscreen } from './store/terminal/actions'
-import { diffToggleShow } from './store/diff/actions'
+import { diffToggleShow, diffToggleDiffMode } from './store/diff/actions'
 
 import '../sentry'
 import { ErrorBoundary } from '@sentry/react'
@@ -65,6 +65,11 @@ window.addEventListener(
       store.dispatch(
         showRemoteBranches(!store.getState().config.showRemoteBranches),
       )
+      ev.stopImmediatePropagation()
+      return
+    }
+    if (combo(ev, ev.key === 'i', { ctrl: true })) {
+      store.dispatch(diffToggleDiffMode())
       ev.stopImmediatePropagation()
       return
     }

@@ -20,6 +20,7 @@ import type {
   WatcherCallback,
   WatcherEvent,
 } from './types'
+import { FileText } from 'src'
 
 const PROFILING = true
 let perfStart = (name: string) => {
@@ -558,6 +559,45 @@ export class Git {
 
     return () => {
       watcher.close()
+    }
+  }
+
+  getFilePlainText = async (
+    filePath: string | null,
+    sha: string | null = null,
+  ): Promise<FileText | null> => {
+    const spawn = await this._getSpawn()
+    if (!spawn) {
+      return null
+    }
+
+    if (!filePath) {
+      return {
+        path: '',
+        type: '',
+        text: '',
+      }
+    }
+
+    const fileType = path.extname(filePath)
+
+    let plainText = null
+    if (sha) {
+      const cmd = ['show', `${sha}:${filePath}`]
+      plainText = await spawn(cmd)
+    } else {
+      const absoluteFilePath = path.join(this.cwd, filePath)
+      plainText = await new Promise<string>((resolve, reject) => {
+        fs.readFile(absoluteFilePath, (err, data) => {
+          err ? reject(err) : resolve(data.toString())
+        })
+      })
+    }
+
+    return {
+      path: filePath,
+      text: plainText,
+      type: fileType,
     }
   }
 
