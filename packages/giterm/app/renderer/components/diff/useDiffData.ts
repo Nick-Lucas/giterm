@@ -3,6 +3,7 @@ import { useSelector, useDispatch } from 'react-redux'
 import { Git, DiffResult, DiffFile, FileText } from '@giterm/git'
 
 import { diffFileSelected } from 'app/store/diff/actions'
+import { setWindowTitle } from 'app/lib/title'
 
 export type { FileText }
 
@@ -75,6 +76,8 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     }
   }, [_filePath, diff?.files])
 
+  const fileName = _filePath || fileDiff?.newName || fileDiff?.oldName || ''
+
   useEffect(() => {
     if (!fileDiff) {
       return
@@ -118,9 +121,31 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     }
   }, [cwd, fileDiff, mode, shaNew, shaOld])
 
+  useEffect(() => {
+    const oldName = fileDiff?.oldName
+    const newName = fileDiff?.newName
+
+    const isRenamed = oldName !== newName
+
+    let title: string
+    if (isRenamed) {
+      if (oldName && newName) {
+        title = `${oldName} -> ${newName}`
+      } else if (oldName) {
+        title = `${oldName} (deleted)`
+      } else {
+        title = `${newName} (created)`
+      }
+    } else {
+      title = `${newName ?? oldName ?? ''}`
+    }
+
+    return setWindowTitle(title)
+  }, [fileDiff?.newName, fileDiff?.oldName])
+
   return {
     loading,
-    filePath: _filePath,
+    filePath: fileName,
     setFilePath,
     diff,
     left,

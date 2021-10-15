@@ -4,7 +4,7 @@ import { remote } from 'electron'
 
 export function RightClickArea({
   onClick,
-  onDoubleClick,
+  onDoubleClick = null,
   menuItems,
   ...props
 }) {

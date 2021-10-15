@@ -9,7 +9,8 @@
     "module": "ESNext",
     "target": "ES2020",
     "moduleResolution": "node",
-    "resolveJsonModule": true
+    "resolveJsonModule": true,
+    "noUnusedLocals": true
   },
   "typeAcquisition": {
     "enable": true

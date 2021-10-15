@@ -1,10 +1,11 @@
 import React, { useMemo } from 'react'
 import styled from 'styled-components'
 
-import { List } from 'app/lib/primitives'
+import { List, RightClickArea } from 'app/lib/primitives'
 import { colours } from 'app/lib/theme'
 
 import { DiffResult } from './types'
+import { clipboard } from 'electron'
 
 interface Props {
   patches: DiffResult['files']
@@ -30,15 +31,36 @@ export const Files = ({ patches, filePath, onChange }: Props) => {
       {patches.map((patch, i) => {
         const name = patch.newName ?? patch.oldName ?? ''
 
+        const menuItems = []
+        if (patch.oldName && patch.newName && patch.oldName !== patch.newName) {
+          menuItems.push(
+            {
+              label: 'Copy Path (Old)',
+              click: () => clipboard.writeText(patch.oldName!),
+            },
+            {
+              label: 'Copy Path (New)',
+              click: () => clipboard.writeText(patch.newName!),
+            },
+          )
+        } else {
+          menuItems.push({
+            label: 'Copy Path',
+            click: () => clipboard.writeText(name),
+          })
+        }
+
         return (
-          <List.Row
-            active={name === filePath}
+          <RightClickArea
             key={name}
-            onClick={() => onChange(name)}>
-            <List.Label trimStart colour={colourByIndex[i]}>
-              {name}
-            </List.Label>
-          </List.Row>
+            onClick={() => onChange(name)}
+            menuItems={menuItems}>
+            <List.Row active={name === filePath} key={name}>
+              <List.Label trimStart colour={colourByIndex[i]}>
+                {name}
+              </List.Label>
+            </List.Row>
+          </RightClickArea>
         )
       })}
     </FilesContainer>
