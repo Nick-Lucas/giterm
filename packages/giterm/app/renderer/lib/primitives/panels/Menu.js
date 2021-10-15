@@ -3,6 +3,7 @@ import { createPortal } from 'react-dom'
 import styled from 'styled-components'
 
 import { Context } from './Context'
+import { colours } from 'app/lib/theme'
 
 export function Show(props) {
   const element = useContext(Context)
@@ -22,9 +23,15 @@ const MenuWrapper = styled.div`
 
   z-index: 1000;
 
+  /* Anchor to top right of view */
   position: absolute;
   top: 0;
   right: 0;
+
+  background-color: ${colours.palette.bg};
+  border-bottom-left-radius: 5px;
+  border-bottom: solid gray 1px;
+  border-left: solid gray 1px;
 `
 
 export const Item = styled.div`
