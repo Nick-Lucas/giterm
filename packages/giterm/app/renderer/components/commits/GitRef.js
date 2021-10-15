@@ -1,7 +1,7 @@
 import React from 'react'
 import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
-import { Cloud, Target, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
+import { Cloud, Tag, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
 
 import { Pill } from 'app/lib/primitives'
 import * as propTypes from './props'
@@ -9,6 +9,14 @@ import * as propTypes from './props'
 const iconProps = {
   size: '12',
   style: { marginBottom: '-1px' },
+}
+
+const tagProps = {
+  ...iconProps,
+  style: {
+    ...iconProps,
+    marginRight: '-1px',
+  },
 }
 
 function iconFromType(type) {
@@ -20,7 +28,7 @@ function iconFromType(type) {
       return <Cloud {...iconProps} />
 
     case propTypes.REF_TYPE_TAG:
-      return <Target {...iconProps} />
+      return <Tag {...tagProps} />
   }
 }
 

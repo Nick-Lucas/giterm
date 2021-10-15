@@ -2,7 +2,7 @@ import React, { useMemo } from 'react'
 import { useSelector } from 'react-redux'
 
 import { clipboard } from 'electron'
-import { Target } from 'react-feather'
+import { Tag } from 'react-feather'
 
 import { Section } from './Section'
 import { RightClickArea, List } from 'app/lib/primitives'
@@ -30,7 +30,7 @@ export function Tags() {
   }, [_tags])
 
   return (
-    <Section title="TAGS" initialOpenState={false} icon={<Target size={15} />}>
+    <Section title="TAGS" initialOpenState={false} icon={<Tag size={15} />}>
       {tags.map((tag) => {
         return (
           <RightClickArea key={tag.id} menuItems={tag.menuItems}>
