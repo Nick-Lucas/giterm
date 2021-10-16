@@ -95,7 +95,6 @@ export class GitRefs {
       'for-each-ref',
       `--format=${format.join(SEP_GIT)}`,
       `--sort=${query.sort ?? '-committerdate'}`,
-      `--sort=refname`,
       typeof query.limit === 'number' &&
         query.limit > 0 &&
         `count=${query.limit}`,
@@ -157,6 +156,7 @@ export class GitRefs {
         // Ensure that remote refs do not appear twice, once against a local ref and once on their own
         if (!!upstreamId) {
           const seenRefIndex = seenUpstreamIdToRefIndex[upstreamId]
+
           if (seenRefIndex >= 0 && isLocal) {
             // If we've already seen the branch ref but this time it's with a local reference,
             //  later we need to remove the previously seen version so we can add this (better) one without introducing duplicates
@@ -211,7 +211,7 @@ export class GitRefs {
 
       // Process refs queued for discarding
       for (let i = discardQueue.length - 1; i >= 0; i--) {
-        refs.splice(i, 1)
+        refs.splice(discardQueue[i], 1)
       }
 
       return {
