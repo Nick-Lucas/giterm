@@ -2,15 +2,27 @@ import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
 import { remote } from 'electron'
 
+export interface MenuItem {
+  label: string
+  click: () => void
+}
+
+interface Props {
+  onClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  onDoubleClick?: (e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void
+  menuItems: MenuItem[]
+  [key: string]: any
+}
+
 export function RightClickArea({
   onClick,
-  onDoubleClick = null,
+  onDoubleClick,
   menuItems,
   ...props
-}) {
+}: Props) {
   const handleContextMenu = useCallback(() => {
     const builtMenu = remote.Menu.buildFromTemplate(menuItems)
-    builtMenu.popup(remote.getCurrentWindow())
+    builtMenu.popup({ window: remote.getCurrentWindow() })
   }, [menuItems])
 
   return (

@@ -1,7 +1,14 @@
 import React, { useState, useCallback } from 'react'
-import PropTypes from 'prop-types'
 import { ChevronDown, Minus } from 'react-feather'
 import styled from 'styled-components'
+
+interface Props {
+  title: string
+  children: any
+  hasContent?: boolean
+  initialOpenState?: boolean
+  icon: any
+}
 
 export function Section({
   title,
@@ -9,7 +16,7 @@ export function Section({
   hasContent = true,
   initialOpenState = true,
   icon = null,
-}) {
+}: Props) {
   const [open, setOpen] = useState(initialOpenState)
   const toggleOpen = useCallback(() => {
     setOpen((open) => !open)
@@ -36,15 +43,7 @@ export function Section({
   )
 }
 
-Section.propTypes = {
-  title: PropTypes.string.isRequired,
-  children: PropTypes.node,
-  hasContent: PropTypes.bool,
-  initialOpenState: PropTypes.bool,
-  icon: PropTypes.node,
-}
-
-const Container = styled.div`
+const Container = styled.div<{ open: boolean }>`
   margin-bottom: ${({ open }) => (open ? '1rem' : '0')};
 `
 
@@ -79,7 +78,7 @@ const Button = styled.button`
   }
 `
 
-const Chevron = styled(ChevronDown)`
+const Chevron = styled(ChevronDown)<{ open: boolean }>`
   transition: transform ease-in-out 0.3s;
   transform: ${({ open }) => (open ? 'rotate(0deg)' : 'rotate(-180deg)')};
 `

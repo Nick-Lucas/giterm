@@ -158,11 +158,8 @@ export const _Row = ({
               <GitRef
                 key={branch.upstream!.id}
                 label={branch.upstream!.name}
-                current={branch.isHead}
                 remoteInSync={branch.upstream?.sha === branch.sha}
                 type="remote-branch"
-                ahead={branch.upstream ? branch.upstream.ahead : 0}
-                behind={branch.upstream ? branch.upstream.behind : 0}
               />
             ))}
 

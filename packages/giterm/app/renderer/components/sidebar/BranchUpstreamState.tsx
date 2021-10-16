@@ -1,14 +1,19 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { ArrowUp, ArrowDown, Cloud } from 'react-feather'
 
 import { Pill } from 'app/lib/primitives'
 
+interface Props {
+  ahead?: number
+  behind?: number
+  selected?: boolean
+}
+
 export function BranchUpstreamState({
-  ahead = null,
-  behind = null,
+  ahead = 0,
+  behind = 0,
   selected = false,
-}) {
+}: Props) {
   const inSync = ahead === 0 && behind === 0
 
   return (
@@ -38,10 +43,4 @@ export function BranchUpstreamState({
       </Pill.Segment>
     </Pill.Container>
   )
-}
-
-BranchUpstreamState.propTypes = {
-  ahead: PropTypes.number,
-  behind: PropTypes.number,
-  selected: PropTypes.bool,
 }

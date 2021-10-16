@@ -3,7 +3,7 @@ import styled, { css } from 'styled-components'
 import { colours } from 'app/lib/theme'
 
 interface ContainerProps {
-  marginRight?: string
+  marginRight?: string | number
 }
 export const Container = styled.div<ContainerProps>`
   display: flex;

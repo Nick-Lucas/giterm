@@ -6,34 +6,25 @@ import { Tag } from 'react-feather'
 
 import { Section } from './Section'
 import { RightClickArea, List } from 'app/lib/primitives'
+import { Store } from 'app/store/reducers.types'
 
 export function Tags() {
-  const _tags = useSelector((state) => state.tags.list)
+  const tags = useSelector((state: Store) => state.tags.list)
 
-  const tags = useMemo(() => {
-    const tags = []
-
-    for (const tag of _tags || []) {
-      tags.push({
-        id: tag.id,
-        name: tag.name,
-        menuItems: [
-          {
-            label: 'Copy ID',
-            click: () => clipboard.writeText(tag.id),
-          },
-        ],
-      })
-    }
-
-    return tags
-  }, [_tags])
+  const menuItems = useMemo(() => {
+    return tags.map(tag => [
+      {
+        label: 'Copy ID',
+        click: () => clipboard.writeText(tag.id),
+      },
+    ])
+  }, [tags])
 
   return (
     <Section title="TAGS" initialOpenState={false} icon={<Tag size={15} />}>
-      {tags.map((tag) => {
+      {tags.map((tag, index) => {
         return (
-          <RightClickArea key={tag.id} menuItems={tag.menuItems}>
+          <RightClickArea key={tag.id} menuItems={menuItems[index]}>
             <List.Row>
               <List.Label>{tag.name}</List.Label>
             </List.Row>
