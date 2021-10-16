@@ -4,7 +4,7 @@ import { useSelector } from 'react-redux'
 import { Cloud, Tag, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
 
 import { Pill } from 'app/lib/primitives'
-import * as propTypes from './props'
+import { RefType } from './props'
 
 const iconProps = {
   size: '12',
@@ -19,17 +19,26 @@ const tagProps = {
   },
 }
 
-function iconFromType(type) {
+function iconFromType(type: RefType) {
   switch (type) {
-    case propTypes.REF_TYPE_BRANCH:
+    case 'branch':
       return <GitBranch {...iconProps} />
 
-    case propTypes.REF_TYPE_REMOTE_BRANCH:
+    case 'remote-branch':
       return <Cloud {...iconProps} />
 
-    case propTypes.REF_TYPE_TAG:
+    case 'tag':
       return <Tag {...tagProps} />
   }
+}
+
+interface Props {
+  type: RefType
+  label: string
+  current?: boolean
+  remoteInSync?: boolean
+  ahead?: number
+  behind?: number
 }
 
 export function GitRef({
@@ -39,8 +48,8 @@ export function GitRef({
   remoteInSync,
   ahead = 0,
   behind = 0,
-}) {
-  const show = useSelector((state) => state.config.showBranchTags)
+}: Props) {
+  const show = useSelector((state: any) => state.config.showBranchTags)
   if (!show) {
     return null
   }
@@ -49,7 +58,7 @@ export function GitRef({
     <Pill.Container>
       <Pill.Segment current={current}>{iconFromType(type)}</Pill.Segment>
 
-      {type === propTypes.REF_TYPE_BRANCH && remoteInSync && (
+      {type === 'branch' && remoteInSync && (
         <Pill.Segment current={current}>
           <Cloud {...iconProps} />
         </Pill.Segment>
@@ -78,13 +87,4 @@ export function GitRef({
       )}
     </Pill.Container>
   )
-}
-
-GitRef.propTypes = {
-  label: PropTypes.string.isRequired,
-  current: PropTypes.bool,
-  remoteInSync: PropTypes.bool,
-  type: propTypes.refTypes.isRequired,
-  ahead: PropTypes.number,
-  behind: PropTypes.number,
 }

@@ -6,11 +6,11 @@ import { Git } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
 
-function* updateBranches() {
+function* updateBranches(): any {
   const cwd = yield select((state) => state.config.cwd)
   const git = new Git(cwd)
 
-  const branches = yield call(() => git.getAllBranches())
+  const branches = yield call(git.refs.getAllBranches)
 
   yield put(branchesUpdated(branches))
 }

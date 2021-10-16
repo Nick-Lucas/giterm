@@ -2,66 +2,13 @@ import _ from 'lodash'
 
 import type { GetSpawn } from './types'
 
-export type RefSort = 'refname' | '-committerdate'
-
-export interface GetBranchRefs {
-  type: 'branches'
-  filter: 'all' | 'local' | 'remote'
-  sort?: RefSort
-  limit?: number
-}
-
-export interface GetTagRefs {
-  type: 'tags'
-  sort?: RefSort
-  limit?: number
-}
-
-export interface RefLocal {
-  id: string
-  name: string
-}
-
-export interface RefRemote {
-  id: string
-  name: string
-  ahead: number
-  behind: number
-}
-
-export interface BranchRef {
-  isHead: boolean
-  sha: string
-  local: RefLocal | false
-  authorDate: string
-  commitDate: string
-  upstream: RefRemote | false
-}
-
-export interface TagRef {
-  id: string
-  name: string
-  sha: string
-  commitDate: string
-  authorDate: string
-}
-
-export interface BranchRefs {
-  type: 'branches'
-  query: GetBranchRefs
-  refs: BranchRef[]
-}
-
-export interface TagRefs {
-  type: 'tags'
-  query: GetTagRefs
-  refs: TagRef[]
-}
-
-export type GetRefsFunc = {
-  (query: GetTagRefs): Promise<TagRefs>
-  (query: GetBranchRefs): Promise<BranchRefs>
-}
+import type {
+  BranchRef,
+  GetBranchRefs,
+  GetRefsFunc,
+  GetTagRefs,
+  TagRef,
+} from './GitRefs.types'
 
 export class GitRefs {
   _cwd: string
@@ -177,6 +124,7 @@ export class GitRefs {
       const refs: BranchRef[] = []
 
       const seenUpstreamIdToRefIndex: Record<string, number> = {}
+      const discardQueue: number[] = []
 
       for (let i = 0; i < tuples.length; i++) {
         let [
@@ -191,9 +139,12 @@ export class GitRefs {
           upstreamDiff,
         ] = tuples[i]
 
+        let upstreamSha: string | undefined = undefined
+
         // Remote branches can show up in the first fields when not being tracked locally
         // We just move them to the remote elements and move on
         if (refId?.startsWith('refs/remotes')) {
+          upstreamSha = sha
           upstreamId = refId
           upstreamName = refName
           refId = ''
@@ -208,15 +159,26 @@ export class GitRefs {
           const seenRefIndex = seenUpstreamIdToRefIndex[upstreamId]
           if (seenRefIndex >= 0 && isLocal) {
             // If we've already seen the branch ref but this time it's with a local reference,
-            //  we need to remove the previously seen version so we can add this (better) one without introducing duplicates
-            refs.splice(seenRefIndex, 1)
+            //  later we need to remove the previously seen version so we can add this (better) one without introducing duplicates
+            const remoteRef = refs[seenRefIndex]
+            discardQueue.push(seenRefIndex)
+
+            // We also copy over the sha so that diverged branches can be easily searched by sha on both local and remote refs
+            upstreamSha = remoteRef.sha
           } else if (seenRefIndex >= 0) {
             // In this scenario the other reference is going to be a local one and is the better reference so we bail on this ref
+
+            // but not before we copy in the upstream sha from here
+            const localRef = refs[seenRefIndex]
+            if (localRef.upstream) {
+              localRef.upstream.sha = upstreamSha
+            }
+
             continue
           }
 
           // We're about to create this index and may need to check it in the future
-          seenUpstreamIdToRefIndex[upstreamId] = tuples.length
+          seenUpstreamIdToRefIndex[upstreamId] = refs.length
         }
 
         const ahead = parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? '0')
@@ -225,21 +187,31 @@ export class GitRefs {
         const ref: BranchRef = {
           sha: sha,
           isHead: isHead === '*',
-          local: isLocal && {
-            id: refId,
-            name: refName,
-          },
-          upstream: isUpstream && {
-            id: upstreamId,
-            name: upstreamName,
-            ahead: ahead,
-            behind: behind,
-          },
+          local: isLocal
+            ? {
+                id: refId,
+                name: refName,
+              }
+            : undefined,
+          upstream: isUpstream
+            ? {
+                sha: upstreamSha,
+                id: upstreamId,
+                name: upstreamName,
+                ahead: ahead,
+                behind: behind,
+              }
+            : undefined,
           authorDate: authorDate,
           commitDate: commitDate,
         }
 
         refs.push(ref)
+      }
+
+      // Process refs queued for discarding
+      for (let i = discardQueue.length - 1; i >= 0; i--) {
+        refs.splice(i, 1)
       }
 
       return {

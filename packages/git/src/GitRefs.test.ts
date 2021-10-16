@@ -1,7 +1,7 @@
 import { Git } from './Git'
 import { TestGitShim } from './TestGitShim'
 
-import { BranchRef, TagRef } from './GitRefs'
+import { BranchRef, TagRef } from './GitRefs.types'
 
 describe('Git', () => {
   let shim: TestGitShim
@@ -43,7 +43,7 @@ describe('Git', () => {
             name: 'branch-a',
           },
           isHead: false,
-          upstream: false,
+          upstream: undefined,
         }),
         expect.objectContaining<Partial<BranchRef>>({
           sha,
@@ -52,7 +52,7 @@ describe('Git', () => {
             name: 'branch-b',
           },
           isHead: true,
-          upstream: false,
+          upstream: undefined,
         }),
       ])
 
@@ -64,12 +64,14 @@ describe('Git', () => {
     })
 
     describe('with remote', () => {
+      let sha_a: string
+
       beforeEach(async () => {
         await spawn(['init'])
 
         shim.writeFile('f1.txt', 'abc')
         await spawn(['checkout', '-b', 'branch-a'])
-        await shim.commit('Initial Commit')
+        sha_a = await shim.commit('Initial Commit')
         await spawn(['checkout', '-b', 'branch-b'])
 
         const remoteUri = await shim.createRemote()
@@ -84,20 +86,23 @@ describe('Git', () => {
 
         expect(branches.refs).toEqual([
           expect.objectContaining<Partial<BranchRef>>({
+            sha: sha_a,
             local: {
               id: 'refs/heads/branch-a',
               name: 'branch-a',
             },
             isHead: false,
-            upstream: false,
+            upstream: undefined,
           }),
           expect.objectContaining<Partial<BranchRef>>({
+            sha: sha_a,
             local: {
               id: 'refs/heads/branch-b',
               name: 'branch-b',
             },
             isHead: true,
             upstream: {
+              sha: sha_a,
               ahead: 0,
               behind: 0,
               id: 'refs/remotes/origin/branch-b',
@@ -119,7 +124,7 @@ describe('Git', () => {
         await spawn(['branch', '--delete', 'branch-a'])
 
         shim.writeFile('f2.txt', 'ahead')
-        await shim.commit('Pushed Commit')
+        const sha_b = await shim.commit('Pushed Commit')
         await spawn(['push'])
         await spawn(['reset', '--hard', 'HEAD~1'])
 
@@ -127,12 +132,14 @@ describe('Git', () => {
 
         expect(branches.refs).toEqual([
           expect.objectContaining<Partial<BranchRef>>({
+            sha: sha_a,
             local: {
               id: 'refs/heads/branch-b',
               name: 'branch-b',
             },
             isHead: true,
             upstream: {
+              sha: sha_b,
               id: 'refs/remotes/origin/branch-b',
               name: 'origin/branch-b',
               ahead: 0,
@@ -154,18 +161,20 @@ describe('Git', () => {
         await spawn(['branch', '--delete', 'branch-a'])
 
         shim.writeFile('f2.txt', 'ahead')
-        await shim.commit('Unpushed Commit')
+        const sha_b = await shim.commit('Unpushed Commit')
 
         const branches = await git.refs.getAllBranches({ sort: 'refname' })
 
         expect(branches.refs).toEqual([
           expect.objectContaining<Partial<BranchRef>>({
+            sha: sha_b,
             local: {
               id: 'refs/heads/branch-b',
               name: 'branch-b',
             },
             isHead: true,
             upstream: {
+              sha: sha_a,
               id: 'refs/remotes/origin/branch-b',
               name: 'origin/branch-b',
               ahead: 1,

@@ -1,14 +1,29 @@
 import PropTypes from 'prop-types'
 
+export interface Column {
+  name: string
+  key: string
+  width: any
+  showTags: boolean
+  format?: (commit: any) => string
+}
+
 export const columns = PropTypes.arrayOf(
   PropTypes.shape({
     name: PropTypes.string.isRequired,
     key: PropTypes.string.isRequired,
     width: PropTypes.any,
     showsTags: PropTypes.bool,
-    skipRowRender: PropTypes.bool,
   }),
 )
+
+export interface Commit {
+  sha: string
+  message: string
+  authorStr: string
+  dateStr: string
+  isHead: boolean
+}
 
 export const commit = PropTypes.shape({
   sha: PropTypes.string,
@@ -19,6 +34,8 @@ export const commit = PropTypes.shape({
 })
 
 export const commits = PropTypes.arrayOf(commit)
+
+export type RefType = 'branch' | 'remote-branch' | 'tag'
 
 export const REF_TYPE_BRANCH = 'branch'
 export const REF_TYPE_REMOTE_BRANCH = 'remote-branch'

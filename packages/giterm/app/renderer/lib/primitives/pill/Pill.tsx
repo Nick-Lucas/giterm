@@ -2,7 +2,10 @@ import styled, { css } from 'styled-components'
 
 import { colours } from 'app/lib/theme'
 
-export const Container = styled.div`
+interface ContainerProps {
+  marginRight?: string
+}
+export const Container = styled.div<ContainerProps>`
   display: flex;
   flex-direction: row;
   flex: 0;
@@ -10,7 +13,13 @@ export const Container = styled.div`
   margin-right: ${({ marginRight }) => marginRight ?? '5px'};
 `
 
-export const Segment = styled.div`
+interface SegmentProps {
+  width?: number
+  current?: boolean
+  warning?: boolean
+  error?: boolean
+}
+export const Segment = styled.div<SegmentProps>`
   display: flex;
   align-items: center;
   justify-content: center;

@@ -1,5 +1,7 @@
 import * as Diff2Html from 'diff2html/lib-esm/types'
 
+export * from './GitRefs.types'
+
 export type WatcherEvent =
   | 'add'
   | 'unlink'
