@@ -96,7 +96,7 @@ const rootElementSelector = document.currentScript?.getAttribute(
 const rootElement = document.querySelector(rootElementSelector)
 
 ReactDOM.render(
-  <ErrorBoundary fallback="An error occurred and has been reported. Please restart the app">
+  <ErrorBoundary>
     <Provider store={store}>
       <Router history={history as any}>
         <Switch>

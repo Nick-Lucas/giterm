@@ -1,5 +1,4 @@
 import React from 'react'
-import PropTypes from 'prop-types'
 import { useSelector } from 'react-redux'
 import { Cloud, Tag, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
 
