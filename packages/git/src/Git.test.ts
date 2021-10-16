@@ -1,90 +1,18 @@
-import os from 'os'
-import fs from 'fs'
-import path from 'path'
-import child_process from 'child_process'
 import { Git } from './Git'
 import { STATE } from './constants'
 import { Commit, DiffResult, DiffFile, StatusFile } from './types'
 
-const tmp = os.tmpdir()
-
-const getSpawn =
-  (cwd: string) =>
-  async (
-    args: string[],
-    { errorOnNonZeroExit = true } = {},
-  ): Promise<string> => {
-    const buffers: Buffer[] = []
-    const child = child_process.spawn('git', args, { cwd })
-
-    return new Promise((resolve, reject) => {
-      child.stdout.on('data', (data) => {
-        buffers.push(data)
-      })
-
-      child.stderr.on('data', (data) => {
-        buffers.push(data)
-      })
-
-      child.on('close', (code) => {
-        if (code != 0 && errorOnNonZeroExit) {
-          const text = String(Buffer.concat(buffers))
-          console.error(text)
-          reject(text)
-        } else {
-          resolve(String(Buffer.concat(buffers)))
-        }
-      })
-    })
-  }
+import { TestGitShim } from './TestGitShim'
 
 describe('Git', () => {
+  let shim: TestGitShim
   let dir = ''
-  let spawn = getSpawn(dir)
-
-  async function waitToFixGitTime(ms = 500) {
-    await new Promise((r) => setTimeout(r, ms))
-  }
-
-  function writeFile(name: string, text: string) {
-    const filePath = path.join(dir, name)
-    fs.writeFileSync(filePath, text, { encoding: 'utf8' })
-  }
-
-  function renameFile(name: string, newName: string) {
-    fs.renameSync(path.join(dir, name), path.join(dir, newName))
-  }
-
-  function rmFile(name: string) {
-    const filePath = path.join(dir, name)
-    if (!fs.existsSync(filePath)) {
-      throw `'${name}' does not exist in dir ${dir}`
-    }
-
-    fs.unlinkSync(filePath)
-  }
-
-  async function commit(text: string) {
-    await spawn(['add', '--all'])
-    await spawn([`commit`, `-m`, text])
-    const sha = await spawn([`rev-parse`, `HEAD`])
-
-    return sha.trim()
-  }
-
-  async function createRemote() {
-    const remoteDir = fs.mkdtempSync(path.join(tmp, 'giterm-git-remote-'))
-    const remoteFile = 'remote.git'
-
-    const remoteSpawn = getSpawn(remoteDir)
-    await remoteSpawn(['init', '--bare', remoteFile])
-
-    return path.join(remoteDir, remoteFile)
-  }
+  let spawn: ReturnType<TestGitShim['getSpawn']>
 
   beforeEach(async () => {
-    dir = fs.mkdtempSync(path.join(tmp, 'giterm-git-'))
-    spawn = getSpawn(dir)
+    shim = new TestGitShim()
+    dir = shim.dir
+    spawn = shim.getSpawn(dir)
   })
 
   describe('getStateText', () => {
@@ -108,14 +36,14 @@ describe('Git', () => {
 
       // We create a rebase conflict between two branches
       await spawn(['checkout', '-b', 'branch-a'])
-      writeFile('f1.txt', 'abc')
-      await commit('First Commit')
+      shim.writeFile('f1.txt', 'abc')
+      await shim.commit('First Commit')
       await spawn(['checkout', '-b', 'branch-b'])
-      writeFile('f1.txt', 'cba')
-      await commit('Second Commit')
+      shim.writeFile('f1.txt', 'cba')
+      await shim.commit('Second Commit')
       await spawn(['checkout', 'branch-a'])
-      writeFile('f1.txt', 'abccba')
-      await commit('Third Commit')
+      shim.writeFile('f1.txt', 'abccba')
+      await shim.commit('Third Commit')
       await spawn(['rebase', 'branch-b'], { errorOnNonZeroExit: false })
 
       const result = await git.getStateText()
@@ -128,14 +56,14 @@ describe('Git', () => {
 
       // We create a merge conflict between two branches
       await spawn(['checkout', '-b', 'branch-a'])
-      writeFile('f1.txt', 'abc')
-      await commit('First Commit')
+      shim.writeFile('f1.txt', 'abc')
+      await shim.commit('First Commit')
       await spawn(['checkout', '-b', 'branch-b'])
-      writeFile('f1.txt', 'cba')
-      await commit('Second Commit')
+      shim.writeFile('f1.txt', 'cba')
+      await shim.commit('Second Commit')
       await spawn(['checkout', 'branch-a'])
-      writeFile('f1.txt', 'abccba')
-      await commit('Third Commit')
+      shim.writeFile('f1.txt', 'abccba')
+      await shim.commit('Third Commit')
       await spawn(['merge', 'branch-b'], { errorOnNonZeroExit: false })
 
       const result = await git.getStateText()
@@ -148,14 +76,14 @@ describe('Git', () => {
 
       // We create a merge conflict between two branches
       await spawn(['checkout', '-b', 'branch-a'])
-      writeFile('f1.txt', 'abc')
-      await commit('First Commit')
+      shim.writeFile('f1.txt', 'abc')
+      await shim.commit('First Commit')
       await spawn(['checkout', '-b', 'branch-b'])
-      writeFile('f1.txt', 'cba')
-      await commit('Second Commit')
+      shim.writeFile('f1.txt', 'cba')
+      await shim.commit('Second Commit')
       await spawn(['checkout', 'branch-a'])
-      writeFile('f1.txt', 'abccba')
-      await commit('Third Commit')
+      shim.writeFile('f1.txt', 'abccba')
+      await shim.commit('Third Commit')
       await spawn(['cherry-pick', 'branch-b'], { errorOnNonZeroExit: false })
 
       const result = await git.getStateText()
@@ -176,8 +104,8 @@ describe('Git', () => {
 
     it('returns sha on branch', async () => {
       await spawn(['init'])
-      writeFile('f1.txt', 'abc')
-      const commitSha = await commit('Initial commit')
+      shim.writeFile('f1.txt', 'abc')
+      const commitSha = await shim.commit('Initial commit')
 
       const git = new Git(dir)
       const sha = await git.getHeadSHA()
@@ -187,10 +115,10 @@ describe('Git', () => {
 
     it('returns sha when detached', async () => {
       await spawn(['init'])
-      writeFile('f1.txt', 'abc')
-      await commit('Initial commit')
-      writeFile('f1.txt', 'abcd')
-      const commitSha = await commit('Second commit')
+      shim.writeFile('f1.txt', 'abc')
+      await shim.commit('Initial commit')
+      shim.writeFile('f1.txt', 'abcd')
+      const commitSha = await shim.commit('Second commit')
       await spawn(['checkout', commitSha])
 
       const git = new Git(dir)
@@ -211,7 +139,7 @@ describe('Git', () => {
     it.each(['staged', 'unstaged'])('lists %s new file', async (stagedKey) => {
       await spawn(['init'])
       const git = new Git(dir)
-      writeFile('f1.txt', 'abcdefg')
+      shim.writeFile('f1.txt', 'abcdefg')
       if (stagedKey === 'staged') {
         await spawn(['add', '--all'])
       }
@@ -237,9 +165,9 @@ describe('Git', () => {
         await spawn(['init'])
         const git = new Git(dir)
 
-        writeFile('f1.txt', 'abcdefg')
-        await commit('Initial Commit')
-        writeFile('f1.txt', 'abcdef')
+        shim.writeFile('f1.txt', 'abcdefg')
+        await shim.commit('Initial Commit')
+        shim.writeFile('f1.txt', 'abcdef')
         if (stagedKey === 'staged') {
           await spawn(['add', '--all'])
         }
@@ -267,9 +195,9 @@ describe('Git', () => {
         await spawn(['init'])
         const git = new Git(dir)
 
-        writeFile('f1.txt', 'abcdefg')
-        await commit('Initial Commit')
-        rmFile('f1.txt')
+        shim.writeFile('f1.txt', 'abcdefg')
+        await shim.commit('Initial Commit')
+        shim.rmFile('f1.txt')
         if (stagedKey === 'staged') {
           await spawn(['add', '--all'])
         }
@@ -295,9 +223,9 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('f1.txt', 'abcdefg')
-      await commit('Initial Commit')
-      renameFile('f1.txt', 'f2.txt')
+      shim.writeFile('f1.txt', 'abcdefg')
+      await shim.commit('Initial Commit')
+      shim.renameFile('f1.txt', 'f2.txt')
 
       const status = await git.getStatus()
 
@@ -329,9 +257,9 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('f1.txt', 'abcdefg')
-      await commit('Initial Commit')
-      renameFile('f1.txt', 'f2.txt')
+      shim.writeFile('f1.txt', 'abcdefg')
+      await shim.commit('Initial Commit')
+      shim.renameFile('f1.txt', 'f2.txt')
       await spawn(['add', '--all'])
 
       const status = await git.getStatus()
@@ -354,15 +282,15 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('f1.txt', 'abcdefg')
-      writeFile('f2.txt', 'abcdefg')
-      writeFile('f3.txt', 'abcdefg')
-      writeFile('f rename.txt', 'abcdefg')
-      await commit('Initial Commit')
-      rmFile('f1.txt')
-      writeFile('f2.txt', 'abc')
-      writeFile('f4.txt', 'jnasd')
-      renameFile('f rename.txt', 'f renamed.txt')
+      shim.writeFile('f1.txt', 'abcdefg')
+      shim.writeFile('f2.txt', 'abcdefg')
+      shim.writeFile('f3.txt', 'abcdefg')
+      shim.writeFile('f rename.txt', 'abcdefg')
+      await shim.commit('Initial Commit')
+      shim.rmFile('f1.txt')
+      shim.writeFile('f2.txt', 'abc')
+      shim.writeFile('f4.txt', 'jnasd')
+      shim.renameFile('f rename.txt', 'f renamed.txt')
 
       const status = await git.getStatus()
 
@@ -424,15 +352,15 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('f1.txt', 'abcdefg')
-      writeFile('f2.txt', 'abcdefg')
-      writeFile('f3.txt', 'abcdefg')
-      writeFile('f rename.txt', 'abcdefg')
-      await commit('Initial Commit')
-      rmFile('f1.txt')
-      writeFile('f2.txt', 'abc')
-      writeFile('f4.txt', 'jnasd')
-      renameFile('f rename.txt', 'f renamed.txt')
+      shim.writeFile('f1.txt', 'abcdefg')
+      shim.writeFile('f2.txt', 'abcdefg')
+      shim.writeFile('f3.txt', 'abcdefg')
+      shim.writeFile('f rename.txt', 'abcdefg')
+      await shim.commit('Initial Commit')
+      shim.rmFile('f1.txt')
+      shim.writeFile('f2.txt', 'abc')
+      shim.writeFile('f4.txt', 'jnasd')
+      shim.renameFile('f rename.txt', 'f renamed.txt')
 
       await spawn(['add', '--all'])
 
@@ -483,283 +411,6 @@ describe('Git', () => {
     })
   })
 
-  describe('getAllBranches', () => {
-    it('works for no repo', async () => {
-      const git = new Git(dir)
-
-      const branches = await git.getAllBranches()
-      expect(branches).toEqual([])
-    })
-
-    it('lists branches', async () => {
-      await spawn(['init'])
-      const git = new Git(dir)
-
-      writeFile('f1.txt', 'abc')
-      await spawn(['checkout', '-b', 'branch-a'])
-      await commit('Initial Commit')
-      await spawn(['checkout', '-b', 'branch-b'])
-
-      // Note: git doesn't create an initial branch until the first commit
-      // So to avoid global config issues for this test we initialise branch-a as the initial branch name
-      const branches = await git.getAllBranches()
-
-      expect(branches).toEqual([
-        expect.objectContaining({
-          id: 'refs/heads/branch-a',
-          isHead: false,
-          isRemote: false,
-          name: 'branch-a',
-          upstream: null,
-        }),
-        expect.objectContaining({
-          id: 'refs/heads/branch-b',
-          isHead: true,
-          isRemote: false,
-          name: 'branch-b',
-          upstream: null,
-        }),
-      ])
-
-      // Check that the deleted variable data meets correct rules
-      for (const branch of branches) {
-        expect(branch.authorDate).toHaveLength(10)
-        expect(branch.date).toHaveLength(10)
-        expect(branch.headSHA).toHaveLength(40)
-      }
-    })
-
-    describe('with remote', () => {
-      beforeEach(async () => {
-        await spawn(['init'])
-
-        writeFile('f1.txt', 'abc')
-        await spawn(['checkout', '-b', 'branch-a'])
-        await commit('Initial Commit')
-        await spawn(['checkout', '-b', 'branch-b'])
-
-        const remoteUri = await createRemote()
-        await spawn(['remote', 'add', 'origin', remoteUri])
-        await spawn(['push', '--set-upstream', 'origin', 'branch-b'])
-      })
-
-      it('lists branches with upstream', async () => {
-        const git = new Git(dir)
-
-        const branches = await git.getAllBranches()
-
-        expect(branches).toEqual([
-          expect.objectContaining({
-            id: 'refs/heads/branch-a',
-            isHead: false,
-            isRemote: false,
-            name: 'branch-a',
-            upstream: null,
-          }),
-          expect.objectContaining({
-            id: 'refs/heads/branch-b',
-            isHead: true,
-            isRemote: false,
-            name: 'branch-b',
-            upstream: {
-              ahead: 0,
-              behind: 0,
-              id: 'refs/remotes/origin/branch-b',
-              name: 'origin/branch-b',
-            },
-          }),
-          expect.objectContaining({
-            id: 'refs/remotes/origin/branch-b',
-            isHead: false,
-            isRemote: true,
-            name: 'origin/branch-b',
-            upstream: null,
-          }),
-        ])
-
-        // Check that the deleted variable data meets correct rules
-        for (const branch of branches) {
-          expect(branch.authorDate).toHaveLength(10)
-          expect(branch.date).toHaveLength(10)
-          expect(branch.headSHA).toHaveLength(40)
-        }
-      })
-
-      it('is behind upstream', async () => {
-        const git = new Git(dir)
-        await spawn(['branch', '--delete', 'branch-a'])
-
-        writeFile('f2.txt', 'ahead')
-        await commit('Pushed Commit')
-        await spawn(['push'])
-        await spawn(['reset', '--hard', 'HEAD~1'])
-
-        const branches = await git.getAllBranches()
-
-        expect(branches).toEqual([
-          expect.objectContaining({
-            id: 'refs/heads/branch-b',
-            isHead: true,
-            isRemote: false,
-            name: 'branch-b',
-            upstream: {
-              ahead: 0,
-              behind: 1,
-              id: 'refs/remotes/origin/branch-b',
-              name: 'origin/branch-b',
-            },
-          }),
-          expect.objectContaining({
-            id: 'refs/remotes/origin/branch-b',
-            isHead: false,
-            isRemote: true,
-            name: 'origin/branch-b',
-            upstream: null,
-          }),
-        ])
-
-        // Check that the deleted variable data meets correct rules
-        for (const branch of branches) {
-          expect(branch.authorDate).toHaveLength(10)
-          expect(branch.date).toHaveLength(10)
-          expect(branch.headSHA).toHaveLength(40)
-        }
-      })
-
-      it('is ahead of upstream', async () => {
-        const git = new Git(dir)
-        await spawn(['branch', '--delete', 'branch-a'])
-
-        writeFile('f2.txt', 'ahead')
-        await commit('Unpushed Commit')
-
-        const branches = await git.getAllBranches()
-
-        expect(branches).toEqual([
-          expect.objectContaining({
-            id: 'refs/heads/branch-b',
-            isHead: true,
-            isRemote: false,
-            name: 'branch-b',
-            upstream: {
-              ahead: 1,
-              behind: 0,
-              id: 'refs/remotes/origin/branch-b',
-              name: 'origin/branch-b',
-            },
-          }),
-          expect.objectContaining({
-            id: 'refs/remotes/origin/branch-b',
-            isHead: false,
-            isRemote: true,
-            name: 'origin/branch-b',
-            upstream: null,
-          }),
-        ])
-
-        // Check that the deleted variable data meets correct rules
-        for (const branch of branches) {
-          expect(branch.authorDate).toHaveLength(10)
-          expect(branch.date).toHaveLength(10)
-          expect(branch.headSHA).toHaveLength(40)
-        }
-      })
-    })
-  })
-
-  describe('getAllTags', () => {
-    it('works for no repo', async () => {
-      const git = new Git(dir)
-
-      const tags = await git.getAllTags()
-      expect(tags).toEqual([])
-    })
-
-    it('shows local tags', async () => {
-      await spawn(['init'])
-      writeFile('f1.txt', 'abc')
-      const sha1 = await commit('First Commit')
-      await waitToFixGitTime(1000)
-      writeFile('f2.txt', 'abc')
-      const sha2 = await commit('Second Commit')
-
-      const git = new Git(dir)
-
-      await spawn(['checkout', sha1])
-      await spawn(['tag', 'tag1'])
-      await spawn(['checkout', sha2])
-      await spawn(['tag', 'tag2'])
-
-      const tags = await git.getAllTags()
-      expect(tags).toEqual([
-        expect.objectContaining({
-          headSHA: sha2,
-          id: 'refs/tags/tag2',
-          name: 'tag2',
-        }),
-        expect.objectContaining({
-          headSHA: sha1,
-          id: 'refs/tags/tag1',
-          name: 'tag1',
-        }),
-      ])
-
-      // Check that the deleted variable data meets correct rules
-      for (const tag of tags) {
-        expect(tag.authorDate).toHaveLength(10)
-        expect(tag.date).toHaveLength(10)
-      }
-    })
-
-    describe('with remote', () => {
-      let sha1: string, sha2: string
-      const branchName = 'main'
-
-      beforeEach(async () => {
-        await spawn(['init'])
-        await spawn(['checkout', '-b', branchName])
-
-        writeFile('f1.txt', 'abc')
-        sha1 = await commit('First Commit')
-        writeFile('f2.txt', 'abc')
-        sha2 = await commit('Second Commit')
-
-        const remoteUri = await createRemote()
-        await spawn(['remote', 'add', 'origin', remoteUri])
-        await spawn(['push', '--set-upstream', 'origin', branchName])
-
-        await spawn(['checkout', sha1])
-        await spawn(['tag', 'tag1'])
-        await waitToFixGitTime()
-        await spawn(['checkout', branchName])
-        await spawn(['tag', 'tag2'])
-        await spawn(['push', '--tags'])
-      })
-
-      it('only local tags are listed', async () => {
-        // Remove tag1 locally
-        await spawn(['tag', '-d', 'tag1'])
-
-        const git = new Git(dir)
-
-        const tags = await git.getAllTags()
-        expect(tags).toEqual([
-          expect.objectContaining({
-            headSHA: sha2,
-            id: 'refs/tags/tag2',
-            name: 'tag2',
-          }),
-        ])
-
-        // Check that the deleted variable data meets correct rules
-        for (const tag of tags) {
-          expect(tag.authorDate).toHaveLength(10)
-          expect(tag.date).toHaveLength(10)
-        }
-      })
-    })
-  })
-
   describe('getAllRemotes', () => {
     it('has no repo', async () => {
       const git = new Git(dir)
@@ -778,7 +429,7 @@ describe('Git', () => {
 
     it('has one remote', async () => {
       await spawn(['init'])
-      const remoteUri = await createRemote()
+      const remoteUri = await shim.createRemote()
       await spawn(['remote', 'add', 'origin', remoteUri])
       const git = new Git(dir)
 
@@ -788,9 +439,9 @@ describe('Git', () => {
 
     it('has many remotes', async () => {
       await spawn(['init'])
-      const remoteUri = await createRemote()
+      const remoteUri = await shim.createRemote()
       await spawn(['remote', 'add', 'origin', remoteUri])
-      const remoteUri2 = await createRemote()
+      const remoteUri2 = await shim.createRemote()
       await spawn(['remote', 'add', 'my-fork', remoteUri2])
       const git = new Git(dir)
 
@@ -820,8 +471,8 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('a.txt', 'abcd')
-      await commit('Commit 1')
+      shim.writeFile('a.txt', 'abcd')
+      await shim.commit('Commit 1')
 
       const commits = await git.loadAllCommits()
       expect(commits).toEqual([
@@ -839,21 +490,21 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('a.txt', 'abcd')
-      const shaCommit1 = await commit('Commit 1')
+      shim.writeFile('a.txt', 'abcd')
+      const shaCommit1 = await shim.commit('Commit 1')
       await spawn(['checkout', '-b', 'branch-a'])
       await spawn(['checkout', '-b', 'branch-b'])
 
-      await waitToFixGitTime()
-      writeFile('b.txt', 'abcd')
-      const shaBranchCommit = await commit('Branch Commit')
+      await shim.waitToFixGitTime()
+      shim.writeFile('b.txt', 'abcd')
+      const shaBranchCommit = await shim.commit('Branch Commit')
 
-      await waitToFixGitTime()
+      await shim.waitToFixGitTime()
       await spawn(['checkout', 'branch-a'])
-      writeFile('a.txt', 'abcdefg')
-      const shaCommit2 = await commit('Commit 2')
+      shim.writeFile('a.txt', 'abcdefg')
+      const shaCommit2 = await shim.commit('Commit 2')
 
-      await waitToFixGitTime()
+      await shim.waitToFixGitTime()
       await spawn(['merge', '--no-ff', 'branch-b'])
       const shaMerge = (await spawn([`rev-parse`, `HEAD`])).trim()
 
@@ -893,17 +544,17 @@ describe('Git', () => {
       await spawn(['init'])
       const git = new Git(dir)
 
-      writeFile('a.txt', 'abcd')
-      const shaCommit1 = await commit('Commit 1')
+      shim.writeFile('a.txt', 'abcd')
+      const shaCommit1 = await shim.commit('Commit 1')
       await spawn(['checkout', '-b', 'branch-a'])
       await spawn(['checkout', '-b', 'branch-b'])
 
-      writeFile('b.txt', 'abcd')
-      const shaBranchCommit = await commit('Branch Commit')
+      shim.writeFile('b.txt', 'abcd')
+      const shaBranchCommit = await shim.commit('Branch Commit')
 
       await spawn(['checkout', 'branch-a'])
-      writeFile('a.txt', 'abcdefg')
-      const shaCommit2 = await commit('Commit 2')
+      shim.writeFile('a.txt', 'abcdefg')
+      const shaCommit2 = await shim.commit('Commit 2')
 
       await spawn(['merge', '--no-ff', 'branch-b'])
       const shaMerge = (await spawn([`rev-parse`, `HEAD`])).trim()
@@ -944,8 +595,8 @@ describe('Git', () => {
   describe('getDiffFromShas', () => {
     async function getBaseCommit(): Promise<string> {
       await spawn(['init'])
-      writeFile('onlyfile', 'abc')
-      return await commit('Base Commit')
+      shim.writeFile('onlyfile', 'abc')
+      return await shim.commit('Base Commit')
     }
 
     describe.each([
@@ -956,8 +607,8 @@ describe('Git', () => {
         const baseSha = await getBaseCommit()
         const git = new Git(dir)
 
-        writeFile('a.txt', 'line 1\nline 2')
-        const sha = await commit('Commit 1')
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const sha = await shim.commit('Commit 1')
 
         const diff = (await git.getDiffFromShas(
           sha,
@@ -989,10 +640,10 @@ describe('Git', () => {
         await getBaseCommit()
         const git = new Git(dir)
 
-        writeFile('a.txt', 'line 1\nline 2')
-        const baseSha = await commit('Commit 1')
-        renameFile('a.txt', 'b.txt')
-        const sha = await commit('Commit 2')
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const baseSha = await shim.commit('Commit 1')
+        shim.renameFile('a.txt', 'b.txt')
+        const sha = await shim.commit('Commit 2')
 
         const diff = (await git.getDiffFromShas(
           sha,
@@ -1023,10 +674,10 @@ describe('Git', () => {
         await getBaseCommit()
         const git = new Git(dir)
 
-        writeFile('a.txt', 'line 1\nline 3')
-        const baseSha = await commit('Commit 1')
-        writeFile('a.txt', 'line 1\nline 2')
-        const sha = await commit('Commit 2')
+        shim.writeFile('a.txt', 'line 1\nline 3')
+        const baseSha = await shim.commit('Commit 1')
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const sha = await shim.commit('Commit 2')
 
         const diff = (await git.getDiffFromShas(
           sha,
@@ -1058,10 +709,10 @@ describe('Git', () => {
         await getBaseCommit()
         const git = new Git(dir)
 
-        writeFile('a.txt', 'line 1\nline 2')
-        const baseSha = await commit('Commit 1')
-        rmFile('a.txt')
-        const sha = await commit('Commit 2')
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const baseSha = await shim.commit('Commit 1')
+        shim.rmFile('a.txt')
+        const sha = await shim.commit('Commit 2')
 
         const diff = (await git.getDiffFromShas(
           sha,
@@ -1094,8 +745,8 @@ describe('Git', () => {
   describe('getDiffFromIndex', () => {
     async function getBaseCommit(): Promise<string> {
       await spawn(['init'])
-      writeFile('a.txt', 'line 1\nline 2')
-      return await commit('Base Commit')
+      shim.writeFile('a.txt', 'line 1\nline 2')
+      return await shim.commit('Base Commit')
     }
 
     it.each<('staged' | 'unstaged')[]>([['staged'], ['unstaged']])(
@@ -1104,7 +755,7 @@ describe('Git', () => {
         await getBaseCommit()
         const git = new Git(dir)
 
-        writeFile('b.txt', 'line 1\nline 2')
+        shim.writeFile('b.txt', 'line 1\nline 2')
         await spawn(['add', '--all'])
         if (setup === 'staged') {
           await spawn(['add', '--all'])
@@ -1140,9 +791,9 @@ describe('Git', () => {
         await getBaseCommit()
         const git = new Git(dir)
 
-        writeFile('a.txt', 'line 1\nline 3')
-        await commit('Commit 1')
-        writeFile('a.txt', 'line 1\nline 2')
+        shim.writeFile('a.txt', 'line 1\nline 3')
+        await shim.commit('Commit 1')
+        shim.writeFile('a.txt', 'line 1\nline 2')
         if (setup === 'staged') {
           await spawn(['add', '--all'])
         }
@@ -1177,7 +828,7 @@ describe('Git', () => {
         await getBaseCommit()
         const git = new Git(dir)
 
-        rmFile('a.txt')
+        shim.rmFile('a.txt')
         if (setup === 'staged') {
           await spawn(['add', '--all'])
         }
@@ -1210,7 +861,7 @@ describe('Git', () => {
       await getBaseCommit()
       const git = new Git(dir)
 
-      renameFile('a.txt', 'b.txt')
+      shim.renameFile('a.txt', 'b.txt')
 
       const diff = (await git.getDiffFromIndex())!
 
@@ -1249,8 +900,8 @@ describe('Git', () => {
       await getBaseCommit()
       const git = new Git(dir)
 
-      renameFile('a.txt', 'b.txt')
-      writeFile('b.txt', 'line 1\nline 3')
+      shim.renameFile('a.txt', 'b.txt')
+      shim.writeFile('b.txt', 'line 1\nline 3')
 
       const diff = (await git.getDiffFromIndex())!
 
@@ -1289,7 +940,7 @@ describe('Git', () => {
       await getBaseCommit()
       const git = new Git(dir)
 
-      renameFile('a.txt', 'b.txt')
+      shim.renameFile('a.txt', 'b.txt')
       await spawn(['add', '--all'])
 
       const diff = (await git.getDiffFromIndex())!
@@ -1319,8 +970,8 @@ describe('Git', () => {
       await getBaseCommit()
       const git = new Git(dir)
 
-      renameFile('a.txt', 'b.txt')
-      writeFile('b.txt', 'line 1\nline 3')
+      shim.renameFile('a.txt', 'b.txt')
+      shim.writeFile('b.txt', 'line 1\nline 3')
       await spawn(['add', '--all'])
 
       const diff = (await git.getDiffFromIndex())!

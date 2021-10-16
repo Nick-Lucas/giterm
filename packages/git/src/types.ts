@@ -71,3 +71,9 @@ export interface FileText {
   text: string
   type: string
 }
+
+export interface SpawnOpts {
+  okCodes?: number[]
+}
+export type Spawn = (args: string[], opts?: SpawnOpts) => Promise<string>
+export type GetSpawn = () => Promise<Spawn | null>

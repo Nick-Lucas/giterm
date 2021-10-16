@@ -32,7 +32,9 @@
         "*.jsx"
       ],
       "rules": {
-        "prefer-const": "warn",
+        "prefer-const": ["error", {
+          "destructuring": "all"
+        }],
         "no-console": "off",
         "no-loop-func": "warn",
         "new-cap": "off",

@@ -16,57 +16,31 @@ import type {
   DiffFile,
   DiffResult,
   GitFileOp,
+  GetSpawn,
   StatusFile,
   WatcherCallback,
   WatcherEvent,
+  FileText,
 } from './types'
-import { FileText } from 'src'
 
-const PROFILING = true
-let perfStart = (name: string) => {
-  performance.mark(name + '/start')
-}
-let perfEnd = (name: string) => {
-  performance.mark(name + '/end')
-  performance.measure(name, name + '/start', name + '/end')
-}
-const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
-  name: string,
-  func: F,
-): F => {
-  return async function (...args: A): Promise<R> {
-    perfStart(name)
-    const result = await func(...args)
-    perfEnd(name)
-    return result
-  } as F
-}
-if (process.env.NODE_ENV !== 'development' || !PROFILING) {
-  perfStart = function () {}
-  perfEnd = function () {}
-}
+import { GitRefs } from './GitRefs'
+import { perfStart, perfEnd, instrumentClass } from './performance'
 
 export class Git {
   rawCwd: string
   cwd: string
   _watcher: chokidar.FSWatcher | null = null
 
+  refs: GitRefs
+
   constructor(cwd: string) {
     this.rawCwd = cwd
     this.cwd = resolveRepo(cwd)
 
-    // Instrument all methods on this class
-    const instance = this as Record<string, any>
-    for (const key in Object.getOwnPropertyDescriptors(instance)) {
-      if (
-        key.startsWith('_') || // Don't care about internals
-        key === 'watchRefs' || // Disable this one. It should be extracted out at some point
-        typeof instance[key] !== 'function' // Only care about functions
-      ) {
-        continue
-      }
-      instance[key] = perfTrace(`GIT/${key}`, instance[key])
-    }
+    this.refs = new GitRefs(this.cwd, this._getSpawn)
+
+    instrumentClass(this, (key) => key != 'watchRefs')
+    instrumentClass(this.refs)
   }
 
   _getGitDir = async () => {
@@ -80,7 +54,7 @@ export class Git {
     return dir
   }
 
-  _getSpawn = async () => {
+  _getSpawn: GetSpawn = async () => {
     if (this.cwd === '/') {
       return null
     }
@@ -168,145 +142,6 @@ export class Git {
     const sha = await spawn(['show', '--format=%H', '-s', 'HEAD'])
 
     return sha.trim()
-  }
-
-  getAllBranches = async () => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return []
-    }
-
-    // Based on
-    // git branch --list --all --format="[%(HEAD)] -SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso) -upstream- %(upstream) %(upstream:track)" -q --sort=-committerdate
-
-    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
-    const format = [
-      '%(HEAD)',
-      '%(objectname)',
-      '%(refname)',
-      '%(refname:short)',
-      '%(authordate:unix)',
-      '%(committerdate:unix)',
-      '%(upstream)',
-      '%(upstream:short)',
-      '%(upstream:track)',
-    ]
-
-    const fragments = [
-      'branch',
-      '--list',
-      '--all',
-      '--sort=-committerdate',
-      `--format=${format.join(SEP)}`,
-    ]
-
-    const result = await spawn(fragments)
-
-    const tuples = result
-      .split(/\r\n|\r|\n/g)
-      .filter(Boolean)
-      .map((str) => str.split(SEP))
-
-    const refs = tuples.map((segments) => {
-      if (segments.length !== format.length) {
-        console.warn(segments)
-        throw `Separator ${SEP} in output, cannot parse git branches. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
-      }
-
-      const [
-        isHead,
-        sha,
-        refId,
-        name,
-        authorDate,
-        commitDate,
-        upstreamId,
-        upstreamName,
-        upstreamDiff,
-      ] = segments
-
-      let upstream = null
-      if (upstreamId) {
-        upstream = {
-          id: upstreamId,
-          name: upstreamName,
-          ahead: parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? '0'),
-          behind: parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? '0'),
-        }
-      }
-
-      return {
-        id: refId,
-        name: name,
-        isRemote: refId.startsWith('refs/remotes'),
-        isHead: isHead === '*',
-        headSHA: sha,
-        date: commitDate,
-        authorDate: authorDate,
-        upstream: upstream,
-      }
-    })
-
-    return _(refs)
-      .uniqBy((branch) => branch.id)
-      .sortBy([
-        (branch) => branch.isRemote,
-        (branch) => -branch.date,
-        (branch) => branch.name,
-      ])
-      .value()
-  }
-
-  getAllTags = async () => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return []
-    }
-
-    // Based on
-    // git tag --list  --format="-SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso)" --sort=-committerdate
-
-    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
-    const format = [
-      '%(objectname)',
-      '%(refname)',
-      '%(refname:short)',
-      '%(authordate:unix)',
-      '%(committerdate:unix)',
-    ]
-
-    const fragments = [
-      'tag',
-      '--list',
-      '--sort=-committerdate',
-      `--format=${format.join(SEP)}`,
-    ]
-
-    const result = await spawn(fragments)
-
-    const tuples = result
-      .split(/\r\n|\r|\n/g)
-      .filter(Boolean)
-      .map((str) => str.split(SEP))
-
-    const refs = tuples.map((segments) => {
-      if (segments.length !== format.length) {
-        console.warn(segments)
-        throw `Separator ${SEP} in output, cannot parse git tags. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
-      }
-
-      const [sha, id, name, authorDate, committerDate] = segments
-
-      return {
-        id,
-        name,
-        headSHA: sha,
-        date: committerDate,
-        authorDate: authorDate,
-      }
-    })
-
-    return _.sortBy(refs, [(tag) => -tag.date, (tag) => tag.name])
   }
 
   getAllRemotes = async () => {
