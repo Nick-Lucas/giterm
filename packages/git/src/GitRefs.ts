@@ -174,7 +174,11 @@ export class GitRefs {
       .map((str) => str.replace(LINE_START_JS, '').split(SEP_JS)) as RefTuple[]
 
     if (query.type === 'branches') {
-      const refs = tuples.map<BranchRef>((segments) => {
+      const refs: BranchRef[] = []
+
+      const seenUpstreamIdToRefIndex: Record<string, number> = {}
+
+      for (let i = 0; i < tuples.length; i++) {
         let [
           isHead,
           sha,
@@ -185,7 +189,7 @@ export class GitRefs {
           upstreamId,
           upstreamName,
           upstreamDiff,
-        ] = segments
+        ] = tuples[i]
 
         // Remote branches can show up in the first fields when not being tracked locally
         // We just move them to the remote elements and move on
@@ -196,17 +200,36 @@ export class GitRefs {
           refName = ''
         }
 
+        const isLocal = !!refId
+        const isUpstream = !!upstreamId
+
+        // Ensure that remote refs do not appear twice, once against a local ref and once on their own
+        if (!!upstreamId) {
+          const seenRefIndex = seenUpstreamIdToRefIndex[upstreamId]
+          if (seenRefIndex >= 0 && isLocal) {
+            // If we've already seen the branch ref but this time it's with a local reference,
+            //  we need to remove the previously seen version so we can add this (better) one without introducing duplicates
+            refs.splice(seenRefIndex, 1)
+          } else if (seenRefIndex >= 0) {
+            // In this scenario the other reference is going to be a local one and is the better reference so we bail on this ref
+            continue
+          }
+
+          // We're about to create this index and may need to check it in the future
+          seenUpstreamIdToRefIndex[upstreamId] = tuples.length
+        }
+
         const ahead = parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? '0')
         const behind = parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? '0')
 
-        return {
+        const ref: BranchRef = {
           sha: sha,
           isHead: isHead === '*',
-          local: !!refId && {
+          local: isLocal && {
             id: refId,
             name: refName,
           },
-          upstream: !!upstreamId && {
+          upstream: isUpstream && {
             id: upstreamId,
             name: upstreamName,
             ahead: ahead,
@@ -215,7 +238,9 @@ export class GitRefs {
           authorDate: authorDate,
           commitDate: commitDate,
         }
-      })
+
+        refs.push(ref)
+      }
 
       return {
         type: query.type,

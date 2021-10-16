@@ -104,16 +104,6 @@ describe('Git', () => {
               name: 'origin/branch-b',
             },
           }),
-          expect.objectContaining<Partial<BranchRef>>({
-            local: false,
-            upstream: {
-              id: 'refs/remotes/origin/branch-b',
-              name: 'origin/branch-b',
-              ahead: 0,
-              behind: 0,
-            },
-            isHead: false,
-          }),
         ])
 
         // Check that the deleted variable data meets correct rules
@@ -149,16 +139,6 @@ describe('Git', () => {
               behind: 1,
             },
           }),
-          expect.objectContaining<Partial<BranchRef>>({
-            local: false,
-            isHead: false,
-            upstream: {
-              id: 'refs/remotes/origin/branch-b',
-              name: 'origin/branch-b',
-              ahead: 0,
-              behind: 0,
-            },
-          }),
         ])
 
         // Check that the deleted variable data meets correct rules
@@ -189,16 +169,6 @@ describe('Git', () => {
               id: 'refs/remotes/origin/branch-b',
               name: 'origin/branch-b',
               ahead: 1,
-              behind: 0,
-            },
-          }),
-          expect.objectContaining<Partial<BranchRef>>({
-            isHead: false,
-            local: false,
-            upstream: {
-              id: 'refs/remotes/origin/branch-b',
-              name: 'origin/branch-b',
-              ahead: 0,
               behind: 0,
             },
           }),
