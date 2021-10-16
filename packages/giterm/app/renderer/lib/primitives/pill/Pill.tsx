@@ -14,7 +14,7 @@ export const Container = styled.div<ContainerProps>`
 `
 
 interface SegmentProps {
-  width?: number
+  width?: number | string
   current?: boolean
   warning?: boolean
   error?: boolean

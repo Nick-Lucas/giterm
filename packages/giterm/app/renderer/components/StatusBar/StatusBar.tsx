@@ -7,8 +7,9 @@ import { StatusBarItem } from './StatusBarItem'
 import { showRemoteBranches } from 'app/store/config/actions'
 import { STATE } from '@giterm/git'
 import { Pill } from 'app/lib/primitives'
+import { Store } from 'app/store/reducers.types'
 
-function mapStateToDisplay(state) {
+function mapStateToDisplay(state: any) {
   switch (state) {
     case STATE.OK:
       return [{}, 'OK']
@@ -34,14 +35,14 @@ function mapStateToDisplay(state) {
 export function StatusBar() {
   const dispatch = useDispatch()
 
-  const { state = '' } = useSelector((state) => state.status)
+  const { state = '' } = useSelector((state: any) => state.status)
 
-  const branches = useSelector((state) => state.branches.list)
+  const branches = useSelector((state: Store) => state.branches.list)
   const currentBranch = useMemo(() => {
     return branches.find((branch) => branch.isHead)
   }, [branches])
 
-  const config = useSelector((state) => state.config)
+  const config = useSelector((state: any) => state.config)
 
   const toggleShowRemoteBranches = useCallback(
     (e) => {
@@ -58,8 +59,8 @@ export function StatusBar() {
   )
 
   const isAheadBehind =
-    currentBranch?.upstream?.ahead > 0 ||
-    currentBranch?.upstream?.behind > 0 ||
+    (currentBranch?.upstream?.ahead && currentBranch.upstream?.ahead > 0) ||
+    (currentBranch?.upstream?.behind && currentBranch.upstream?.behind > 0) ||
     false
 
   return (
@@ -101,7 +102,9 @@ export function StatusBar() {
         )}
 
         <Pill.Segment>
-          <Pill.Content>{currentBranch?.name ?? 'No Branch'}</Pill.Content>
+          <Pill.Content>
+            {currentBranch?.local?.name ?? 'No Branch'}
+          </Pill.Content>
         </Pill.Segment>
       </Pill.Container>
 
