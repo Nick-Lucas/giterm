@@ -1,7 +1,7 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
 import { useDispatch, useSelector } from 'react-redux'
 import styled from 'styled-components'
-import { FixedSizeList } from 'react-window'
+import { FixedSizeList, FixedSizeListProps } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import InfiniteLoader from 'react-window-infinite-loader'
 import _ from 'lodash'
@@ -15,13 +15,17 @@ import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { Commit } from './Commit'
 import { useValueEffect } from 'app/lib/hooks'
 
+import { Commit as CommitType } from '@giterm/git'
+import { Column } from './props'
+import { Store } from 'app/store/reducers.types'
+
 export function Commits() {
   const dispatch = useDispatch()
-  const commits = useSelector((state) => state.commits?.commits) ?? []
-  const graphWidth = useSelector((state) => state.graph.width)
-  const headSHA = useSelector((state) => state.status.headSHA)
+  const commits = useSelector((state: Store) => state.commits.commits) ?? []
+  const graphWidth = useSelector((state: any) => state.graph.width)
+  const headSHA = useSelector((state: any) => state.status.headSHA)
 
-  const columns = useMemo(() => {
+  const columns = useMemo<Column[]>(() => {
     const graphCols = Math.min(8, graphWidth)
 
     return [
@@ -42,7 +46,7 @@ export function Commits() {
     ]
   }, [graphWidth])
 
-  const [selectedCommits, setSelectedCommits] = useState([])
+  const [selectedCommits, setSelectedCommits] = useState<CommitType[]>([])
   const selectedShas = useMemo(
     () => selectedCommits.map((c) => c.sha),
     [selectedCommits],
@@ -66,10 +70,7 @@ export function Commits() {
     [dispatch, selectedCommits],
   )
 
-  /**
-   * @type {React.MutableRefObject<FixedSizeList>}
-   */
-  const listRef = useRef()
+  const listRef = useRef<FixedSizeList>()
   useValueEffect(headSHA, () => {
     // TODO: improve this logic to find the index asynchronously and pre-load if possible
     const index = commits.findIndex((c) => c.sha === headSHA)
@@ -124,7 +125,14 @@ const TableWrapper = styled.div`
   flex: 1;
 `
 
-const VirtualList = ({ numberOfItems, onLoadMoreItems, children, listRef }) => {
+interface VirtualListProps {
+  numberOfItems: number
+  onLoadMoreItems: () => void
+  children: FixedSizeListProps['children']
+  listRef: React.MutableRefObject<FixedSizeList | undefined>
+}
+
+const VirtualList = ({ numberOfItems, onLoadMoreItems, children, listRef }: VirtualListProps) => {
   return (
     <TableWrapper>
       <AutoSizer>
@@ -136,7 +144,13 @@ const VirtualList = ({ numberOfItems, onLoadMoreItems, children, listRef }) => {
             {({ onItemsRendered, ref }) => (
               <FixedSizeList
                 ref={(el) => {
-                  ref(el)
+                  if (!el) {
+                    return
+                  }
+                  
+                  if (typeof ref === 'function'){
+                    ref(el)
+                  }
                   if (listRef) {
                     listRef.current = el
                   }

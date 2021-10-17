@@ -1,6 +1,7 @@
 import * as Diff2Html from 'diff2html/lib-esm/types'
 
 export * from './GitRefs.types'
+export * from './GitCommits.types'
 
 export type WatcherEvent =
   | 'add'
@@ -23,18 +24,6 @@ export interface StatusFile {
   isDeleted: boolean
   isModified: boolean
   isRenamed: boolean
-}
-
-export interface Commit {
-  sha: string
-  sha7: string
-  message: string
-  dateISO: string
-  email: string
-  author: string
-  authorStr: string
-  parents: string[]
-  isHead: boolean
 }
 
 type Modify<T, R> = Omit<T, keyof R> & R

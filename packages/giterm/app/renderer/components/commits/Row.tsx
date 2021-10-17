@@ -7,7 +7,7 @@ import { GraphColumnWidth, GraphIndent, RowHeight } from './constants'
 import { colours } from 'app/lib/theme'
 import _ from 'lodash'
 import { Link, Node } from '@giterm/gitgraph'
-import { BranchRef, TagRef } from '@giterm/git'
+import { BranchRef, Commit, TagRef } from '@giterm/git'
 import { useSelector } from 'react-redux'
 
 const Colours = colours.GRAPH_NODES
@@ -92,7 +92,7 @@ function getPathLinePoints(link: Link, indexOffset = 0) {
 }
 
 interface Props {
-  commit: any
+  commit: Commit
   isHead: boolean
   node: Node
   linksBefore: Link[]

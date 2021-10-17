@@ -4,12 +4,12 @@ import { RightClickArea } from 'app/lib/primitives'
 import { clipboard } from 'electron'
 
 import { Row } from './Row'
-import { Commit as CommitType, Column } from './props'
+import { Column } from './props'
 import { Store } from 'app/store/reducers.types'
 
 interface Props {
   index: number
-  style: Record<string, unknown>
+  style: React.CSSProperties
   onClick: (e: React.MouseEventHandler<HTMLDivElement>, commit: any) => void
   isSelected: boolean
   columns: Column[]
@@ -21,8 +21,8 @@ export function Commit({ index, style, onClick, isSelected, columns }: Props) {
   const branchesBySha = useSelector((state: Store) => state.branches.bySha)
   const tagsBySha = useSelector((state: Store) => state.tags.bySha)
   const { nodes, links } = useSelector((state: any) => state.graph)
-  const commits = useSelector((state: any) => state.commits?.commits) ?? []
-  const commit = commits[index] as CommitType
+  const commits = useSelector((state: Store) => state.commits.commits)
+  const commit = commits[index]
 
   const status = useSelector((state: any) => state.status)
 

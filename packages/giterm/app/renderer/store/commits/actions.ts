@@ -1,5 +1,7 @@
+import { Commit } from '@giterm/git'
+
 export const COMMITS_UPDATED = 'commits/updated'
-export const commitsUpdated = (commits, digest) => ({
+export const commitsUpdated = (commits: Commit[], digest: string) => ({
   type: COMMITS_UPDATED,
   commits,
   digest,

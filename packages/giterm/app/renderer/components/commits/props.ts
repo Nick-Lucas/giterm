@@ -1,10 +1,11 @@
 import PropTypes from 'prop-types'
+import { Commit } from '@giterm/git'
 
 export interface Column {
   name: string
-  key: string
+  key: keyof Commit | 'graph'
   width: any
-  showTags: boolean
+  showTags?: boolean
   format?: (commit: any) => string
 }
 
@@ -16,14 +17,6 @@ export const columns = PropTypes.arrayOf(
     showsTags: PropTypes.bool,
   }),
 )
-
-export interface Commit {
-  sha: string
-  message: string
-  authorStr: string
-  dateStr: string
-  isHead: boolean
-}
 
 export const commit = PropTypes.shape({
   sha: PropTypes.string,

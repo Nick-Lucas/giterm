@@ -3,8 +3,6 @@ import * as Diff2Html from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
 
-import { createHash } from 'crypto'
-
 import fs from 'fs'
 import { spawn } from 'child_process'
 
@@ -12,7 +10,6 @@ import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
 import type {
-  Commit,
   DiffFile,
   DiffResult,
   GitFileOp,
@@ -24,23 +21,27 @@ import type {
 } from './types'
 
 import { GitRefs } from './GitRefs'
-import { perfStart, perfEnd, instrumentClass } from './performance'
+import { GitCommits } from './GitCommits'
+import { instrumentClass } from './performance'
 
 export class Git {
   rawCwd: string
   cwd: string
   _watcher: chokidar.FSWatcher | null = null
 
-  refs: GitRefs
+  readonly refs: GitRefs
+  readonly commits: GitCommits
 
   constructor(cwd: string) {
     this.rawCwd = cwd
     this.cwd = resolveRepo(cwd)
 
     this.refs = new GitRefs(this.cwd, this._getSpawn)
+    this.commits = new GitCommits(this.cwd, this._getSpawn, this)
 
     instrumentClass(this, (key) => key != 'watchRefs')
     instrumentClass(this.refs)
+    instrumentClass(this.commits)
   }
 
   _getGitDir = async () => {
@@ -162,89 +163,6 @@ export class Git {
           name: remote,
         }
       })
-  }
-
-  loadAllCommits = async (
-    showRemote: boolean = true,
-    startIndex = 0,
-    number = 500,
-  ): Promise<[commits: Commit[], digest: string]> => {
-    const headSha = await this.getHeadSHA()
-    if (!headSha) {
-      return [[], '']
-    }
-
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return [[], '']
-    }
-
-    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
-    const FORMAT_SEGMENTS_COUNT = 6
-    const cmd = [
-      '--no-pager',
-      'log',
-      `--format=%H${SEP}%P${SEP}%aN${SEP}%aE${SEP}%aI${SEP}%s`,
-      '--branches=*',
-      '--tags=*',
-      showRemote && '--remotes=*',
-      `--skip=${startIndex}`,
-      `--max-count=${number}`,
-      `--date-order`,
-    ].filter(Boolean) as string[]
-
-    perfStart('GIT/log/spawn')
-    const result = await spawn(cmd)
-    perfEnd('GIT/log/spawn')
-
-    perfStart('GIT/log/sanitise-result')
-    const tuples = result
-      .split(/\r\n|\r|\n/g)
-      .filter(Boolean)
-      .map((str) => str.split(SEP))
-    perfEnd('GIT/log/sanitise-result')
-
-    perfStart('GIT/log/deserialise')
-    const commits = new Array<Commit>(tuples.length)
-    const hash = createHash('sha1')
-    for (let i = 0; i < tuples.length; i++) {
-      const formatSegments = tuples[i]
-      if (formatSegments.length !== FORMAT_SEGMENTS_COUNT) {
-        throw `Separator ${SEP} in output, cannot parse git history. ${formatSegments.length} segments found, ${FORMAT_SEGMENTS_COUNT} expected. Values: ${formatSegments}`
-      }
-
-      const [
-        sha,
-        parentShasStr,
-        authorName,
-        authorEmail,
-        authorDateISO,
-        subject,
-      ] = formatSegments
-      const parentShas = parentShasStr.split(' ').filter(Boolean)
-      const author = `${authorName} <${authorEmail}>`
-
-      commits[i] = {
-        sha: sha,
-        sha7: sha.substring(0, 7),
-        message: subject.trim(),
-        dateISO: authorDateISO,
-        email: authorEmail,
-        author: authorName,
-        authorStr: author,
-        parents: parentShas,
-        isHead: headSha === sha,
-      }
-
-      hash.update(sha)
-    }
-    perfEnd('GIT/log/deserialise')
-
-    perfStart('GIT/digest-finalise')
-    const digest = hash.digest('hex')
-    perfEnd('GIT/digest-finalise')
-
-    return [commits, digest]
   }
 
   getStatus = async (): Promise<StatusFile[]> => {

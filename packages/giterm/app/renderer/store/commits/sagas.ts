@@ -3,18 +3,18 @@ import { commitsUpdated, REACHED_END_OF_LIST } from './actions'
 
 import { SHOW_REMOTE_BRANCHES, CWD_UPDATED } from 'app/store/config/actions'
 import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
-import { Git } from '@giterm/git'
+import { Git, Commits } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
-import { measure } from 'app/lib/profiling'
+import { Store } from 'app/store/reducers.types'
 
-function* reloadCommits(action) {
-  const cwd = yield select((state) => state.config.cwd)
+function* reloadCommits(action: any): any {
+  const cwd = yield select((state: any) => state.config.cwd)
   const git = new Git(cwd)
 
   const { showRemoteBranches } = yield select((state) => state.config)
-  const { commits: existingCommits, numberToLoad } = yield select(
-    (state) => state.commits,
+  const { commits: existingCommits, numberToLoad }: Store['commits'] = yield select(
+    (state: Store) => state.commits,
   )
 
   const reloadAll = [
@@ -23,14 +23,19 @@ function* reloadCommits(action) {
     SHOW_REMOTE_BRANCHES,
   ].includes(action.type)
 
-  const [commits, digest] = yield call(() =>
-    measure('load-commits', () =>
-      git.loadAllCommits(
-        showRemoteBranches,
-        reloadAll ? 0 : existingCommits.length,
-        reloadAll ? numberToLoad : numberToLoad - existingCommits.length,
-      ),
-    ),
+  const { commits, digest }: Commits = yield call(() =>
+    git.commits.load({
+      includeRemote: showRemoteBranches,
+      paging: reloadAll
+        ? {
+            start: 0,
+            count: numberToLoad,
+          }
+        : {
+            start: existingCommits.length,
+            count: numberToLoad - existingCommits.length,
+          },
+    }),
   )
 
   const nextCommits = reloadAll ? commits : [...existingCommits, ...commits]
