@@ -3,6 +3,12 @@ import _ from 'lodash'
 type PrimaryColour = number
 type SecondaryColour = number | null
 
+export interface RehydrationPackage {
+  graph: GraphState
+  branchTracker: BranchTracker
+  colours: ColourTracker
+}
+
 export interface Commit {
   sha: string
   parents: string[]
@@ -24,6 +30,13 @@ export interface Link {
   parentSha: string
   nodeAtStart: boolean
   nodeAtEnd: boolean
+}
+
+export interface GraphResponse {
+  nodes: Node[]
+  links: Link[][]
+  commits: Commit[]
+  rehydrationPackage: RehydrationPackage
 }
 
 function commitToNode(
@@ -270,10 +283,16 @@ class GraphState {
     this.nodes.push(null)
   }
 
-  getGraph = () => ({
-    nodes: this.nodes,
-    links: this.links,
-  })
+  getGraph = (): { nodes: Node[]; links: Link[][] } => {
+    if (this.nodes[this.nodes.length - 1] == null) {
+      throw 'Row has been prepared but not populated. This implies a bug in the Graph calculation'
+    }
+
+    return {
+      nodes: this.nodes as Node[],
+      links: this.links,
+    }
+  }
 }
 
 function rehydrate({
@@ -294,8 +313,8 @@ function rehydrate({
 
 export function commitsToGraph(
   commits: Commit[] = [],
-  rehydrationPackage = {},
-) {
+  rehydrationPackage: Partial<RehydrationPackage> = {},
+): GraphResponse {
   const { graph, branchTracker, colours } = rehydrate(rehydrationPackage)
 
   for (const commit of commits) {

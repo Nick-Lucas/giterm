@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'app/store'
 
 import { Terminal } from 'react-feather'
 import { diffToggleShow } from 'app/store/diff/actions'

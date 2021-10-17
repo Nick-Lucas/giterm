@@ -7,7 +7,7 @@
   "main": "dist/gitgraph.js",
   "module": "dist/gitgraph.module.js",
   "scripts": {
-    "build": "microbundle --target node -f es,cjs",
+    "build": "microbundle --target node -f es,cjs --tsconfig=tsconfig.app.json",
     "dev": "yarn run build -w"
   },
   "dependencies": {

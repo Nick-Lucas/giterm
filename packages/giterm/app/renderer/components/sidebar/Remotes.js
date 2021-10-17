@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'app/store'
 
 import { clipboard } from 'electron'
 import { Cloud } from 'react-feather'

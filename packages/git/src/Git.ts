@@ -3,8 +3,6 @@ import * as Diff2Html from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
 
-import { createHash } from 'crypto'
-
 import fs from 'fs'
 import { spawn } from 'child_process'
 
@@ -12,61 +10,40 @@ import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
 import type {
-  Commit,
   DiffFile,
   DiffResult,
   GitFileOp,
+  GetSpawn,
   StatusFile,
-  WatcherCallback,
-  WatcherEvent,
+  FileText,
+  Remote,
 } from './types'
-import { FileText } from 'src'
 
-const PROFILING = true
-let perfStart = (name: string) => {
-  performance.mark(name + '/start')
-}
-let perfEnd = (name: string) => {
-  performance.mark(name + '/end')
-  performance.measure(name, name + '/start', name + '/end')
-}
-const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
-  name: string,
-  func: F,
-): F => {
-  return async function (...args: A): Promise<R> {
-    perfStart(name)
-    const result = await func(...args)
-    perfEnd(name)
-    return result
-  } as F
-}
-if (process.env.NODE_ENV !== 'development' || !PROFILING) {
-  perfStart = function () {}
-  perfEnd = function () {}
-}
+import { GitRefs } from './GitRefs'
+import { GitCommits } from './GitCommits'
+import { Watcher } from './Watcher'
+import { perfStart, instrumentClass } from './performance'
 
 export class Git {
   rawCwd: string
   cwd: string
   _watcher: chokidar.FSWatcher | null = null
 
+  readonly refs: GitRefs
+  readonly commits: GitCommits
+  readonly watcher: Watcher
+
   constructor(cwd: string) {
     this.rawCwd = cwd
     this.cwd = resolveRepo(cwd)
 
-    // Instrument all methods on this class
-    const instance = this as Record<string, any>
-    for (const key in Object.getOwnPropertyDescriptors(instance)) {
-      if (
-        key.startsWith('_') || // Don't care about internals
-        key === 'watchRefs' || // Disable this one. It should be extracted out at some point
-        typeof instance[key] !== 'function' // Only care about functions
-      ) {
-        continue
-      }
-      instance[key] = perfTrace(`GIT/${key}`, instance[key])
-    }
+    this.refs = new GitRefs(this.cwd, this._getSpawn)
+    this.commits = new GitCommits(this.cwd, this._getSpawn, this)
+    this.watcher = new Watcher(this.cwd)
+
+    instrumentClass(this)
+    instrumentClass(this.refs)
+    instrumentClass(this.commits)
   }
 
   _getGitDir = async () => {
@@ -80,12 +57,14 @@ export class Git {
     return dir
   }
 
-  _getSpawn = async () => {
+  _getSpawn: GetSpawn = async () => {
     if (this.cwd === '/') {
       return null
     }
 
     return async (args: string[], { okCodes = [0] } = {}): Promise<string> => {
+      const perf = perfStart('GIT/spawn/git ' + args.join(' '))
+
       const buffers: Buffer[] = []
       const child = spawn('git', args, { cwd: this.cwd })
 
@@ -99,6 +78,8 @@ export class Git {
         })
 
         child.on('close', (code) => {
+          perf.done()
+
           const stdtxt = String(Buffer.concat(buffers))
           if (okCodes.includes(code ?? 0)) {
             resolve(stdtxt)
@@ -170,146 +151,7 @@ export class Git {
     return sha.trim()
   }
 
-  getAllBranches = async () => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return []
-    }
-
-    // Based on
-    // git branch --list --all --format="[%(HEAD)] -SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso) -upstream- %(upstream) %(upstream:track)" -q --sort=-committerdate
-
-    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
-    const format = [
-      '%(HEAD)',
-      '%(objectname)',
-      '%(refname)',
-      '%(refname:short)',
-      '%(authordate:unix)',
-      '%(committerdate:unix)',
-      '%(upstream)',
-      '%(upstream:short)',
-      '%(upstream:track)',
-    ]
-
-    const fragments = [
-      'branch',
-      '--list',
-      '--all',
-      '--sort=-committerdate',
-      `--format=${format.join(SEP)}`,
-    ]
-
-    const result = await spawn(fragments)
-
-    const tuples = result
-      .split(/\r\n|\r|\n/g)
-      .filter(Boolean)
-      .map((str) => str.split(SEP))
-
-    const refs = tuples.map((segments) => {
-      if (segments.length !== format.length) {
-        console.warn(segments)
-        throw `Separator ${SEP} in output, cannot parse git branches. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
-      }
-
-      const [
-        isHead,
-        sha,
-        refId,
-        name,
-        authorDate,
-        commitDate,
-        upstreamId,
-        upstreamName,
-        upstreamDiff,
-      ] = segments
-
-      let upstream = null
-      if (upstreamId) {
-        upstream = {
-          id: upstreamId,
-          name: upstreamName,
-          ahead: parseInt(/ahead (\d+)/.exec(upstreamDiff)?.[1] ?? '0'),
-          behind: parseInt(/behind (\d+)/.exec(upstreamDiff)?.[1] ?? '0'),
-        }
-      }
-
-      return {
-        id: refId,
-        name: name,
-        isRemote: refId.startsWith('refs/remotes'),
-        isHead: isHead === '*',
-        headSHA: sha,
-        date: commitDate,
-        authorDate: authorDate,
-        upstream: upstream,
-      }
-    })
-
-    return _(refs)
-      .uniqBy((branch) => branch.id)
-      .sortBy([
-        (branch) => branch.isRemote,
-        (branch) => -branch.date,
-        (branch) => branch.name,
-      ])
-      .value()
-  }
-
-  getAllTags = async () => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return []
-    }
-
-    // Based on
-    // git tag --list  --format="-SHA- %(objectname) -local- %(refname) %(refname:short) -date- %(committerdate:iso)" --sort=-committerdate
-
-    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
-    const format = [
-      '%(objectname)',
-      '%(refname)',
-      '%(refname:short)',
-      '%(authordate:unix)',
-      '%(committerdate:unix)',
-    ]
-
-    const fragments = [
-      'tag',
-      '--list',
-      '--sort=-committerdate',
-      `--format=${format.join(SEP)}`,
-    ]
-
-    const result = await spawn(fragments)
-
-    const tuples = result
-      .split(/\r\n|\r|\n/g)
-      .filter(Boolean)
-      .map((str) => str.split(SEP))
-
-    const refs = tuples.map((segments) => {
-      if (segments.length !== format.length) {
-        console.warn(segments)
-        throw `Separator ${SEP} in output, cannot parse git tags. ${segments.length} segments found, ${format.length} expected. Values: ${segments}`
-      }
-
-      const [sha, id, name, authorDate, committerDate] = segments
-
-      return {
-        id,
-        name,
-        headSHA: sha,
-        date: committerDate,
-        authorDate: authorDate,
-      }
-    })
-
-    return _.sortBy(refs, [(tag) => -tag.date, (tag) => tag.name])
-  }
-
-  getAllRemotes = async () => {
+  getAllRemotes = async (): Promise<Remote[]> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return []
@@ -327,89 +169,6 @@ export class Git {
           name: remote,
         }
       })
-  }
-
-  loadAllCommits = async (
-    showRemote: boolean = true,
-    startIndex = 0,
-    number = 500,
-  ): Promise<[commits: Commit[], digest: string]> => {
-    const headSha = await this.getHeadSHA()
-    if (!headSha) {
-      return [[], '']
-    }
-
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return [[], '']
-    }
-
-    const SEP = '----e16409c0-8a85-4a6c-891d-8701f48612d8----'
-    const FORMAT_SEGMENTS_COUNT = 6
-    const cmd = [
-      '--no-pager',
-      'log',
-      `--format=%H${SEP}%P${SEP}%aN${SEP}%aE${SEP}%aI${SEP}%s`,
-      '--branches=*',
-      '--tags=*',
-      showRemote && '--remotes=*',
-      `--skip=${startIndex}`,
-      `--max-count=${number}`,
-      `--date-order`,
-    ].filter(Boolean) as string[]
-
-    perfStart('GIT/log/spawn')
-    const result = await spawn(cmd)
-    perfEnd('GIT/log/spawn')
-
-    perfStart('GIT/log/sanitise-result')
-    const tuples = result
-      .split(/\r\n|\r|\n/g)
-      .filter(Boolean)
-      .map((str) => str.split(SEP))
-    perfEnd('GIT/log/sanitise-result')
-
-    perfStart('GIT/log/deserialise')
-    const commits = new Array<Commit>(tuples.length)
-    const hash = createHash('sha1')
-    for (let i = 0; i < tuples.length; i++) {
-      const formatSegments = tuples[i]
-      if (formatSegments.length !== FORMAT_SEGMENTS_COUNT) {
-        throw `Separator ${SEP} in output, cannot parse git history. ${formatSegments.length} segments found, ${FORMAT_SEGMENTS_COUNT} expected. Values: ${formatSegments}`
-      }
-
-      const [
-        sha,
-        parentShasStr,
-        authorName,
-        authorEmail,
-        authorDateISO,
-        subject,
-      ] = formatSegments
-      const parentShas = parentShasStr.split(' ').filter(Boolean)
-      const author = `${authorName} <${authorEmail}>`
-
-      commits[i] = {
-        sha: sha,
-        sha7: sha.substring(0, 7),
-        message: subject.trim(),
-        dateISO: authorDateISO,
-        email: authorEmail,
-        author: authorName,
-        authorStr: author,
-        parents: parentShas,
-        isHead: headSha === sha,
-      }
-
-      hash.update(sha)
-    }
-    perfEnd('GIT/log/deserialise')
-
-    perfStart('GIT/digest-finalise')
-    const digest = hash.digest('hex')
-    perfEnd('GIT/digest-finalise')
-
-    return [commits, digest]
   }
 
   getStatus = async (): Promise<StatusFile[]> => {
@@ -511,55 +270,8 @@ export class Git {
           isRenamed: file.operation === 'R',
         }
       })
-      .sortBy((file) => file.path)
+      .sortBy((file: StatusFile) => file.path)
       .value()
-  }
-
-  watchRefs = (callback: WatcherCallback): (() => void) => {
-    const cwd = this.cwd === '/' ? this.rawCwd : this.cwd
-    const gitDir = path.join(cwd, '.git')
-    const refsPath = path.join(gitDir, 'refs')
-
-    // Watch the refs themselves
-    const watcher = chokidar.watch(refsPath, {
-      cwd: gitDir,
-      awaitWriteFinish: {
-        stabilityThreshold: 1000,
-        pollInterval: 50,
-      },
-      ignoreInitial: true,
-      ignorePermissionErrors: true,
-    })
-
-    // Watch individual refs
-    function processChange(event: WatcherEvent) {
-      return (path: string) =>
-        void callback({
-          event,
-          ref: path,
-          isRemote: path.startsWith('refs/remotes'),
-        })
-    }
-    watcher.on('add', processChange('add'))
-    watcher.on('unlink', processChange('unlink'))
-    watcher.on('change', processChange('change'))
-
-    // Watch for repo destruction and creation
-    function repoChange(event: WatcherEvent) {
-      return function (path: string) {
-        if (path === 'refs') {
-          processChange(event)(path)
-        }
-      }
-    }
-    watcher.on('addDir', repoChange('repo-create'))
-    watcher.on('unlinkDir', repoChange('repo-remove'))
-
-    watcher.on('error', (err) => console.error('watchRefs error: ', err))
-
-    return () => {
-      watcher.close()
-    }
   }
 
   getFilePlainText = async (

@@ -1,5 +1,5 @@
 import React, { useMemo, useCallback } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'app/store'
 import styled from 'styled-components'
 
 import { clipboard } from 'electron'

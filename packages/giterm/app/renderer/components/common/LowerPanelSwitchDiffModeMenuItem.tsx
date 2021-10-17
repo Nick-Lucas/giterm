@@ -1,15 +1,14 @@
 import React, { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'app/store'
 
 import { Pause, Square } from 'react-feather'
 import { diffToggleDiffMode } from 'app/store/diff/actions'
-import { Store } from 'app/store/reducers.types'
 
 import { Menu } from 'app/lib/primitives'
 
 export function LowerPanelSwitchDiffModeMenuItem() {
   const dispatch = useDispatch()
-  const { diffMode } = useSelector<Store, Store['diff']>((state) => state.diff)
+  const { diffMode } = useSelector((state) => state.diff)
 
   const handleUserToggle = useCallback(() => {
     dispatch(diffToggleDiffMode())

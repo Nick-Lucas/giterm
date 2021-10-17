@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'app/store'
 import styled, { css } from 'styled-components'
 
 import { Commits } from 'app/components/commits'

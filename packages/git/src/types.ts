@@ -1,16 +1,8 @@
 import * as Diff2Html from 'diff2html/lib-esm/types'
 
-export type WatcherEvent =
-  | 'add'
-  | 'unlink'
-  | 'change'
-  | 'repo-create'
-  | 'repo-remove'
-export type WatcherCallback = (data: {
-  event: string
-  ref: string
-  isRemote: boolean
-}) => void
+export * from './GitRefs.types'
+export * from './GitCommits.types'
+export * from './Watcher.types'
 
 export interface StatusFile {
   path: string
@@ -21,18 +13,6 @@ export interface StatusFile {
   isDeleted: boolean
   isModified: boolean
   isRenamed: boolean
-}
-
-export interface Commit {
-  sha: string
-  sha7: string
-  message: string
-  dateISO: string
-  email: string
-  author: string
-  authorStr: string
-  parents: string[]
-  isHead: boolean
 }
 
 type Modify<T, R> = Omit<T, keyof R> & R
@@ -70,4 +50,14 @@ export interface FileText {
   path: string
   text: string
   type: string
+}
+
+export interface SpawnOpts {
+  okCodes?: number[]
+}
+export type Spawn = (args: string[], opts?: SpawnOpts) => Promise<string>
+export type GetSpawn = () => Promise<Spawn | null>
+
+export interface Remote {
+  name: string
 }

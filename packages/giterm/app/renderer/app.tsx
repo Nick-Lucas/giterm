@@ -6,7 +6,7 @@ import { Switch, Route, Router } from 'react-router'
 import { syncHistoryWithStore } from 'react-router-redux'
 
 import { createMemoryHistory } from 'history'
-import configureStore from './store'
+import { store } from './store'
 
 import { Home } from './containers/home'
 import { showRemoteBranches, showBranchTags } from './store/config/actions'
@@ -17,9 +17,7 @@ import '../sentry'
 import { ErrorBoundary } from '@sentry/react'
 
 // Store Init
-const initialState = {}
 const routerHistory = createMemoryHistory()
-const store = configureStore(initialState)
 const history = syncHistoryWithStore(routerHistory as any, store)
 
 interface Modifiers {
@@ -96,7 +94,7 @@ const rootElementSelector = document.currentScript?.getAttribute(
 const rootElement = document.querySelector(rootElementSelector)
 
 ReactDOM.render(
-  <ErrorBoundary fallback="An error occurred and has been reported. Please restart the app">
+  <ErrorBoundary>
     <Provider store={store}>
       <Router history={history as any}>
         <Switch>

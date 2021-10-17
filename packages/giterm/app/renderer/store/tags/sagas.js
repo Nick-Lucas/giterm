@@ -10,7 +10,7 @@ function* updateTags() {
   const cwd = yield select((state) => state.config.cwd)
   const git = new Git(cwd)
 
-  const tags = yield call(() => git.getAllTags())
+  const tags = yield call(() => git.refs.getAllTags())
 
   yield put(tagsUpdated(tags))
 }
