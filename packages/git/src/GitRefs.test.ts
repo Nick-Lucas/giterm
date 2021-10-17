@@ -219,14 +219,14 @@ describe('Git', () => {
       const tags = await git.refs.getAllTags()
       expect(tags.refs).toEqual([
         expect.objectContaining<Partial<TagRef>>({
-          sha: sha1,
-          id: 'refs/tags/tag1',
-          name: 'tag1',
-        }),
-        expect.objectContaining<Partial<TagRef>>({
           sha: sha2,
           id: 'refs/tags/tag2',
           name: 'tag2',
+        }),
+        expect.objectContaining<Partial<TagRef>>({
+          sha: sha1,
+          id: 'refs/tags/tag1',
+          name: 'tag1',
         }),
       ])
 
