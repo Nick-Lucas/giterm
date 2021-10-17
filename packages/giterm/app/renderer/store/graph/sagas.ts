@@ -18,15 +18,16 @@ function* recalculateGraph(): any {
     return
   }
 
-  const graph = measure('calculate-graph', () =>
-    commitsToGraph(
-      commits,
+  const graph = measure('calculate-graph', () => commitsToGraph(commits))
+
+  yield put(
+    graphUpdated(
+      {
+        digest,
+      },
+      graph,
     ),
   )
-
-  yield put(graphUpdated({
-    digest
-  }, graph))
 }
 
 export function* watch() {

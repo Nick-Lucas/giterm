@@ -16,7 +16,7 @@ const initialState: GraphReducer = {
   nodes: [],
   links: [],
   rehydrationPackage: undefined,
-  width: 0
+  width: 0,
 }
 
 export function reducer(state = initialState, action: any): GraphReducer {
@@ -29,7 +29,10 @@ export function reducer(state = initialState, action: any): GraphReducer {
         nodes: graph.nodes,
         links: graph.links,
         rehydrationPackage: graph.rehydrationPackage,
-        width: graph.nodes.reduce((max, node) => Math.max(node.column + 1, max), 3),
+        width: graph.nodes.reduce(
+          (max, node) => Math.max(node.column + 1, max),
+          3,
+        ),
       }
     }
 
