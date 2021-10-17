@@ -2,14 +2,18 @@ import React, { useCallback } from 'react'
 import { useDispatch } from 'app/store'
 import styled from 'styled-components'
 
-import { Terminal } from './terminal'
+import { Terminal } from './Terminal'
 
 import { autoTerminalFullscreen } from 'app/store/terminal/actions'
 
 import { Panel } from 'app/lib/primitives'
 import { LowerPanelMenu } from 'app/components/common'
 
-export function TerminalPanel({ show }) {
+interface Props {
+  show?: boolean
+}
+
+export function TerminalPanel({ show }: Props) {
   const dispatch = useDispatch()
 
   const handleBufferChange = useCallback(
