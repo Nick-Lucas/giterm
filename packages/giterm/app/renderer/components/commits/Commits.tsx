@@ -132,7 +132,12 @@ interface VirtualListProps {
   listRef: React.MutableRefObject<FixedSizeList | undefined>
 }
 
-const VirtualList = ({ numberOfItems, onLoadMoreItems, children, listRef }: VirtualListProps) => {
+const VirtualList = ({
+  numberOfItems,
+  onLoadMoreItems,
+  children,
+  listRef,
+}: VirtualListProps) => {
   return (
     <TableWrapper>
       <AutoSizer>
@@ -147,8 +152,8 @@ const VirtualList = ({ numberOfItems, onLoadMoreItems, children, listRef }: Virt
                   if (!el) {
                     return
                   }
-                  
-                  if (typeof ref === 'function'){
+
+                  if (typeof ref === 'function') {
                     ref(el)
                   }
                   if (listRef) {

@@ -13,9 +13,8 @@ function* reloadCommits(action: any): any {
   const git = new Git(cwd)
 
   const { showRemoteBranches } = yield select((state) => state.config)
-  const { commits: existingCommits, numberToLoad }: Store['commits'] = yield select(
-    (state: Store) => state.commits,
-  )
+  const { commits: existingCommits, numberToLoad }: Store['commits'] =
+    yield select((state: Store) => state.commits)
 
   const reloadAll = [
     CWD_UPDATED,

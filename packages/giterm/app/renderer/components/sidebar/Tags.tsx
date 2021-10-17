@@ -12,7 +12,7 @@ export function Tags() {
   const tags = useSelector((state: Store) => state.tags.list)
 
   const menuItems = useMemo(() => {
-    return tags.map(tag => [
+    return tags.map((tag) => [
       {
         label: 'Copy ID',
         click: () => clipboard.writeText(tag.id),

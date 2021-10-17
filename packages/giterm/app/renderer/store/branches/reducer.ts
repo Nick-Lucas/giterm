@@ -1,7 +1,7 @@
 import { BRANCHES_UPDATED } from './actions'
 import _ from 'lodash'
 
-import { BranchRefs, BranchRef, GetBranchRefs } from "@giterm/git";
+import { BranchRefs, BranchRef, GetBranchRefs } from '@giterm/git'
 
 export interface Reducer {
   query: GetBranchRefs | null
@@ -12,7 +12,7 @@ export interface Reducer {
 const initialState: Reducer = {
   query: null,
   list: [],
-  bySha: {}
+  bySha: {},
 }
 
 export function reducer(state = initialState, action: any): Reducer {
@@ -32,11 +32,11 @@ export function reducer(state = initialState, action: any): Reducer {
         if (branch.upstream?.sha && branch.upstream.sha != branch.sha) {
           if (!bySha[branch.upstream.sha]) {
             bySha[branch.upstream.sha] = []
-          } 
+          }
           bySha[branch.upstream.sha].push(branch)
         }
       }
-      
+
       return {
         query: branches.query,
         list: branches.refs,
