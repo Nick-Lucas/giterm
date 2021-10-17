@@ -32,7 +32,7 @@ describe('Git', () => {
         shim.writeFile('a.txt', 'line 1\nline 2')
         const sha = await shim.commit('Commit 1')
 
-        const diff = (await git.diff.getDiffFromShas(
+        const diff = (await git.diff.getByShas(
           sha,
           useOldSha ? baseSha : null,
         ))!
@@ -67,7 +67,7 @@ describe('Git', () => {
         shim.renameFile('a.txt', 'b.txt')
         const sha = await shim.commit('Commit 2')
 
-        const diff = (await git.diff.getDiffFromShas(
+        const diff = (await git.diff.getByShas(
           sha,
           useOldSha ? baseSha : null,
         ))!
@@ -101,7 +101,7 @@ describe('Git', () => {
         shim.writeFile('a.txt', 'line 1\nline 2')
         const sha = await shim.commit('Commit 2')
 
-        const diff = (await git.diff.getDiffFromShas(
+        const diff = (await git.diff.getByShas(
           sha,
           useOldSha ? baseSha : null,
         ))!
@@ -136,7 +136,7 @@ describe('Git', () => {
         shim.rmFile('a.txt')
         const sha = await shim.commit('Commit 2')
 
-        const diff = (await git.diff.getDiffFromShas(
+        const diff = (await git.diff.getByShas(
           sha,
           useOldSha ? baseSha : null,
         ))!
@@ -183,7 +183,7 @@ describe('Git', () => {
           await spawn(['add', '--all'])
         }
 
-        const diff = (await git.diff.getDiffFromIndex())!
+        const diff = (await git.diff.getIndex())!
 
         expect(diff).toEqual<DiffResult>({
           stats: {
@@ -220,7 +220,7 @@ describe('Git', () => {
           await spawn(['add', '--all'])
         }
 
-        const diff = (await git.diff.getDiffFromIndex())!
+        const diff = (await git.diff.getIndex())!
 
         expect(diff).toEqual<DiffResult>({
           stats: {
@@ -255,7 +255,7 @@ describe('Git', () => {
           await spawn(['add', '--all'])
         }
 
-        const diff = (await git.diff.getDiffFromIndex())!
+        const diff = (await git.diff.getIndex())!
 
         expect(diff).toEqual<DiffResult>({
           stats: {
@@ -285,7 +285,7 @@ describe('Git', () => {
 
       shim.renameFile('a.txt', 'b.txt')
 
-      const diff = (await git.diff.getDiffFromIndex())!
+      const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
         stats: {
@@ -325,7 +325,7 @@ describe('Git', () => {
       shim.renameFile('a.txt', 'b.txt')
       shim.writeFile('b.txt', 'line 1\nline 3')
 
-      const diff = (await git.diff.getDiffFromIndex())!
+      const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
         stats: {
@@ -365,7 +365,7 @@ describe('Git', () => {
       shim.renameFile('a.txt', 'b.txt')
       await spawn(['add', '--all'])
 
-      const diff = (await git.diff.getDiffFromIndex())!
+      const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
         stats: {
@@ -396,7 +396,7 @@ describe('Git', () => {
       shim.writeFile('b.txt', 'line 1\nline 3')
       await spawn(['add', '--all'])
 
-      const diff = (await git.diff.getDiffFromIndex())!
+      const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
         stats: {

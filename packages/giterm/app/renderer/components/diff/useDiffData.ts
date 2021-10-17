@@ -44,10 +44,10 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
 
       const diff =
         mode === 'shas'
-          ? await git.diff.getDiffFromShas(shaNew, shaOld, {
+          ? await git.diff.getByShas(shaNew, shaOld, {
               contextLines,
             })
-          : await git.diff.getDiffFromIndex({ contextLines })
+          : await git.diff.getIndex({ contextLines })
 
       if (!cancelled) {
         if (diff) {
@@ -95,11 +95,11 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
       let right: FileText | null
       if (mode === 'shas') {
         const shaOldRelative = shaOld ?? `${shaNew}~1`
-        left = await git.getFilePlainText(leftName, shaOldRelative)
-        right = await git.getFilePlainText(rightName, shaNew)
+        left = await git.diff.loadFileText(leftName, shaOldRelative)
+        right = await git.diff.loadFileText(rightName, shaNew)
       } else {
-        left = await git.getFilePlainText(leftName, 'HEAD')
-        right = await git.getFilePlainText(rightName)
+        left = await git.diff.loadFileText(leftName, 'HEAD')
+        right = await git.diff.loadFileText(rightName)
       }
 
       if (!cancelled) {

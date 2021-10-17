@@ -21,3 +21,9 @@ export interface DiffResult {
   stats: DiffStats
   files: DiffFile[]
 }
+
+export interface FileText {
+  path: string
+  text: string
+  type: string
+}

@@ -1,13 +1,16 @@
+import fs from 'fs'
+import path from 'path'
 import _ from 'lodash'
 import * as Diff2Html from 'diff2html'
 
 import { Git } from './Git'
 
-import type { DiffFile, DiffResult, GetSpawn } from './types'
+import type { DiffFile, DiffResult, FileText } from './GitDiff.types'
+import type { GetSpawn } from './types'
 
 export class GitDiff {
-  _cwd: string
-  _getSpawn: GetSpawn
+  private _cwd: string
+  private _getSpawn: GetSpawn
   private git: Git
 
   constructor(cwd: string, getSpawn: GetSpawn, git: Git) {
@@ -16,7 +19,46 @@ export class GitDiff {
     this.git = git
   }
 
-  getDiffFromShas = async (
+  loadFileText = async (
+    filePath: string | null,
+    sha: string | null = null,
+  ): Promise<FileText | null> => {
+    const spawn = await this._getSpawn()
+    if (!spawn) {
+      return null
+    }
+
+    if (!filePath) {
+      return {
+        path: '',
+        type: '',
+        text: '',
+      }
+    }
+
+    const fileType = path.extname(filePath)
+
+    let plainText = null
+    if (sha) {
+      const cmd = ['show', `${sha}:${filePath}`]
+      plainText = await spawn(cmd)
+    } else {
+      const absoluteFilePath = path.join(this._cwd, filePath)
+      plainText = await new Promise<string>((resolve, reject) => {
+        fs.readFile(absoluteFilePath, (err, data) => {
+          err ? reject(err) : resolve(data.toString())
+        })
+      })
+    }
+
+    return {
+      path: filePath,
+      text: plainText,
+      type: fileType,
+    }
+  }
+
+  getByShas = async (
     shaNew: string,
     shaOld: string | null = null,
     { contextLines = 10 } = {},
@@ -54,9 +96,7 @@ export class GitDiff {
     return diff
   }
 
-  getDiffFromIndex = async ({
-    contextLines = 5,
-  } = {}): Promise<DiffResult | null> => {
+  getIndex = async ({ contextLines = 5 } = {}): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null

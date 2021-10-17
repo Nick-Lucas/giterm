@@ -26,12 +26,6 @@ export type GitFileOp =
   | 'B' // Broken
   | undefined
 
-export interface FileText {
-  path: string
-  text: string
-  type: string
-}
-
 export interface SpawnOpts {
   okCodes?: number[]
 }

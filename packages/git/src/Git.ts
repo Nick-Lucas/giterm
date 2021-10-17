@@ -8,7 +8,7 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import type { GitFileOp, GetSpawn, StatusFile, FileText, Remote } from './types'
+import type { GitFileOp, GetSpawn, StatusFile, Remote } from './types'
 
 import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
@@ -267,44 +267,5 @@ export class Git {
       })
       .sortBy((file: StatusFile) => file.path)
       .value()
-  }
-
-  getFilePlainText = async (
-    filePath: string | null,
-    sha: string | null = null,
-  ): Promise<FileText | null> => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return null
-    }
-
-    if (!filePath) {
-      return {
-        path: '',
-        type: '',
-        text: '',
-      }
-    }
-
-    const fileType = path.extname(filePath)
-
-    let plainText = null
-    if (sha) {
-      const cmd = ['show', `${sha}:${filePath}`]
-      plainText = await spawn(cmd)
-    } else {
-      const absoluteFilePath = path.join(this.cwd, filePath)
-      plainText = await new Promise<string>((resolve, reject) => {
-        fs.readFile(absoluteFilePath, (err, data) => {
-          err ? reject(err) : resolve(data.toString())
-        })
-      })
-    }
-
-    return {
-      path: filePath,
-      text: plainText,
-      type: fileType,
-    }
   }
 }
