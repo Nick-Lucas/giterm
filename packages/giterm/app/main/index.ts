@@ -14,7 +14,10 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 // autoUpdater.logger = logger
 
-let mainWindow = null
+import * as remote from "@electron/remote/main";
+remote.initialize()
+
+let mainWindow: BrowserWindow
 let forceQuit = false
 
 const installExtensions = async () => {
@@ -27,12 +30,10 @@ const installExtensions = async () => {
       forceDownload,
     )
     logger.log('Installing extensions: Done')
-  } catch (e) {
+  } catch (e: any) {
     logger.warn(`Error installing devtools extension: ${e.message}`)
   }
 }
-
-app.allowRendererProcessReuse = false
 
 app.on('window-all-closed', () => {
   // On OS X it is common for applications and their menu bar
@@ -56,6 +57,7 @@ app.on('ready', async () => {
     show: false,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
       preload: path.join(__dirname, '../sentry.js'),
     },
     title: `Giterm ${app.getVersion()}`,
@@ -99,7 +101,7 @@ app.on('ready', async () => {
       })
     } else {
       mainWindow.on('closed', () => {
-        mainWindow = null
+        (mainWindow as any) = null
       })
     }
   })
@@ -109,16 +111,18 @@ app.on('ready', async () => {
     mainWindow.webContents.openDevTools()
 
     // add inspect element on right click menu
-    mainWindow.webContents.on('context-menu', (e, props) => {
-      Menu.buildFromTemplate([
-        {
-          label: 'Inspect element',
-          click() {
-            mainWindow.inspectElement(props.x, props.y)
-          },
-        },
-      ]).popup(mainWindow)
-    })
+    // TODO: add this back
+    // mainWindow.webContents.on('context-menu', (e, props) => {
+    //   Menu.buildFromTemplate([
+    //     {
+    //       label: 'Inspect element',
+    //       click() {
+            
+    //         mainWindow.inspectElement(props.x, props.y)
+    //       },
+    //     },
+    //   ]).popup(mainWindow)
+    // })
   }
 
   Menu.setApplicationMenu(getMenu(mainWindow))

@@ -1,6 +1,6 @@
 import React, { useCallback } from 'react'
 import PropTypes from 'prop-types'
-import { remote } from 'electron'
+import { remote } from '@electron/remote'
 
 export interface MenuItem {
   label: string

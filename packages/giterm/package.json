@@ -29,6 +29,7 @@
   },
   "dependencies": {
     "@babel/runtime": "^7.7.6",
+    "@electron/remote": "^2.0.1",
     "@giterm/git": "1.0.0",
     "@giterm/gitgraph": "1.0.0",
     "@monaco-editor/react": "^4.3.1",
@@ -90,9 +91,9 @@
     "@types/styled-components": "^5.1.15",
     "babel-plugin-module-resolver": "^4.0.0",
     "browser-sync": "^2.23.6",
-    "electron": "8.5.5",
-    "electron-builder": "^22.11.7",
-    "electron-notarize": "^1.0.0",
+    "electron": "^15.2.0",
+    "electron-builder": "^22.13.1",
+    "electron-notarize": "^1.1.1",
     "npm-run-all": "^4.0.1",
     "redux-mock-store": "^1.2.2",
     "rimraf": "^3.0.2"
