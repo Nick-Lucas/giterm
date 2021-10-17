@@ -3,7 +3,7 @@ import { createHash } from 'crypto'
 
 import { Git } from './Git'
 import type { GetSpawn } from './types'
-import { perfStart, perfEnd } from './performance'
+import { perfStart } from './performance'
 
 import { Commits, Commit, LoadCommits } from './GitCommits.types'
 
@@ -61,18 +61,18 @@ export class GitCommits {
       `--date-order`,
     ].filter(Boolean) as string[]
 
-    perfStart('GIT/log/spawn')
+    const perfSpawn = perfStart('GIT/log/spawn')
     const result = await spawn(cmd)
-    perfEnd('GIT/log/spawn')
+    perfSpawn.done()
 
-    perfStart('GIT/log/sanitise-result')
+    const perfSanitise = perfStart('GIT/log/sanitise-result')
     const tuples = result
       .split(/\r\n|\r|\n/g)
       .filter(Boolean)
       .map((str) => str.split(SEP))
-    perfEnd('GIT/log/sanitise-result')
+    perfSanitise.done()
 
-    perfStart('GIT/log/deserialise')
+    const perfDeserialise = perfStart('GIT/log/deserialise')
     const commits = new Array<Commit>(tuples.length)
     const hash = createHash('sha1')
     for (let i = 0; i < tuples.length; i++) {
@@ -106,11 +106,11 @@ export class GitCommits {
 
       hash.update(sha)
     }
-    perfEnd('GIT/log/deserialise')
+    perfDeserialise.done()
 
-    perfStart('GIT/digest-finalise')
+    const perfFinalise = perfStart('GIT/digest-finalise')
     const digest = hash.digest('hex')
-    perfEnd('GIT/digest-finalise')
+    perfFinalise.done()
 
     return {
       query: opts,

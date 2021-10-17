@@ -2,6 +2,8 @@ const PROFILING = true
 
 export let perfStart = (name: string) => {
   performance.mark(name + '/start')
+
+  return { done: () => perfEnd(name) }
 }
 
 export let perfEnd = (name: string) => {
@@ -22,7 +24,7 @@ const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
 }
 
 if (process.env.NODE_ENV !== 'development' || !PROFILING) {
-  perfStart = function () {}
+  perfStart = () => ({ done: () => {} })
   perfEnd = function () {}
 }
 
