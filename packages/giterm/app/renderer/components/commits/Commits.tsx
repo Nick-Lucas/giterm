@@ -74,7 +74,7 @@ export function Commits() {
     // TODO: improve this logic to find the index asynchronously and pre-load if possible
     const index = commits.findIndex((c) => c.sha === headSHA)
     if (index >= 0) {
-      setSelectedCommits([headSHA])
+      setSelectedCommits([commits[index]])
       listRef.current?.scrollToItem(index, 'smart')
     }
   })

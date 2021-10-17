@@ -19,7 +19,7 @@ export function updateReducer<T>(updateType: string, initialState: T) {
 }
 
 export function sentrySafeWrapper(
-  effect: (...args: []) => any,
+  effect: (...args: any[]) => any,
   { restartOnError = false } = {},
 ) {
   return function* self(...args: any[]): ReturnType<typeof effect> {
