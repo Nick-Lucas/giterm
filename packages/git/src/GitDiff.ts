@@ -102,40 +102,52 @@ export class GitDiff {
       return null
     }
 
-    // TODO: can we demand this as an input instead to save on 200ms?
     const statusFiles = await this.git.getStatus()
 
-    const diffTexts = await Promise.all(
-      statusFiles.map(async (statusFile) => {
-        const cmd = ['diff', '--unified=' + contextLines]
-
-        if (statusFile.isNew) {
-          // Has to be compared to an empty file
-          cmd.push('/dev/null', statusFile.path)
-        } else if (statusFile.isDeleted) {
-          // Has to be compared to current HEAD tree
-          cmd.push('HEAD', '--', statusFile.path)
-        } else if (statusFile.isModified) {
-          // Compare back to head
-          cmd.push('HEAD', statusFile.path)
-        } else if (statusFile.isRenamed) {
-          // Have to tell git diff about the rename
-          cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
+    return {
+      files: statusFiles.map<DiffFile>((sf) => {
+        return {
+          newName: sf.path,
+          oldName: sf.oldPath,
+          isNew: sf.isNew,
+          isDeleted: sf.isDeleted,
+          isRenamed: sf.isRenamed,
+          isModified: sf.isModified,
         }
-
-        return await spawn(cmd, { okCodes: [0, 1] })
       }),
-    )
+    }
 
-    const diffText = diffTexts.join('\n')
+    // const diffTexts = await Promise.all(
+    //   statusFiles.map(async (statusFile) => {
+    //     const cmd = ['diff', '--unified=' + contextLines]
 
-    const diff = await this.processDiff(diffText)
+    //     if (statusFile.isNew) {
+    //       // Has to be compared to an empty file
+    //       cmd.push('/dev/null', statusFile.path)
+    //     } else if (statusFile.isDeleted) {
+    //       // Has to be compared to current HEAD tree
+    //       cmd.push('HEAD', '--', statusFile.path)
+    //     } else if (statusFile.isModified) {
+    //       // Compare back to head
+    //       cmd.push('HEAD', statusFile.path)
+    //     } else if (statusFile.isRenamed) {
+    //       // Have to tell git diff about the rename
+    //       cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
+    //     }
 
-    return diff
+    //     return await spawn(cmd, { okCodes: [0, 1] })
+    //   }),
+    // )
+
+    // const diffText = diffTexts.join('\n')
+
+    // const diff = await this.processDiff(diffText)
+
+    // return diff
   }
 
-  private processDiff = async (diffText: string): Promise<DiffResult> => {
-    const files = Diff2Html.parse(diffText) as DiffFile[]
+  private processDiff = async (diffText: string): Promise<any> => {
+    const files = Diff2Html.parse(diffText) as any
 
     for (const file of files) {
       if (file.oldName === '/dev/null') {
@@ -154,10 +166,13 @@ export class GitDiff {
 
     return {
       stats: {
-        insertions: files.reduce((result, file) => file.addedLines + result, 0),
+        insertions: files.reduce(
+          (result: any, file: any) => file.addedLines + result,
+          0,
+        ),
         filesChanged: files.length,
         deletions: files.reduce(
-          (result, file) => file.deletedLines + result,
+          (result: any, file: any) => file.deletedLines + result,
           0,
         ),
       },
