@@ -8,13 +8,14 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import type { GitFileOp, GetSpawn, StatusFile, Remote } from './types'
+import type { GetSpawn, StatusFile, Remote, FileInfo } from './types'
 
 import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
 import { GitDiff } from './GitDiff'
 import { Watcher } from './Watcher'
 import { perfStart, instrumentClass } from './performance'
+import { parseDiffNameStatusViewWithNulColumns } from './git-diff-parsing'
 
 export class Git {
   rawCwd: string
@@ -172,39 +173,15 @@ export class Git {
       return []
     }
 
-    interface FileInfo {
-      staged: boolean
-      operation: GitFileOp
-      path1: string
-      path2?: string
+    type FileInfoWithStaged = FileInfo & { staged: boolean }
+
+    const parseNamesWithStaged = (staged: boolean) => (output: string) => {
+      return parseDiffNameStatusViewWithNulColumns(output).map((fileInfo) => {
+        const extendedFileInfo = fileInfo as FileInfoWithStaged
+        extendedFileInfo.staged = staged
+        return extendedFileInfo
+      })
     }
-
-    const parseNamesWithStaged =
-      (staged: boolean) =>
-      (output: string): FileInfo[] => {
-        const segments = output.split('\0').filter(Boolean)
-
-        const lines: [GitFileOp, string, string?][] = []
-        while (segments.length > 0) {
-          const operation = segments.shift() as string
-          const operationKey = operation?.slice(0, 1) as GitFileOp
-          if (operationKey === 'R' || operationKey === 'C') {
-            const path1 = segments.shift()!
-            const path2 = segments.shift()!
-            lines.push([operationKey, path1, path2])
-          } else if (operationKey) {
-            const path1 = segments.shift()!
-            lines.push([operationKey, path1])
-          }
-        }
-
-        return lines.map((line) => ({
-          staged,
-          operation: line[0],
-          path1: line[1],
-          path2: line[2],
-        }))
-      }
 
     const stagedPromise = spawn([
       'diff',
@@ -229,7 +206,7 @@ export class Git {
       return output
         .split('\0')
         .filter(Boolean)
-        .map<FileInfo>((filepath) => ({
+        .map<FileInfoWithStaged>((filepath) => ({
           staged: false,
           operation: 'A',
           path1: filepath,
@@ -244,7 +221,7 @@ export class Git {
 
     return _(results)
       .flatMap()
-      .map<StatusFile>((file: FileInfo) => {
+      .map<StatusFile>((file: FileInfoWithStaged) => {
         let filePath = null
         let oldFilePath = null
         if (file.operation === 'R') {

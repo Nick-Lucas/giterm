@@ -1,12 +1,12 @@
 import fs from 'fs'
 import path from 'path'
 import _ from 'lodash'
-import * as Diff2Html from 'diff2html'
 
 import { Git } from './Git'
 
 import type { DiffFile, DiffResult, FileText } from './GitDiff.types'
 import type { GetSpawn } from './types'
+import { parseDiffNameStatusViewWithNulColumns } from './git-diff-parsing'
 
 export class GitDiff {
   private _cwd: string
@@ -61,42 +61,62 @@ export class GitDiff {
   getByShas = async (
     shaNew: string,
     shaOld: string | null = null,
-    { contextLines = 10 } = {},
   ): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
     }
 
-    // From Git:
-    // git diff SHAOLD SHANEW --unified=10
-    // git show SHA --patch -m
-
     if (!shaNew) {
       console.error('shaNew was not provided')
       return null
     }
 
-    let cmd = []
-    if (shaOld) {
-      cmd = ['diff', shaOld, shaNew, '--unified=' + contextLines]
-    } else {
-      cmd = [
-        'show',
-        shaNew,
-        '--patch', // Always show patch
-        '-m', // Show patch even on merge commits
-        '--unified=' + contextLines,
-      ]
+    if (!shaOld) {
+      shaOld = `${shaNew}~1`
     }
+    const cmd = [
+      'diff',
+      shaOld,
+      shaNew,
+      '--name-status',
+      '-z', // Terminate columns with NUL
+    ]
 
-    const patchText = await spawn(cmd)
-    const diff = await this.processDiff(patchText)
+    const output = await spawn(cmd)
+    const files = parseDiffNameStatusViewWithNulColumns(output)
 
-    return diff
+    return {
+      files: files.map<DiffFile>((file) => {
+        let newName: string | null = null
+        let oldName: string | null = null
+        if (file.operation === 'R') {
+          oldName = file.path1.trim()
+          newName = file.path2!.trim()
+        } else if (file.operation === 'A') {
+          newName = file.path1.trim()
+          oldName = null
+        } else if (file.operation === 'D') {
+          newName = null
+          oldName = file.path1.trim()
+        } else {
+          oldName = file.path1.trim()
+          newName = file.path1.trim()
+        }
+
+        return {
+          newName: newName,
+          oldName: oldName,
+          isDeleted: file.operation === 'D',
+          isModified: file.operation === 'M' || file.operation === 'R',
+          isNew: file.operation === 'A',
+          isRenamed: file.operation === 'R',
+        }
+      }),
+    }
   }
 
-  getIndex = async ({ contextLines = 5 } = {}): Promise<DiffResult | null> => {
+  getIndex = async (): Promise<DiffResult | null> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return null
@@ -105,78 +125,32 @@ export class GitDiff {
     const statusFiles = await this.git.getStatus()
 
     return {
-      files: statusFiles.map<DiffFile>((sf) => {
+      files: statusFiles.map<DiffFile>((file) => {
+        let newName: string | null = null
+        let oldName: string | null = null
+        if (file.isRenamed) {
+          oldName = file.oldPath
+          newName = file.path
+        } else if (file.isNew) {
+          newName = file.path
+          oldName = null
+        } else if (file.isDeleted) {
+          newName = null
+          oldName = file.path
+        } else {
+          oldName = file.path
+          newName = file.path
+        }
+
         return {
-          newName: sf.path,
-          oldName: sf.oldPath,
-          isNew: sf.isNew,
-          isDeleted: sf.isDeleted,
-          isRenamed: sf.isRenamed,
-          isModified: sf.isModified,
+          newName: newName,
+          oldName: oldName,
+          isNew: file.isNew,
+          isDeleted: file.isDeleted,
+          isRenamed: file.isRenamed,
+          isModified: file.isModified || file.isRenamed,
         }
       }),
-    }
-
-    // const diffTexts = await Promise.all(
-    //   statusFiles.map(async (statusFile) => {
-    //     const cmd = ['diff', '--unified=' + contextLines]
-
-    //     if (statusFile.isNew) {
-    //       // Has to be compared to an empty file
-    //       cmd.push('/dev/null', statusFile.path)
-    //     } else if (statusFile.isDeleted) {
-    //       // Has to be compared to current HEAD tree
-    //       cmd.push('HEAD', '--', statusFile.path)
-    //     } else if (statusFile.isModified) {
-    //       // Compare back to head
-    //       cmd.push('HEAD', statusFile.path)
-    //     } else if (statusFile.isRenamed) {
-    //       // Have to tell git diff about the rename
-    //       cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
-    //     }
-
-    //     return await spawn(cmd, { okCodes: [0, 1] })
-    //   }),
-    // )
-
-    // const diffText = diffTexts.join('\n')
-
-    // const diff = await this.processDiff(diffText)
-
-    // return diff
-  }
-
-  private processDiff = async (diffText: string): Promise<any> => {
-    const files = Diff2Html.parse(diffText) as any
-
-    for (const file of files) {
-      if (file.oldName === '/dev/null') {
-        file.oldName = null
-      }
-      if (file.newName === '/dev/null') {
-        file.newName = null
-      }
-
-      // Diff2Html doesn't attach false values, so patch these on
-      file.isNew = !!file.isNew
-      file.isDeleted = !!file.isDeleted
-      file.isRename = !!file.isRename
-      file.isModified = !file.isNew && !file.isDeleted
-    }
-
-    return {
-      stats: {
-        insertions: files.reduce(
-          (result: any, file: any) => file.addedLines + result,
-          0,
-        ),
-        filesChanged: files.length,
-        deletions: files.reduce(
-          (result: any, file: any) => file.deletedLines + result,
-          0,
-        ),
-      },
-      files,
     }
   }
 }

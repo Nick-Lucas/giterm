@@ -38,19 +38,12 @@ describe('Git', () => {
         ))!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 0,
-            filesChanged: 1,
-            insertions: 2,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: null,
               newName: 'a.txt',
-              addedLines: 2,
-              deletedLines: 0,
               isNew: true,
-              isRename: false,
+              isRenamed: false,
               isDeleted: false,
               isModified: false,
             }),
@@ -73,18 +66,12 @@ describe('Git', () => {
         ))!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 0,
-            filesChanged: 1,
-            insertions: 0,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: 'a.txt',
               newName: 'b.txt',
-              addedLines: 0,
               isNew: false,
-              isRename: true,
+              isRenamed: true,
               isModified: true,
               isDeleted: false,
             }),
@@ -107,19 +94,12 @@ describe('Git', () => {
         ))!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 1,
-            filesChanged: 1,
-            insertions: 1,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: 'a.txt',
               newName: 'a.txt',
-              addedLines: 1,
-              deletedLines: 1,
               isNew: false,
-              isRename: false,
+              isRenamed: false,
               isModified: true,
               isDeleted: false,
             }),
@@ -142,19 +122,12 @@ describe('Git', () => {
         ))!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 2,
-            filesChanged: 1,
-            insertions: 0,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: 'a.txt',
               newName: null,
-              addedLines: 0,
-              deletedLines: 2,
               isNew: false,
-              isRename: false,
+              isRenamed: false,
               isModified: false,
               isDeleted: true,
             }),
@@ -186,19 +159,12 @@ describe('Git', () => {
         const diff = (await git.diff.getIndex())!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 0,
-            filesChanged: 1,
-            insertions: 2,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: null,
               newName: 'b.txt',
-              addedLines: 2,
-              deletedLines: 0,
               isNew: true,
-              isRename: false,
+              isRenamed: false,
               isDeleted: false,
               isModified: false,
             }),
@@ -223,19 +189,12 @@ describe('Git', () => {
         const diff = (await git.diff.getIndex())!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 1,
-            filesChanged: 1,
-            insertions: 1,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: 'a.txt',
               newName: 'a.txt',
-              addedLines: 1,
-              deletedLines: 1,
               isNew: false,
-              isRename: false,
+              isRenamed: false,
               isModified: true,
               isDeleted: false,
             }),
@@ -258,19 +217,12 @@ describe('Git', () => {
         const diff = (await git.diff.getIndex())!
 
         expect(diff).toEqual<DiffResult>({
-          stats: {
-            deletions: 2,
-            filesChanged: 1,
-            insertions: 0,
-          },
           files: [
             expect.objectContaining<Partial<DiffFile>>({
               oldName: 'a.txt',
               newName: null,
-              addedLines: 0,
-              deletedLines: 2,
               isNew: false,
-              isRename: false,
+              isRenamed: false,
               isModified: false,
               isDeleted: true,
             }),
@@ -288,29 +240,20 @@ describe('Git', () => {
       const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
-        stats: {
-          deletions: 2,
-          filesChanged: 2,
-          insertions: 2,
-        },
         files: [
           expect.objectContaining<Partial<DiffFile>>({
             oldName: 'a.txt',
             newName: null,
-            addedLines: 0,
-            deletedLines: 2,
             isNew: false,
-            isRename: false,
+            isRenamed: false,
             isModified: false,
             isDeleted: true,
           }),
           expect.objectContaining<Partial<DiffFile>>({
             oldName: null,
             newName: 'b.txt',
-            addedLines: 2,
-            deletedLines: 0,
             isNew: true,
-            isRename: false,
+            isRenamed: false,
             isModified: false,
             isDeleted: false,
           }),
@@ -328,29 +271,20 @@ describe('Git', () => {
       const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
-        stats: {
-          deletions: 2,
-          filesChanged: 2,
-          insertions: 2,
-        },
         files: [
           expect.objectContaining<Partial<DiffFile>>({
             oldName: 'a.txt',
             newName: null,
-            addedLines: 0,
-            deletedLines: 2,
             isNew: false,
-            isRename: false,
+            isRenamed: false,
             isModified: false,
             isDeleted: true,
           }),
           expect.objectContaining<Partial<DiffFile>>({
             oldName: null,
             newName: 'b.txt',
-            addedLines: 2,
-            deletedLines: 0,
             isNew: true,
-            isRename: false,
+            isRenamed: false,
             isModified: false,
             isDeleted: false,
           }),
@@ -368,19 +302,12 @@ describe('Git', () => {
       const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
-        stats: {
-          deletions: 0,
-          filesChanged: 1,
-          insertions: 0,
-        },
         files: [
           expect.objectContaining<Partial<DiffFile>>({
             oldName: 'a.txt',
             newName: 'b.txt',
-            addedLines: 0,
-            deletedLines: 0,
             isNew: false,
-            isRename: true,
+            isRenamed: true,
             isModified: true,
             isDeleted: false,
           }),
@@ -399,19 +326,12 @@ describe('Git', () => {
       const diff = (await git.diff.getIndex())!
 
       expect(diff).toEqual<DiffResult>({
-        stats: {
-          deletions: 1,
-          filesChanged: 1,
-          insertions: 1,
-        },
         files: [
           expect.objectContaining<Partial<DiffFile>>({
             oldName: 'a.txt',
             newName: 'b.txt',
-            addedLines: 1,
-            deletedLines: 1,
             isNew: false,
-            isRename: true,
+            isRenamed: true,
             isModified: true,
             isDeleted: false,
           }),

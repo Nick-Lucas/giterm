@@ -44,10 +44,8 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
 
       const diff =
         mode === 'shas'
-          ? await git.diff.getByShas(shaNew, shaOld, {
-              contextLines,
-            })
-          : await git.diff.getIndex({ contextLines })
+          ? await git.diff.getByShas(shaNew, shaOld)
+          : await git.diff.getIndex()
 
       if (!cancelled) {
         if (diff) {
@@ -91,16 +89,18 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     async function fetch() {
       const git = new Git(cwd)
 
-      let left: FileText | null
-      let right: FileText | null
+      let leftPromise: Promise<FileText | null>
+      let rightPromise: Promise<FileText | null>
       if (mode === 'shas') {
         const shaOldRelative = shaOld ?? `${shaNew}~1`
-        left = await git.diff.loadFileText(leftName, shaOldRelative)
-        right = await git.diff.loadFileText(rightName, shaNew)
+        leftPromise = git.diff.loadFileText(leftName, shaOldRelative)
+        rightPromise = git.diff.loadFileText(rightName, shaNew)
       } else {
-        left = await git.diff.loadFileText(leftName, 'HEAD')
-        right = await git.diff.loadFileText(rightName)
+        leftPromise = git.diff.loadFileText(leftName, 'HEAD')
+        rightPromise = git.diff.loadFileText(rightName)
       }
+
+      const [left, right] = await Promise.all([leftPromise, rightPromise])
 
       if (!cancelled) {
         if (left && right) {

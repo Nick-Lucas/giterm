@@ -2,6 +2,7 @@ export * from './GitRefs.types'
 export * from './GitCommits.types'
 export * from './Watcher.types'
 export * from './GitDiff.types'
+export * from './git-diff-parsing.types'
 
 export interface StatusFile {
   path: string
@@ -13,18 +14,6 @@ export interface StatusFile {
   isModified: boolean
   isRenamed: boolean
 }
-
-export type GitFileOp =
-  | 'A' // Added
-  | 'C' // Copied
-  | 'D' // Deleted
-  | 'M' // Modified
-  | 'R' // Renamed
-  | 'T' // Type changed
-  | 'U' // Unmerged
-  | 'X' // Unknown
-  | 'B' // Broken
-  | undefined
 
 export interface SpawnOpts {
   okCodes?: number[]
