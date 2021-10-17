@@ -7,7 +7,9 @@
     
     <!-- https://electronjs.org/docs/tutorial/security#6-define-a-content-security-policy -->
     <!-- Load app script and allow browsersync to load -->
-    <meta http-equiv="Content-Security-Policy" content="script-src 'self' ws://localhost:* http://localhost:35829">
+    <meta http-equiv="Content-Security-Policy" content="script-src 'unsafe-eval' 'self' ws://localhost:* http://localhost:35829">
+    <meta http-equiv="Cross-Origin-Opener-Policy" content="require-corp">
+    <meta http-equiv="Cross-Origin-Embedder-Policy" content="same-origin">
   </head>
   <body>
     <div id="app" style="display: flex"></div>

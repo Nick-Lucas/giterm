@@ -14,14 +14,17 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 // autoUpdater.logger = logger
 
-import * as remote from "@electron/remote/main";
+import * as remote from '@electron/remote/main'
 remote.initialize()
+
+// Required to support node-pty
+app.allowRendererProcessReuse = false
 
 let mainWindow: BrowserWindow
 let forceQuit = false
 
 const installExtensions = async () => {
-  const forceDownload = !!process.env.UPGRADE_EXTENSIONS
+  const forceDownload = true //!!process.env.UPGRADE_EXTENSIONS
 
   try {
     logger.log('Installing extensions: Started')
@@ -58,10 +61,13 @@ app.on('ready', async () => {
     webPreferences: {
       nodeIntegration: true,
       contextIsolation: false,
-      preload: path.join(__dirname, '../sentry.js'),
+      preload: path.join(__dirname, '../sentry.js')
     },
     title: `Giterm ${app.getVersion()}`,
   })
+
+  // Allow use of remote module
+  remote.enable(mainWindow.webContents)
 
   // Show on currently active screen
   const currentScreen = screen.getDisplayNearestPoint(
@@ -101,7 +107,8 @@ app.on('ready', async () => {
       })
     } else {
       mainWindow.on('closed', () => {
-        (mainWindow as any) = null
+        // eslint-disable-next-line @typescript-eslint/no-extra-semi
+        ;(mainWindow as any) = null
       })
     }
   })
@@ -117,7 +124,7 @@ app.on('ready', async () => {
     //     {
     //       label: 'Inspect element',
     //       click() {
-            
+
     //         mainWindow.inspectElement(props.x, props.y)
     //       },
     //     },
