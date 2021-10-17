@@ -190,13 +190,15 @@ export function Terminal({ isShown = true, onAlternateBufferChange }: Props) {
     // Refresh immediately after input
     const onNewLineDisposable = terminal.onKey(async (e) => {
       if (e.domEvent.code === 'Enter') {
-        await handleTerminalUpdates()
+        // Yes this is an async function. No we don't want to wait for it to complete as that blocks the terminal!
+        handleTerminalUpdates()
       }
     })
 
     // Refresh after new lines received
-    const onLineFeedDisposable = terminal.onLineFeed(async () => {
-      await handleTerminalUpdates()
+    const onLineFeedDisposable = terminal.onLineFeed(() => {
+      // Yes this is an async function. No we don't want to wait for it to complete as that blocks the terminal!
+      handleTerminalUpdates()
     })
 
     // Refresh after long running processes finish

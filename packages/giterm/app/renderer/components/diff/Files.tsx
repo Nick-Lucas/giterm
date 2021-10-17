@@ -4,7 +4,7 @@ import styled from 'styled-components'
 import { List, RightClickArea } from 'app/lib/primitives'
 import { colours } from 'app/lib/theme'
 
-import { DiffResult } from './types'
+import { DiffResult } from '@giterm/git'
 import { clipboard } from 'electron'
 
 interface Props {

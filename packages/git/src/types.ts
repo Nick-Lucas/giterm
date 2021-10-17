@@ -1,8 +1,8 @@
-import * as Diff2Html from 'diff2html/lib-esm/types'
-
 export * from './GitRefs.types'
 export * from './GitCommits.types'
 export * from './Watcher.types'
+export * from './GitDiff.types'
+export * from './git-diff-parsing.types'
 
 export interface StatusFile {
   path: string
@@ -13,43 +13,6 @@ export interface StatusFile {
   isDeleted: boolean
   isModified: boolean
   isRenamed: boolean
-}
-
-type Modify<T, R> = Omit<T, keyof R> & R
-export interface DiffStats {
-  insertions: number
-  deletions: number
-  filesChanged: number
-}
-export type DiffFile = Modify<
-  Diff2Html.DiffFile,
-  {
-    newName: string | null
-    oldName: string | null
-    isModified: boolean
-  }
->
-export interface DiffResult {
-  stats: DiffStats
-  files: DiffFile[]
-}
-
-export type GitFileOp =
-  | 'A' // Added
-  | 'C' // Copied
-  | 'D' // Deleted
-  | 'M' // Modified
-  | 'R' // Renamed
-  | 'T' // Type changed
-  | 'U' // Unmerged
-  | 'X' // Unknown
-  | 'B' // Broken
-  | undefined
-
-export interface FileText {
-  path: string
-  text: string
-  type: string
 }
 
 export interface SpawnOpts {
