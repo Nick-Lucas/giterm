@@ -1,11 +1,11 @@
 export const TERMINAL_CHANGED = 'terminal/changed'
-export const terminalChanged = (cwd) => ({
+export const terminalChanged = (cwd: string) => ({
   type: TERMINAL_CHANGED,
   cwd: cwd.trim(),
 })
 
 export const AUTO_TERMINAL_FULLSCREEN = 'terminal/auto_terminal_fullscreen'
-export const autoTerminalFullscreen = (fullscreen) => ({
+export const autoTerminalFullscreen = (fullscreen: boolean) => ({
   type: AUTO_TERMINAL_FULLSCREEN,
   fullscreen,
 })

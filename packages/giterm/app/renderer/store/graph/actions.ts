@@ -1,10 +1,11 @@
+import { GraphResponse } from '@giterm/gitgraph'
+import { Holistic } from './types'
+
 export const GRAPH_UPDATED = 'graph/updated'
-export const graphUpdated = (holistics, nodes, links, rehydrationPackage) => ({
+export const graphUpdated = (holistics: Holistic, graph: GraphResponse) => ({
   type: GRAPH_UPDATED,
   holistics,
-  nodes,
-  links,
-  rehydrationPackage,
+  graph,
 })
 
 export const GRAPH_UPDATE_SKIPPED = 'graph/update_skipped'

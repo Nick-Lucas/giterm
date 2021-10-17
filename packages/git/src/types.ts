@@ -57,3 +57,7 @@ export interface SpawnOpts {
 }
 export type Spawn = (args: string[], opts?: SpawnOpts) => Promise<string>
 export type GetSpawn = () => Promise<Spawn | null>
+
+export interface Remote {
+  name: string
+}

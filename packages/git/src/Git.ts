@@ -16,6 +16,7 @@ import type {
   GetSpawn,
   StatusFile,
   FileText,
+  Remote,
 } from './types'
 
 import { GitRefs } from './GitRefs'
@@ -146,7 +147,7 @@ export class Git {
     return sha.trim()
   }
 
-  getAllRemotes = async () => {
+  getAllRemotes = async (): Promise<Remote[]> => {
     const spawn = await this._getSpawn()
     if (!spawn) {
       return []

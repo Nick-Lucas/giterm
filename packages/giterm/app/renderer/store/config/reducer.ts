@@ -2,7 +2,13 @@ import { SHOW_REMOTE_BRANCHES, SHOW_BRANCH_TAGS, CWD_UPDATED } from './actions'
 
 import { INITIAL_CWD } from 'app/lib/cwd'
 
-const initialState = {
+export interface ConfigReducer {
+  cwd: string
+  showRemoteBranches: boolean
+  showBranchTags: boolean
+}
+
+const initialState: ConfigReducer = {
   cwd: INITIAL_CWD,
 
   // Show data from remotes
@@ -12,7 +18,7 @@ const initialState = {
   showBranchTags: true,
 }
 
-export const reducer = (state = initialState, action) => {
+export const reducer = (state = initialState, action: any): ConfigReducer => {
   switch (action.type) {
     case CWD_UPDATED: {
       const { cwd } = action

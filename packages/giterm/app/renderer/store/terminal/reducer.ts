@@ -3,7 +3,13 @@ import {
   AUTO_TERMINAL_FULLSCREEN,
 } from './actions'
 
-const initialState = {
+export interface TerminalReducer {
+  fullscreen: boolean
+  userTerminalFullscreen: boolean
+  autoTerminalFullscreen: boolean
+}
+
+const initialState: TerminalReducer = {
   // Calculated field based on user/auto properties
   fullscreen: false,
 
@@ -14,7 +20,7 @@ const initialState = {
   autoTerminalFullscreen: false,
 }
 
-export const reducer = (state = initialState, action) => {
+export const reducer = (state = initialState, action: any): TerminalReducer => {
   switch (action.type) {
     case FLIP_USER_TERMINAL_FULLSCREEN: {
       const userNext = !state.fullscreen
