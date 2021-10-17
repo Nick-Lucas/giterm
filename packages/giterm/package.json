@@ -89,7 +89,7 @@
     "@types/styled-components": "^5.1.15",
     "babel-plugin-module-resolver": "^4.0.0",
     "browser-sync": "^2.23.6",
-    "electron": "8.5.5",
+    "electron": "11.5.0",
     "electron-builder": "^22.11.7",
     "electron-notarize": "^1.0.0",
     "npm-run-all": "^4.0.1",
