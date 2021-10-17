@@ -45,11 +45,13 @@ const RowWrapper = styled.div<RowWrapperProps>`
 `
 
 interface RowColumnProps {
+  alignVertical: boolean
   width: string
 }
 const RowColumn = styled.div<RowColumnProps>`
   display: flex;
   flex-direction: row;
+  align-items: ${({ alignVertical }) => (alignVertical ? 'center' : 'initial')};
 
   margin-right: 10px;
   max-height: 100%;
@@ -128,7 +130,10 @@ export const _Row = ({
   return (
     <RowWrapper isSelected={selected} isHead={isHead}>
       {columns.map((column) => (
-        <RowColumn key={column.key} width={column.width}>
+        <RowColumn
+          key={column.key}
+          width={column.width}
+          alignVertical={column.key !== 'graph'}>
           {column.showTags &&
             localBranchRefs.map((branch) => (
               <GitRef

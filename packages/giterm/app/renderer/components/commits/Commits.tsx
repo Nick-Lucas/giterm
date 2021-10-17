@@ -33,7 +33,7 @@ export function Commits() {
         key: 'graph',
         width: `${GraphIndent + GraphColumnWidth * graphCols}px`,
       },
-      { name: 'SHA', key: 'sha7', width: '50px' },
+      { name: 'SHA', key: 'sha7', width: '55px' },
       { name: 'Message', key: 'message', width: '500px', showTags: true },
       { name: 'Author', key: 'authorStr', width: '150px' },
       {
