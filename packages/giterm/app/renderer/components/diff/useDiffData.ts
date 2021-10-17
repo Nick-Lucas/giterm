@@ -44,10 +44,10 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
 
       const diff =
         mode === 'shas'
-          ? await git.getDiffFromShas(shaNew, shaOld, {
+          ? await git.diff.getDiffFromShas(shaNew, shaOld, {
               contextLines,
             })
-          : await git.getDiffFromIndex({ contextLines })
+          : await git.diff.getDiffFromIndex({ contextLines })
 
       if (!cancelled) {
         if (diff) {

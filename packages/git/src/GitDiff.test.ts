@@ -1,0 +1,422 @@
+import { Git } from './Git'
+import { DiffResult, DiffFile } from './types'
+
+import { TestGitShim } from './TestGitShim'
+
+describe('Git', () => {
+  let shim: TestGitShim
+  let dir = ''
+  let spawn: ReturnType<TestGitShim['getSpawn']>
+
+  beforeEach(async () => {
+    shim = new TestGitShim()
+    dir = shim.dir
+    spawn = shim.getSpawn(dir)
+  })
+
+  describe('getDiffFromShas', () => {
+    async function getBaseCommit(): Promise<string> {
+      await spawn(['init'])
+      shim.writeFile('onlyfile', 'abc')
+      return await shim.commit('Base Commit')
+    }
+
+    describe.each([
+      ['one commit', false],
+      ['two commits', true],
+    ])('fetching diff for %s', (caseName: string, useOldSha: boolean) => {
+      it('added file', async () => {
+        const baseSha = await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const sha = await shim.commit('Commit 1')
+
+        const diff = (await git.diff.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 0,
+            filesChanged: 1,
+            insertions: 2,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: null,
+              newName: 'a.txt',
+              addedLines: 2,
+              deletedLines: 0,
+              isNew: true,
+              isRename: false,
+              isDeleted: false,
+              isModified: false,
+            }),
+          ],
+        })
+      })
+
+      it('renamed file', async () => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const baseSha = await shim.commit('Commit 1')
+        shim.renameFile('a.txt', 'b.txt')
+        const sha = await shim.commit('Commit 2')
+
+        const diff = (await git.diff.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 0,
+            filesChanged: 1,
+            insertions: 0,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: 'b.txt',
+              addedLines: 0,
+              isNew: false,
+              isRename: true,
+              isModified: true,
+              isDeleted: false,
+            }),
+          ],
+        })
+      })
+
+      it('modified file', async () => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.writeFile('a.txt', 'line 1\nline 3')
+        const baseSha = await shim.commit('Commit 1')
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const sha = await shim.commit('Commit 2')
+
+        const diff = (await git.diff.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 1,
+            filesChanged: 1,
+            insertions: 1,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: 'a.txt',
+              addedLines: 1,
+              deletedLines: 1,
+              isNew: false,
+              isRename: false,
+              isModified: true,
+              isDeleted: false,
+            }),
+          ],
+        })
+      })
+
+      it('deleted file', async () => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        const baseSha = await shim.commit('Commit 1')
+        shim.rmFile('a.txt')
+        const sha = await shim.commit('Commit 2')
+
+        const diff = (await git.diff.getDiffFromShas(
+          sha,
+          useOldSha ? baseSha : null,
+        ))!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 2,
+            filesChanged: 1,
+            insertions: 0,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: null,
+              addedLines: 0,
+              deletedLines: 2,
+              isNew: false,
+              isRename: false,
+              isModified: false,
+              isDeleted: true,
+            }),
+          ],
+        })
+      })
+    })
+  })
+
+  describe('getDiffFromIndex', () => {
+    async function getBaseCommit(): Promise<string> {
+      await spawn(['init'])
+      shim.writeFile('a.txt', 'line 1\nline 2')
+      return await shim.commit('Base Commit')
+    }
+
+    it.each<('staged' | 'unstaged')[]>([['staged'], ['unstaged']])(
+      'added file (%s)',
+      async (setup: 'staged' | 'unstaged') => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.writeFile('b.txt', 'line 1\nline 2')
+        await spawn(['add', '--all'])
+        if (setup === 'staged') {
+          await spawn(['add', '--all'])
+        }
+
+        const diff = (await git.diff.getDiffFromIndex())!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 0,
+            filesChanged: 1,
+            insertions: 2,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: null,
+              newName: 'b.txt',
+              addedLines: 2,
+              deletedLines: 0,
+              isNew: true,
+              isRename: false,
+              isDeleted: false,
+              isModified: false,
+            }),
+          ],
+        })
+      },
+    )
+
+    it.each<('staged' | 'unstaged')[]>([['staged'], ['unstaged']])(
+      'modified file (%s)',
+      async (setup: 'staged' | 'unstaged') => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.writeFile('a.txt', 'line 1\nline 3')
+        await shim.commit('Commit 1')
+        shim.writeFile('a.txt', 'line 1\nline 2')
+        if (setup === 'staged') {
+          await spawn(['add', '--all'])
+        }
+
+        const diff = (await git.diff.getDiffFromIndex())!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 1,
+            filesChanged: 1,
+            insertions: 1,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: 'a.txt',
+              addedLines: 1,
+              deletedLines: 1,
+              isNew: false,
+              isRename: false,
+              isModified: true,
+              isDeleted: false,
+            }),
+          ],
+        })
+      },
+    )
+
+    it.each<('staged' | 'unstaged')[]>([['staged'], ['unstaged']])(
+      'deleted file (%s)',
+      async (setup: 'staged' | 'unstaged') => {
+        await getBaseCommit()
+        const git = new Git(dir)
+
+        shim.rmFile('a.txt')
+        if (setup === 'staged') {
+          await spawn(['add', '--all'])
+        }
+
+        const diff = (await git.diff.getDiffFromIndex())!
+
+        expect(diff).toEqual<DiffResult>({
+          stats: {
+            deletions: 2,
+            filesChanged: 1,
+            insertions: 0,
+          },
+          files: [
+            expect.objectContaining<Partial<DiffFile>>({
+              oldName: 'a.txt',
+              newName: null,
+              addedLines: 0,
+              deletedLines: 2,
+              isNew: false,
+              isRename: false,
+              isModified: false,
+              isDeleted: true,
+            }),
+          ],
+        })
+      },
+    )
+
+    it('renamed file (unstaged)', async () => {
+      await getBaseCommit()
+      const git = new Git(dir)
+
+      shim.renameFile('a.txt', 'b.txt')
+
+      const diff = (await git.diff.getDiffFromIndex())!
+
+      expect(diff).toEqual<DiffResult>({
+        stats: {
+          deletions: 2,
+          filesChanged: 2,
+          insertions: 2,
+        },
+        files: [
+          expect.objectContaining<Partial<DiffFile>>({
+            oldName: 'a.txt',
+            newName: null,
+            addedLines: 0,
+            deletedLines: 2,
+            isNew: false,
+            isRename: false,
+            isModified: false,
+            isDeleted: true,
+          }),
+          expect.objectContaining<Partial<DiffFile>>({
+            oldName: null,
+            newName: 'b.txt',
+            addedLines: 2,
+            deletedLines: 0,
+            isNew: true,
+            isRename: false,
+            isModified: false,
+            isDeleted: false,
+          }),
+        ],
+      })
+    })
+
+    it('renamed and modified file (unstaged)', async () => {
+      await getBaseCommit()
+      const git = new Git(dir)
+
+      shim.renameFile('a.txt', 'b.txt')
+      shim.writeFile('b.txt', 'line 1\nline 3')
+
+      const diff = (await git.diff.getDiffFromIndex())!
+
+      expect(diff).toEqual<DiffResult>({
+        stats: {
+          deletions: 2,
+          filesChanged: 2,
+          insertions: 2,
+        },
+        files: [
+          expect.objectContaining<Partial<DiffFile>>({
+            oldName: 'a.txt',
+            newName: null,
+            addedLines: 0,
+            deletedLines: 2,
+            isNew: false,
+            isRename: false,
+            isModified: false,
+            isDeleted: true,
+          }),
+          expect.objectContaining<Partial<DiffFile>>({
+            oldName: null,
+            newName: 'b.txt',
+            addedLines: 2,
+            deletedLines: 0,
+            isNew: true,
+            isRename: false,
+            isModified: false,
+            isDeleted: false,
+          }),
+        ],
+      })
+    })
+
+    it('renamed file (staged)', async () => {
+      await getBaseCommit()
+      const git = new Git(dir)
+
+      shim.renameFile('a.txt', 'b.txt')
+      await spawn(['add', '--all'])
+
+      const diff = (await git.diff.getDiffFromIndex())!
+
+      expect(diff).toEqual<DiffResult>({
+        stats: {
+          deletions: 0,
+          filesChanged: 1,
+          insertions: 0,
+        },
+        files: [
+          expect.objectContaining<Partial<DiffFile>>({
+            oldName: 'a.txt',
+            newName: 'b.txt',
+            addedLines: 0,
+            deletedLines: 0,
+            isNew: false,
+            isRename: true,
+            isModified: true,
+            isDeleted: false,
+          }),
+        ],
+      })
+    })
+
+    it('renamed and modified file (staged)', async () => {
+      await getBaseCommit()
+      const git = new Git(dir)
+
+      shim.renameFile('a.txt', 'b.txt')
+      shim.writeFile('b.txt', 'line 1\nline 3')
+      await spawn(['add', '--all'])
+
+      const diff = (await git.diff.getDiffFromIndex())!
+
+      expect(diff).toEqual<DiffResult>({
+        stats: {
+          deletions: 1,
+          filesChanged: 1,
+          insertions: 1,
+        },
+        files: [
+          expect.objectContaining<Partial<DiffFile>>({
+            oldName: 'a.txt',
+            newName: 'b.txt',
+            addedLines: 1,
+            deletedLines: 1,
+            isNew: false,
+            isRename: true,
+            isModified: true,
+            isDeleted: false,
+          }),
+        ],
+      })
+    })
+  })
+})

@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import * as Diff2Html from 'diff2html'
 import chokidar from 'chokidar'
 import path from 'path'
 
@@ -9,18 +8,11 @@ import { spawn } from 'child_process'
 import { resolveRepo } from './resolve-repo'
 
 import { STATE, STATE_FILES } from './constants'
-import type {
-  DiffFile,
-  DiffResult,
-  GitFileOp,
-  GetSpawn,
-  StatusFile,
-  FileText,
-  Remote,
-} from './types'
+import type { GitFileOp, GetSpawn, StatusFile, FileText, Remote } from './types'
 
 import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
+import { GitDiff } from './GitDiff'
 import { Watcher } from './Watcher'
 import { perfStart, instrumentClass } from './performance'
 
@@ -31,6 +23,7 @@ export class Git {
 
   readonly refs: GitRefs
   readonly commits: GitCommits
+  readonly diff: GitDiff
   readonly watcher: Watcher
 
   constructor(cwd: string) {
@@ -39,11 +32,13 @@ export class Git {
 
     this.refs = new GitRefs(this.cwd, this._getSpawn)
     this.commits = new GitCommits(this.cwd, this._getSpawn, this)
+    this.diff = new GitDiff(this.cwd, this._getSpawn, this)
     this.watcher = new Watcher(this.cwd)
 
     instrumentClass(this)
     instrumentClass(this.refs)
     instrumentClass(this.commits)
+    instrumentClass(this.diff)
   }
 
   _getGitDir = async () => {
@@ -310,114 +305,6 @@ export class Git {
       path: filePath,
       text: plainText,
       type: fileType,
-    }
-  }
-
-  getDiffFromShas = async (
-    shaNew: string,
-    shaOld: string | null = null,
-    { contextLines = 10 } = {},
-  ): Promise<DiffResult | null> => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return null
-    }
-
-    // From Git:
-    // git diff SHAOLD SHANEW --unified=10
-    // git show SHA --patch -m
-
-    if (!shaNew) {
-      console.error('shaNew was not provided')
-      return null
-    }
-
-    let cmd = []
-    if (shaOld) {
-      cmd = ['diff', shaOld, shaNew, '--unified=' + contextLines]
-    } else {
-      cmd = [
-        'show',
-        shaNew,
-        '--patch', // Always show patch
-        '-m', // Show patch even on merge commits
-        '--unified=' + contextLines,
-      ]
-    }
-
-    const patchText = await spawn(cmd)
-    const diff = await this.processDiff(patchText)
-
-    return diff
-  }
-
-  getDiffFromIndex = async ({
-    contextLines = 5,
-  } = {}): Promise<DiffResult | null> => {
-    const spawn = await this._getSpawn()
-    if (!spawn) {
-      return null
-    }
-
-    const statusFiles = await this.getStatus()
-
-    const diffTexts = await Promise.all(
-      statusFiles.map(async (statusFile) => {
-        const cmd = ['diff', '--unified=' + contextLines]
-
-        if (statusFile.isNew) {
-          // Has to be compared to an empty file
-          cmd.push('/dev/null', statusFile.path)
-        } else if (statusFile.isDeleted) {
-          // Has to be compared to current HEAD tree
-          cmd.push('HEAD', '--', statusFile.path)
-        } else if (statusFile.isModified) {
-          // Compare back to head
-          cmd.push('HEAD', statusFile.path)
-        } else if (statusFile.isRenamed) {
-          // Have to tell git diff about the rename
-          cmd.push('HEAD', '--', statusFile.oldPath!, statusFile.path)
-        }
-
-        return await spawn(cmd, { okCodes: [0, 1] })
-      }),
-    )
-
-    const diffText = diffTexts.join('\n')
-
-    const diff = await this.processDiff(diffText)
-
-    return diff
-  }
-
-  private processDiff = async (diffText: string): Promise<DiffResult> => {
-    const files = Diff2Html.parse(diffText) as DiffFile[]
-
-    for (const file of files) {
-      if (file.oldName === '/dev/null') {
-        file.oldName = null
-      }
-      if (file.newName === '/dev/null') {
-        file.newName = null
-      }
-
-      // Diff2Html doesn't attach false values, so patch these on
-      file.isNew = !!file.isNew
-      file.isDeleted = !!file.isDeleted
-      file.isRename = !!file.isRename
-      file.isModified = !file.isNew && !file.isDeleted
-    }
-
-    return {
-      stats: {
-        insertions: files.reduce((result, file) => file.addedLines + result, 0),
-        filesChanged: files.length,
-        deletions: files.reduce(
-          (result, file) => file.deletedLines + result,
-          0,
-        ),
-      },
-      files,
     }
   }
 }
