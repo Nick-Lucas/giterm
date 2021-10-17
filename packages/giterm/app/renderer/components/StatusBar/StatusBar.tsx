@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo } from 'react'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'app/store'
 import styled from 'styled-components'
 import { Activity, GitBranch, Cloud, ArrowUp, ArrowDown } from 'react-feather'
 
@@ -7,7 +7,6 @@ import { StatusBarItem } from './StatusBarItem'
 import { showRemoteBranches } from 'app/store/config/actions'
 import { STATE } from '@giterm/git'
 import { Pill } from 'app/lib/primitives'
-import { Store } from 'app/store/reducers.types'
 
 function mapStateToDisplay(state: any) {
   switch (state) {
@@ -35,14 +34,14 @@ function mapStateToDisplay(state: any) {
 export function StatusBar() {
   const dispatch = useDispatch()
 
-  const { state = '' } = useSelector((state: any) => state.status)
+  const { state = '' } = useSelector((state) => state.status)
 
-  const branches = useSelector((state: Store) => state.branches.list)
+  const branches = useSelector((state) => state.branches.list)
   const currentBranch = useMemo(() => {
     return branches.find((branch) => branch.isHead)
   }, [branches])
 
-  const config = useSelector((state: any) => state.config)
+  const config = useSelector((state) => state.config)
 
   const toggleShowRemoteBranches = useCallback(
     (e) => {

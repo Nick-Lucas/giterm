@@ -8,7 +8,7 @@ import {
 } from './actions'
 import produce from 'immer'
 
-export interface Reducer {
+export interface DiffState {
   show: boolean
   mode: 'shas' | 'index' | null
   shas: string[]
@@ -16,7 +16,7 @@ export interface Reducer {
   diffMode: 'split' | 'inline'
 }
 
-const initialState: Reducer = {
+const initialState: DiffState = {
   show: false,
   mode: null,
   shas: [],
@@ -24,7 +24,7 @@ const initialState: Reducer = {
   diffMode: 'split',
 }
 
-export function reducer(state = initialState, action: any) {
+export function reducer(state = initialState, action: any): DiffState {
   return produce(state, (draft) => {
     switch (action.type) {
       case DIFF_COMPLETE: {

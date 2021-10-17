@@ -1,5 +1,5 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'app/store'
 import { Cloud, Tag, GitBranch, ArrowUp, ArrowDown } from 'react-feather'
 
 import { Pill } from 'app/lib/primitives'
@@ -48,7 +48,7 @@ export function GitRef({
   ahead = 0,
   behind = 0,
 }: Props) {
-  const show = useSelector((state: any) => state.config.showBranchTags)
+  const show = useSelector((state) => state.config.showBranchTags)
   if (!show) {
     return null
   }

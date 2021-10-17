@@ -8,7 +8,7 @@ import { colours } from 'app/lib/theme'
 import _ from 'lodash'
 import { Link, Node } from '@giterm/gitgraph'
 import { BranchRef, Commit, TagRef } from '@giterm/git'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'app/store'
 
 const Colours = colours.GRAPH_NODES
 
@@ -115,7 +115,7 @@ export const _Row = ({
   selected,
 }: Props) => {
   const showRemoteBranches = useSelector(
-    (state: any) => state.config.showRemoteBranches,
+    (state) => state.config.showRemoteBranches,
   )
 
   const [localBranchRefs, remoteBranchRefs] = useMemo(() => {

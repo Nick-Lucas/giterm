@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'app/store'
 
 import { Minimize, Maximize } from 'react-feather'
 import { flipUserTerminalFullscreen } from 'app/store/terminal/actions'

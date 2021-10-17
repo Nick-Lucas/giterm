@@ -1,5 +1,11 @@
+import type { WatcherEvent } from '@giterm/git'
+
 export const GIT_REFS_CHANGED = 'git/refs_changed'
-export function gitRefsChanged(event, ref, isRemote) {
+export function gitRefsChanged(
+  event: WatcherEvent['event'],
+  ref: WatcherEvent['ref'],
+  isRemote: WatcherEvent['isRemote'],
+) {
   return {
     type: GIT_REFS_CHANGED,
     event,

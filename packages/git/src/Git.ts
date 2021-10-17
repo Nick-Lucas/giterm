@@ -15,13 +15,12 @@ import type {
   GitFileOp,
   GetSpawn,
   StatusFile,
-  WatcherCallback,
-  WatcherEvent,
   FileText,
 } from './types'
 
 import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
+import { Watcher } from './Watcher'
 import { instrumentClass } from './performance'
 
 export class Git {
@@ -31,6 +30,7 @@ export class Git {
 
   readonly refs: GitRefs
   readonly commits: GitCommits
+  readonly watcher: Watcher
 
   constructor(cwd: string) {
     this.rawCwd = cwd
@@ -38,8 +38,9 @@ export class Git {
 
     this.refs = new GitRefs(this.cwd, this._getSpawn)
     this.commits = new GitCommits(this.cwd, this._getSpawn, this)
+    this.watcher = new Watcher(this.cwd)
 
-    instrumentClass(this, (key) => key != 'watchRefs')
+    instrumentClass(this)
     instrumentClass(this.refs)
     instrumentClass(this.commits)
   }
@@ -264,55 +265,8 @@ export class Git {
           isRenamed: file.operation === 'R',
         }
       })
-      .sortBy((file) => file.path)
+      .sortBy((file: StatusFile) => file.path)
       .value()
-  }
-
-  watchRefs = (callback: WatcherCallback): (() => void) => {
-    const cwd = this.cwd === '/' ? this.rawCwd : this.cwd
-    const gitDir = path.join(cwd, '.git')
-    const refsPath = path.join(gitDir, 'refs')
-
-    // Watch the refs themselves
-    const watcher = chokidar.watch(refsPath, {
-      cwd: gitDir,
-      awaitWriteFinish: {
-        stabilityThreshold: 1000,
-        pollInterval: 50,
-      },
-      ignoreInitial: true,
-      ignorePermissionErrors: true,
-    })
-
-    // Watch individual refs
-    function processChange(event: WatcherEvent) {
-      return (path: string) =>
-        void callback({
-          event,
-          ref: path,
-          isRemote: path.startsWith('refs/remotes'),
-        })
-    }
-    watcher.on('add', processChange('add'))
-    watcher.on('unlink', processChange('unlink'))
-    watcher.on('change', processChange('change'))
-
-    // Watch for repo destruction and creation
-    function repoChange(event: WatcherEvent) {
-      return function (path: string) {
-        if (path === 'refs') {
-          processChange(event)(path)
-        }
-      }
-    }
-    watcher.on('addDir', repoChange('repo-create'))
-    watcher.on('unlinkDir', repoChange('repo-remove'))
-
-    watcher.on('error', (err) => console.error('watchRefs error: ', err))
-
-    return () => {
-      watcher.close()
-    }
   }
 
   getFilePlainText = async (

@@ -2,18 +2,7 @@ import * as Diff2Html from 'diff2html/lib-esm/types'
 
 export * from './GitRefs.types'
 export * from './GitCommits.types'
-
-export type WatcherEvent =
-  | 'add'
-  | 'unlink'
-  | 'change'
-  | 'repo-create'
-  | 'repo-remove'
-export type WatcherCallback = (data: {
-  event: string
-  ref: string
-  isRemote: boolean
-}) => void
+export * from './Watcher.types'
 
 export interface StatusFile {
   path: string

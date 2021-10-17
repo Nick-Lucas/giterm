@@ -6,15 +6,15 @@ import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
 import { Git, Commits } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
-import { Store } from 'app/store/reducers.types'
+import { State } from 'app/store'
 
 function* reloadCommits(action: any): any {
   const cwd = yield select((state: any) => state.config.cwd)
   const git = new Git(cwd)
 
   const { showRemoteBranches } = yield select((state) => state.config)
-  const { commits: existingCommits, numberToLoad }: Store['commits'] =
-    yield select((state: Store) => state.commits)
+  const { commits: existingCommits, numberToLoad }: State['commits'] =
+    yield select((state: State) => state.commits)
 
   const reloadAll = [
     CWD_UPDATED,

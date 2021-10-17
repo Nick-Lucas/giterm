@@ -1,15 +1,13 @@
 import React from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'app/store'
 
 import { Menu } from 'app/lib/primitives'
 import { LowerPanelExpandCollapseMenuItem } from './LowerPanelExpandCollapseMenuItem'
 import { LowerPanelSwitchViewMenuItem } from './LowerPanelSwitchViewMenuItem'
 import { LowerPanelSwitchDiffModeMenuItem } from './LowerPanelSwitchDiffModeMenuItem'
 
-import { Store } from 'app/store/reducers.types'
-
 export function LowerPanelMenu({ children = null, ...props }) {
-  const diff = useSelector<Store, Store['diff']>((state) => state.diff)
+  const diff = useSelector((state) => state.diff)
 
   return (
     <Menu.Show {...props}>

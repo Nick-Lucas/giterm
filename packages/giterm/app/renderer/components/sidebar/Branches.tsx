@@ -1,5 +1,5 @@
 import React, { useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'app/store'
 
 import { clipboard } from 'electron'
 import { Cloud, GitBranch } from 'react-feather'
@@ -7,10 +7,9 @@ import { Cloud, GitBranch } from 'react-feather'
 import { RightClickArea, List } from 'app/lib/primitives'
 import { Section } from './Section'
 import { BranchUpstreamState } from './BranchUpstreamState'
-import { Store } from 'app/store/reducers.types'
 
 export function Branches() {
-  const _branches = useSelector((state: Store) => state.branches.list)
+  const _branches = useSelector((state) => state.branches.list)
 
   const branches = useMemo(
     () => _branches.filter((b) => !!b.local),

@@ -7,7 +7,7 @@ import React, {
   useCallback,
 } from 'react'
 import PropTypes from 'prop-types'
-import { useSelector, useDispatch } from 'react-redux'
+import { useSelector, useDispatch } from 'app/store'
 import styled from 'styled-components'
 import _ from 'lodash'
 

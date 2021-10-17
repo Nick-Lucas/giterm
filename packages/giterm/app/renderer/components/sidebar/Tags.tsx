@@ -1,15 +1,14 @@
 import React, { useMemo } from 'react'
-import { useSelector } from 'react-redux'
+import { useSelector } from 'app/store'
 
 import { clipboard } from 'electron'
 import { Tag } from 'react-feather'
 
 import { Section } from './Section'
 import { RightClickArea, List } from 'app/lib/primitives'
-import { Store } from 'app/store/reducers.types'
 
 export function Tags() {
-  const tags = useSelector((state: Store) => state.tags.list)
+  const tags = useSelector((state) => state.tags.list)
 
   const menuItems = useMemo(() => {
     return tags.map((tag) => [

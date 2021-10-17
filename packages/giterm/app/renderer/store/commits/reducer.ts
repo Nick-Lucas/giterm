@@ -1,18 +1,18 @@
 import { Commit } from '@giterm/git'
 import { COMMITS_UPDATED, REACHED_END_OF_LIST } from './actions'
 
-export interface Reducer {
+export interface CommitsReducer {
   numberToLoad: number
   digest?: string
   commits: Commit[]
 }
 
-const initialState: Reducer = {
+const initialState: CommitsReducer = {
   numberToLoad: 100,
   commits: [],
 }
 
-export const reducer = (state = initialState, action: any): Reducer => {
+export const reducer = (state = initialState, action: any): CommitsReducer => {
   switch (action.type) {
     case COMMITS_UPDATED:
       return {

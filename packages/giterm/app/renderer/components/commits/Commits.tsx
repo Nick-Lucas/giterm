@@ -1,5 +1,5 @@
 import React, { useCallback, useMemo, useRef, useState } from 'react'
-import { useDispatch, useSelector } from 'react-redux'
+import { useDispatch, useSelector } from 'app/store'
 import styled from 'styled-components'
 import { FixedSizeList, FixedSizeListProps } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
@@ -17,13 +17,12 @@ import { useValueEffect } from 'app/lib/hooks'
 
 import { Commit as CommitType } from '@giterm/git'
 import { Column } from './props'
-import { Store } from 'app/store/reducers.types'
 
 export function Commits() {
   const dispatch = useDispatch()
-  const commits = useSelector((state: Store) => state.commits.commits) ?? []
-  const graphWidth = useSelector((state: any) => state.graph.width)
-  const headSHA = useSelector((state: any) => state.status.headSHA)
+  const commits = useSelector((state) => state.commits.commits) ?? []
+  const graphWidth = useSelector((state) => state.graph.width)
+  const headSHA = useSelector((state) => state.status.headSHA)
 
   const columns = useMemo<Column[]>(() => {
     const graphCols = Math.min(8, graphWidth)

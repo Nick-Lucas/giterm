@@ -1,5 +1,5 @@
 import React, { useCallback } from 'react'
-import { useDispatch } from 'react-redux'
+import { useDispatch } from 'app/store'
 import styled from 'styled-components'
 
 import { Terminal } from './terminal'
