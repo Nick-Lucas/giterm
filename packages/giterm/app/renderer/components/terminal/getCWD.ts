@@ -4,14 +4,11 @@ import { exec } from 'child_process'
 // Thanks hypercwd for example implementations
 // https://github.com/hharnisc/hypercwd
 
-/**
- * @type {(pid: string) => Promise<string>}
- */
-let getCWD
+let getCWD: (pid: string | number) => Promise<string>
 if (process.platform === 'win32') {
   console.error('Windows is not currently supported')
   alert('Windows is not currently supported :(')
-  getCWD = () => '/'
+  getCWD = () => Promise.resolve('/')
 } else {
   getCWD = async (pid) =>
     new Promise((resolve, reject) => {

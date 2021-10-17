@@ -22,7 +22,7 @@ import { INITIAL_CWD } from 'app/lib/cwd'
 import { BASHRC_PATH } from './bash-config'
 import { getCWD } from './getCWD'
 
-const terminalOpts = {
+const terminalOpts: XTerm.ITerminalOptions = {
   allowTransparency: true,
   fontFamily: 'Inconsolata, monospace',
   fontSize: 16,
@@ -32,9 +32,14 @@ const terminalOpts = {
   cursorStyle: 'bar',
 }
 
-export function Terminal({ isShown = true, onAlternateBufferChange }) {
+export interface Props {
+  isShown?: boolean
+  onAlternateBufferChange: (active: boolean) => void
+}
+
+export function Terminal({ isShown = true, onAlternateBufferChange }: Props) {
   const dispatch = useDispatch()
-  const container = useRef()
+  const container = useRef<HTMLElement>()
 
   const cwd = useSelector((state) => state.config.cwd) || INITIAL_CWD
   const cwdStaticRef = useRef(cwd)
@@ -82,7 +87,9 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
   }, [])
 
   useEffect(() => {
-    terminal.open(container.current)
+    if (container.current) {
+      terminal.open(container.current)
+    }
   }, [terminal])
 
   //
@@ -221,8 +228,14 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
       }
     }
 
-    terminal.textarea.onblur = () => setFocused(false)
-    terminal.onfocus = () => setFocused(true)
+    if (terminal.textarea) {
+      terminal.textarea.onblur = () => {
+        setFocused(false)
+      }
+      terminal.textarea.onfocus = () => {
+        setFocused(true)
+      }
+    }
     window.addEventListener('keydown', handleNotFocused)
 
     return () => {
@@ -230,7 +243,9 @@ export function Terminal({ isShown = true, onAlternateBufferChange }) {
     }
   }, [focused, isShown, terminal])
 
-  return <TerminalContainer ref={container} />
+  return (
+    <TerminalContainer ref={container as React.RefObject<HTMLDivElement>} />
+  )
 }
 
 Terminal.propTypes = {
