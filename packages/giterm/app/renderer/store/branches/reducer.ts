@@ -29,11 +29,18 @@ export function reducer(state = initialState, action: any): BranchesReducer {
           bySha[branch.sha].push(branch)
         }
 
-        if (branch.upstream?.sha && branch.upstream.sha != branch.sha) {
-          if (!bySha[branch.upstream.sha]) {
-            bySha[branch.upstream.sha] = []
+        const upstream = branch.upstream
+        if (upstream && upstream.sha) {
+          const isRemoteOnly = !branch.local && !!upstream
+          const isLocallyTrackedButAheadOrBehind =
+            !!branch.local && upstream.sha != branch.sha
+
+          if (isRemoteOnly || isLocallyTrackedButAheadOrBehind) {
+            if (!bySha[upstream.sha]) {
+              bySha[upstream.sha] = []
+            }
+            bySha[upstream.sha].push(branch)
           }
-          bySha[branch.upstream.sha].push(branch)
         }
       }
 
