@@ -12,6 +12,7 @@ export function Branches() {
   const _branches = useSelector((state) => state.branches.list)
 
   const branches = useMemo(
+    // TODO: consider adding an option for whether to include remote branches here
     () => _branches.filter((b) => !!b.local),
     [_branches],
   )
