@@ -1,4 +1,4 @@
-import { remote } from 'electron'
+import * as remote from '@electron/remote'
 
 const pwd = process.cwd()
 const homeDir = remote.app.getPath('home')

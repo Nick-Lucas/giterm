@@ -15,6 +15,8 @@ import '../sentry'
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 // autoUpdater.logger = logger
+import * as remote from '@electron/remote/main'
+remote.initialize()
 
 let mainWindow: BrowserWindow | null = null
 const gitWorker = startWorker()
@@ -59,10 +61,13 @@ app.on('ready', async () => {
     show: false,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
       preload: path.join(__dirname, '../sentry.js'),
     },
     title: `Giterm ${app.getVersion()}`,
   })
+
+  remote.enable(mainWindow.webContents)
 
   // Show on currently active screen
   const currentScreen = screen.getDisplayNearestPoint(
