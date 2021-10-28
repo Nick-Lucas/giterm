@@ -14,7 +14,7 @@ const isDevelopment = process.env.NODE_ENV === 'development'
 
 // autoUpdater.logger = logger
 
-let mainWindow = null
+let mainWindow: BrowserWindow | null = null
 let forceQuit = false
 
 const installExtensions = async () => {
@@ -27,7 +27,7 @@ const installExtensions = async () => {
       forceDownload,
     )
     logger.log('Installing extensions: Done')
-  } catch (e) {
+  } catch (e: any) {
     logger.warn(`Error installing devtools extension: ${e.message}`)
   }
 }
@@ -74,7 +74,7 @@ app.on('ready', async () => {
 
   // show window once on first load
   mainWindow.webContents.once('did-finish-load', () => {
-    mainWindow.show()
+    mainWindow!.show()
   })
 
   mainWindow.webContents.on('did-finish-load', () => {
@@ -83,22 +83,22 @@ app.on('ready', async () => {
     // 2. Click on icon in dock should re-open the window
     // 3. ⌘+Q should close the window and quit the app
     if (process.platform === 'darwin') {
-      mainWindow.on('close', function (e) {
+      mainWindow!.on('close', function (e) {
         if (!forceQuit) {
           e.preventDefault()
-          mainWindow.hide()
+          mainWindow!.hide()
         }
       })
 
       app.on('activate', () => {
-        mainWindow.show()
+        mainWindow!.show()
       })
 
       app.on('before-quit', () => {
         forceQuit = true
       })
     } else {
-      mainWindow.on('closed', () => {
+      mainWindow!.on('closed', () => {
         mainWindow = null
       })
     }
@@ -114,10 +114,10 @@ app.on('ready', async () => {
         {
           label: 'Inspect element',
           click() {
-            mainWindow.inspectElement(props.x, props.y)
+            mainWindow!.webContents.inspectElement(props.x, props.y)
           },
         },
-      ]).popup(mainWindow)
+      ]).popup()
     })
   }
 
