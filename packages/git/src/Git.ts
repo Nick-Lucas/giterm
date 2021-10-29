@@ -1,5 +1,4 @@
 import _ from 'lodash'
-import chokidar from 'chokidar'
 import path from 'path'
 
 import fs from 'fs'
@@ -13,18 +12,15 @@ import type { GetSpawn, StatusFile, Remote, FileInfo } from './types'
 import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
 import { GitDiff } from './GitDiff'
-import { Watcher } from './Watcher'
 import { parseDiffNameStatusViewWithNulColumns } from './git-diff-parsing'
 
 export class Git {
   rawCwd: string
   cwd: string
-  _watcher: chokidar.FSWatcher | null = null
 
   readonly refs: GitRefs
   readonly commits: GitCommits
   readonly diff: GitDiff
-  readonly watcher: Watcher
 
   constructor(cwd: string) {
     this.rawCwd = cwd
@@ -33,7 +29,6 @@ export class Git {
     this.refs = new GitRefs(this.cwd, this._getSpawn)
     this.commits = new GitCommits(this.cwd, this._getSpawn, this)
     this.diff = new GitDiff(this.cwd, this._getSpawn, this)
-    this.watcher = new Watcher(this.cwd)
   }
 
   _getGitDir = async () => {

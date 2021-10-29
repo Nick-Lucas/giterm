@@ -29,10 +29,10 @@ const installExtensions = async () => {
 
   try {
     logger.log('Installing extensions: Started')
-    await installExtension(
-      [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS],
-      forceDownload,
-    )
+    await installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS], {
+      loadExtensionOptions: { allowFileAccess: true },
+      forceDownload: forceDownload,
+    })
     logger.log('Installing extensions: Done')
   } catch (e: any) {
     logger.warn(`Error installing devtools extension: ${e.message}`)
