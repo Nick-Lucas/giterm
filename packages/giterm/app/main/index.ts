@@ -8,16 +8,16 @@ import installExtension, {
   REDUX_DEVTOOLS,
 } from 'electron-devtools-installer'
 
-import { createGitWorker } from './createGitWorker'
+import { startWorker } from './git-worker'
+
 import '../sentry'
-import { create } from 'lodash'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 // autoUpdater.logger = logger
 
 let mainWindow: BrowserWindow | null = null
-let gitWorker: BrowserWindow | null = null
+const gitWorker = startWorker()
 let forceQuit = false
 
 const installExtensions = async () => {
@@ -50,8 +50,6 @@ app.on('ready', async () => {
     logger.log('Development mode detected, installing dev tools')
     await installExtensions()
   }
-
-  gitWorker = await createGitWorker()
 
   mainWindow = new BrowserWindow({
     width: 1000,
@@ -89,10 +87,7 @@ app.on('ready', async () => {
     // 3. ⌘+Q should close the window and quit the app
     if (process.platform === 'darwin') {
       mainWindow!.on('close', function (e) {
-        if (forceQuit) {
-          gitWorker!.close()
-          gitWorker = null
-        } else {
+        if (!forceQuit) {
           e.preventDefault()
           mainWindow!.hide()
         }
@@ -108,8 +103,7 @@ app.on('ready', async () => {
     } else {
       mainWindow!.on('closed', () => {
         mainWindow = null
-        gitWorker!.close()
-        gitWorker = null
+        gitWorker.dispose()
       })
     }
   })

@@ -5,7 +5,10 @@ module.exports = {
   settings: {
     'import/resolver': {
       alias: {
-        map: [['app', __dirname]],
+        map: [
+          ['app', __dirname],
+          ['main', __dirname + '/../main'],
+        ],
       },
     },
   },

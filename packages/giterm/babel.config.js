@@ -21,6 +21,7 @@ module.exports = {
         root: ['.'],
         alias: {
           '^app/(.+)': './app/renderer/\\1',
+          '^main/(.+)': './app/main/\\1',
         },
       },
     ],

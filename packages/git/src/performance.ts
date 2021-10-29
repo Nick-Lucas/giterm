@@ -1,5 +1,12 @@
 const PROFILING = true
 
+const isPerformanceAvailable = typeof performance !== 'undefined'
+if (!isPerformanceAvailable) {
+  console.warn(
+    'Giterm: Performance module is not available. Performance will not be tracked for Git tasks',
+  )
+}
+
 export let perfStart = (name: string) => {
   performance.mark(name + '/start')
 
@@ -23,7 +30,11 @@ const perfTrace = <R, A extends any[], F extends (...args: A) => Promise<R>>(
   } as F
 }
 
-if (process.env.NODE_ENV !== 'development' || !PROFILING) {
+if (
+  process.env.NODE_ENV !== 'development' ||
+  !PROFILING ||
+  !isPerformanceAvailable
+) {
   perfStart = () => ({ done: () => {} })
   perfEnd = function () {}
 }

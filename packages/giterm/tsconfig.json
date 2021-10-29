@@ -8,6 +8,7 @@
     "module": "CommonJS",
     "paths": {
       "app/*": ["./app/renderer/*"],
+      "main/*": ["./app/main/*"],
       "@giterm/*": ["../*/src"]
     }
   },

@@ -7,12 +7,14 @@ import { Git, StatusFile } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
 
+import { Worker } from 'main/git-worker'
+
 function* updateStatus(): any {
   const cwd: string = yield select((state) => state.config.cwd)
   const git = new Git(cwd)
 
   const state: string = yield call(() => git.getStateText())
-  const files: StatusFile[] = yield call(() => git.getStatus())
+  const files: StatusFile[] = yield call(() => Worker.getStatus(cwd, []))
   const headSHA: string = yield call(() => git.getHeadSHA())
 
   yield put(statusUpdated(files, state, headSHA))
