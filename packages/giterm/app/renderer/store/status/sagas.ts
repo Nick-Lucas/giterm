@@ -1,4 +1,4 @@
-import { takeLatest, select, call, put } from 'redux-saga/effects'
+import { takeLatest, select, call, put, all } from 'redux-saga/effects'
 import { statusUpdated } from './actions'
 import { TERMINAL_CHANGED } from 'app/store/terminal/actions'
 import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
@@ -12,9 +12,15 @@ import { Worker } from 'main/git-worker'
 function* updateStatus(): any {
   const cwd: string = yield select((state) => state.config.cwd)
 
-  const state: string = yield call(() => Worker.getStateText(cwd, []))
-  const files: StatusFile[] = yield call(() => Worker.getStatus(cwd, []))
-  const headSHA: string = yield call(() => Worker.getHeadSha(cwd, []))
+  const [state, files, headSHA]: [
+    state: string,
+    files: StatusFile[],
+    headSHA: string,
+  ] = yield all([
+    call(() => Worker.getStateText(cwd, [])),
+    call(() => Worker.getStatus(cwd, [])),
+    call(() => Worker.getHeadSha(cwd, [])),
+  ])
 
   yield put(statusUpdated(files, state, headSHA))
 }

@@ -4,6 +4,7 @@ import { Git, DiffResult, DiffFile, FileText } from '@giterm/git'
 
 import { diffFileSelected } from 'app/store/diff/actions'
 import { setWindowTitle } from 'app/lib/title'
+import { Worker } from 'main/git-worker'
 
 export type { FileText }
 
@@ -40,12 +41,10 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     let cancelled = false
 
     async function fetchDiff() {
-      const git = new Git(cwd)
-
       const diff =
         mode === 'shas'
-          ? await git.diff.getByShas(shaNew, shaOld)
-          : await git.diff.getIndex()
+          ? await Worker.diff.getByShas(cwd, [shaNew, shaOld])
+          : await Worker.diff.getIndex(cwd, [])
 
       if (!cancelled) {
         if (diff) {
@@ -87,17 +86,15 @@ export function useDiffData({ contextLines = 5 } = {}): DiffData {
     const rightName = fileDiff.newName
 
     async function fetch() {
-      const git = new Git(cwd)
-
       let leftPromise: Promise<FileText | null>
       let rightPromise: Promise<FileText | null>
       if (mode === 'shas') {
         const shaOldRelative = shaOld ?? `${shaNew}~1`
-        leftPromise = git.diff.loadFileText(leftName, shaOldRelative)
-        rightPromise = git.diff.loadFileText(rightName, shaNew)
+        leftPromise = Worker.diff.loadFileText(cwd, [leftName, shaOldRelative])
+        rightPromise = Worker.diff.loadFileText(cwd, [rightName, shaNew])
       } else {
-        leftPromise = git.diff.loadFileText(leftName, 'HEAD')
-        rightPromise = git.diff.loadFileText(rightName)
+        leftPromise = Worker.diff.loadFileText(cwd, [leftName, 'HEAD'])
+        rightPromise = Worker.diff.loadFileText(cwd, [rightName])
       }
 
       const [left, right] = await Promise.all([leftPromise, rightPromise])

@@ -164,7 +164,7 @@ const VirtualList = ({
                 itemSize={RowHeight}
                 itemCount={numberOfItems}
                 onItemsRendered={onItemsRendered}
-                overscanCount={10}>
+                overscanCount={30}>
                 {children}
               </FixedSizeList>
             )}
