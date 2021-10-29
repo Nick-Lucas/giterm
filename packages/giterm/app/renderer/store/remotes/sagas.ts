@@ -6,12 +6,12 @@ import { Remote } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
 import { State } from 'app/store'
-import { Worker } from 'main/git-worker'
+import { GitWorker } from 'main/git-worker'
 
 function* updateRemotes(): any {
   const cwd: string = yield select((state: State) => state.config.cwd)
 
-  const remotes: Remote[] = yield call(() => Worker.getAllRemotes(cwd, []))
+  const remotes: Remote[] = yield call(() => GitWorker.getAllRemotes(cwd, []))
 
   yield put(remotesUpdated(remotes))
 }

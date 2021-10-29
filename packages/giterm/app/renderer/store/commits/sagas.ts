@@ -7,7 +7,7 @@ import { Commits } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
 import { State } from 'app/store'
-import { Worker } from 'main/git-worker'
+import { GitWorker } from 'main/git-worker'
 
 function* reloadCommits(action: any): any {
   const cwd = yield select((state: any) => state.config.cwd)
@@ -23,7 +23,7 @@ function* reloadCommits(action: any): any {
   ].includes(action.type)
 
   const { commits, digest }: Commits = yield call(() =>
-    Worker.commits.load(cwd, [
+    GitWorker.commits.load(cwd, [
       {
         includeRemote: showRemoteBranches,
         paging: reloadAll

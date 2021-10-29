@@ -62,7 +62,7 @@ const createRpcHandler = <
   }
 }
 
-export const Worker = {
+export const GitWorker = {
   getStatus: createRpc<Git['getStatus']>('git/status'),
   getStateText: createRpc<Git['getStateText']>('git/status-text'),
   getHeadSha: createRpc<Git['getHeadSHA']>('git/head-sha'),
@@ -84,7 +84,7 @@ export const Worker = {
   },
 }
 
-export const startWorker = () => {
+export const startGitWorker = () => {
   const handlers = [
     createRpcHandler('git/status', (git) => git.getStatus),
     createRpcHandler('git/status-text', (git) => git.getStateText),

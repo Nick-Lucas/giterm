@@ -8,7 +8,8 @@ import installExtension, {
   REDUX_DEVTOOLS,
 } from 'electron-devtools-installer'
 
-import { startWorker } from './git-worker'
+import { startGitWorker } from './git-worker'
+import { startSpawnWorker } from './spawn-worker'
 
 import '../sentry'
 
@@ -19,7 +20,8 @@ import * as remote from '@electron/remote/main'
 remote.initialize()
 
 let mainWindow: BrowserWindow | null = null
-const gitWorker = startWorker()
+const gitWorker = startGitWorker()
+const spawnWorker = startSpawnWorker()
 let forceQuit = false
 
 const installExtensions = async () => {
@@ -109,6 +111,7 @@ app.on('ready', async () => {
       mainWindow!.on('closed', () => {
         mainWindow = null
         gitWorker.dispose()
+        spawnWorker.dispose()
       })
     }
   })

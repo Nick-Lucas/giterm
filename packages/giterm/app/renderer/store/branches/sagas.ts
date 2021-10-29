@@ -4,12 +4,12 @@ import { GIT_REFS_CHANGED, GIT_HEAD_CHANGED } from 'app/store/emitters/actions'
 import { CWD_UPDATED } from 'app/store/config/actions'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
-import { Worker } from 'main/git-worker'
+import { GitWorker } from 'main/git-worker'
 
 function* updateBranches(): any {
   const cwd = yield select((state) => state.config.cwd)
 
-  const branches = yield call(() => Worker.refs.getAllBranches(cwd, []))
+  const branches = yield call(() => GitWorker.refs.getAllBranches(cwd, []))
 
   yield put(branchesUpdated(branches))
 }
