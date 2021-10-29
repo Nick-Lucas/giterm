@@ -1,4 +1,4 @@
-import { remote } from 'electron'
+import * as remote from '@electron/remote'
 
 const appName = remote.app.getName()
 const appVersion = remote.app.getVersion()

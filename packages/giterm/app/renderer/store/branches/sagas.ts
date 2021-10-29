@@ -2,15 +2,14 @@ import { takeLatest, select, call, put } from 'redux-saga/effects'
 import { branchesUpdated } from './actions'
 import { GIT_REFS_CHANGED, GIT_HEAD_CHANGED } from 'app/store/emitters/actions'
 import { CWD_UPDATED } from 'app/store/config/actions'
-import { Git } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
+import { GitWorker } from 'main/git-worker'
 
 function* updateBranches(): any {
   const cwd = yield select((state) => state.config.cwd)
-  const git = new Git(cwd)
 
-  const branches = yield call(git.refs.getAllBranches)
+  const branches = yield call(() => GitWorker.refs.getAllBranches(cwd, []))
 
   yield put(branchesUpdated(branches))
 }

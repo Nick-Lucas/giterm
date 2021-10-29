@@ -8,13 +8,20 @@ import installExtension, {
   REDUX_DEVTOOLS,
 } from 'electron-devtools-installer'
 
+import { startGitWorker } from './git-worker'
+import { startSpawnWorker } from './spawn-worker'
+
 import '../sentry'
 
 const isDevelopment = process.env.NODE_ENV === 'development'
 
 // autoUpdater.logger = logger
+import * as remote from '@electron/remote/main'
+remote.initialize()
 
-let mainWindow = null
+let mainWindow: BrowserWindow | null = null
+const gitWorker = startGitWorker()
+const spawnWorker = startSpawnWorker()
 let forceQuit = false
 
 const installExtensions = async () => {
@@ -22,12 +29,12 @@ const installExtensions = async () => {
 
   try {
     logger.log('Installing extensions: Started')
-    await installExtension(
-      [REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS],
-      forceDownload,
-    )
+    await installExtension([REACT_DEVELOPER_TOOLS, REDUX_DEVTOOLS], {
+      loadExtensionOptions: { allowFileAccess: true },
+      forceDownload: forceDownload,
+    })
     logger.log('Installing extensions: Done')
-  } catch (e) {
+  } catch (e: any) {
     logger.warn(`Error installing devtools extension: ${e.message}`)
   }
 }
@@ -56,10 +63,13 @@ app.on('ready', async () => {
     show: false,
     webPreferences: {
       nodeIntegration: true,
+      contextIsolation: false,
       preload: path.join(__dirname, '../sentry.js'),
     },
     title: `Giterm ${app.getVersion()}`,
   })
+
+  remote.enable(mainWindow.webContents)
 
   // Show on currently active screen
   const currentScreen = screen.getDisplayNearestPoint(
@@ -74,7 +84,7 @@ app.on('ready', async () => {
 
   // show window once on first load
   mainWindow.webContents.once('did-finish-load', () => {
-    mainWindow.show()
+    mainWindow!.show()
   })
 
   mainWindow.webContents.on('did-finish-load', () => {
@@ -83,23 +93,25 @@ app.on('ready', async () => {
     // 2. Click on icon in dock should re-open the window
     // 3. ⌘+Q should close the window and quit the app
     if (process.platform === 'darwin') {
-      mainWindow.on('close', function (e) {
+      mainWindow!.on('close', function (e) {
         if (!forceQuit) {
           e.preventDefault()
-          mainWindow.hide()
+          mainWindow!.hide()
         }
       })
 
       app.on('activate', () => {
-        mainWindow.show()
+        mainWindow!.show()
       })
 
       app.on('before-quit', () => {
         forceQuit = true
       })
     } else {
-      mainWindow.on('closed', () => {
+      mainWindow!.on('closed', () => {
         mainWindow = null
+        gitWorker.dispose()
+        spawnWorker.dispose()
       })
     }
   })
@@ -114,10 +126,10 @@ app.on('ready', async () => {
         {
           label: 'Inspect element',
           click() {
-            mainWindow.inspectElement(props.x, props.y)
+            mainWindow!.webContents.inspectElement(props.x, props.y)
           },
         },
-      ]).popup(mainWindow)
+      ]).popup()
     })
   }
 

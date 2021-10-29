@@ -1,7 +1,7 @@
 import { takeEvery, takeLatest, take, put, select } from 'redux-saga/effects'
 import { eventChannel } from 'redux-saga'
 
-import { Git, WatcherEvent } from '@giterm/git'
+import { Watcher, WatcherEvent } from '@giterm/git'
 import { CWD_UPDATED } from 'app/store/config/actions'
 import { gitRefsChanged, gitHeadChanged } from './actions'
 import { CORE_INIT } from 'app/store/core/actions'
@@ -10,10 +10,10 @@ import { sentrySafeWrapper } from 'app/store/helpers'
 
 function* listenForRefChanges(): any {
   const cwd = yield select((state) => state.config.cwd)
-  const git = new Git(cwd)
+  const watcher = new Watcher(cwd)
 
   const refChangeEmitter = eventChannel((emit) => {
-    return git.watcher.watchRefs((data) => {
+    return watcher.watchRefs((data) => {
       emit(data)
     })
   })

@@ -1,4 +1,4 @@
-import { exec } from 'child_process'
+import { SpawnWorker } from 'main/spawn-worker'
 
 // MIT License
 // Thanks hypercwd for example implementations
@@ -10,19 +10,11 @@ if (process.platform === 'win32') {
   alert('Windows is not currently supported :(')
   getCWD = () => Promise.resolve('/')
 } else {
-  getCWD = async (pid) =>
-    new Promise((resolve, reject) => {
-      exec(
-        `lsof -a -F n -p ${pid} -d cwd | tail -1 | sed 's/.//'`,
-        (e, stdout) => {
-          if (e) {
-            reject(e)
-          } else {
-            resolve(stdout)
-          }
-        },
-      )
-    })
+  getCWD = async (pid) => {
+    return await SpawnWorker.exec([
+      `lsof -a -F n -p ${pid} -d cwd | tail -1 | sed 's/.//'`,
+    ])
+  }
 }
 
 export { getCWD }

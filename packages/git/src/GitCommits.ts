@@ -3,7 +3,6 @@ import { createHash } from 'crypto'
 
 import { Git } from './Git'
 import type { GetSpawn } from './types'
-import { perfStart } from './performance'
 
 import { Commits, Commit, LoadCommits } from './GitCommits.types'
 
@@ -61,18 +60,13 @@ export class GitCommits {
       `--date-order`,
     ].filter(Boolean) as string[]
 
-    const perfSpawn = perfStart('GIT/log/spawn')
     const result = await spawn(cmd)
-    perfSpawn.done()
 
-    const perfSanitise = perfStart('GIT/log/sanitise-result')
     const tuples = result
       .split(/\r\n|\r|\n/g)
       .filter(Boolean)
       .map((str) => str.split(SEP))
-    perfSanitise.done()
 
-    const perfDeserialise = perfStart('GIT/log/deserialise')
     const commits = new Array<Commit>(tuples.length)
     const hash = createHash('sha1')
     for (let i = 0; i < tuples.length; i++) {
@@ -106,11 +100,8 @@ export class GitCommits {
 
       hash.update(sha)
     }
-    perfDeserialise.done()
 
-    const perfFinalise = perfStart('GIT/digest-finalise')
     const digest = hash.digest('hex')
-    perfFinalise.done()
 
     return {
       query: opts,

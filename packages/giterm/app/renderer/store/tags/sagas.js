@@ -2,15 +2,14 @@ import { takeLatest, select, call, put } from 'redux-saga/effects'
 import { tagsUpdated } from './actions'
 import { GIT_REFS_CHANGED } from 'app/store/emitters/actions'
 import { CWD_UPDATED } from 'app/store/config/actions'
-import { Git } from '@giterm/git'
 import { CORE_INIT } from 'app/store/core/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
+import { GitWorker } from 'main/git-worker'
 
 function* updateTags() {
   const cwd = yield select((state) => state.config.cwd)
-  const git = new Git(cwd)
 
-  const tags = yield call(() => git.refs.getAllTags())
+  const tags = yield call(() => GitWorker.refs.getAllTags(cwd))
 
   yield put(tagsUpdated(tags))
 }

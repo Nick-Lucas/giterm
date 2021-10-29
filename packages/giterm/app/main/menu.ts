@@ -1,11 +1,11 @@
 // https://electronjs.org/docs/api/menu-item#roles
 
-import { Menu } from 'electron'
+import { Menu, BrowserWindow } from 'electron'
 
 // NOTE
 // Accelerators don't work from menu when focus is within xterm.js
 // so functionality is handled within app.js as a result
-export default function menu(mainWindow) {
+export default function menu(mainWindow: BrowserWindow) {
   return Menu.buildFromTemplate([
     {
       label: 'Giterm',
@@ -64,7 +64,7 @@ export default function menu(mainWindow) {
     {
       label: 'Window',
       submenu: [
-        { role: 'toggleFullScreen' },
+        { role: 'togglefullscreen' },
         { type: 'separator' },
         { role: 'resetZoom' },
         { role: 'zoomIn' },
