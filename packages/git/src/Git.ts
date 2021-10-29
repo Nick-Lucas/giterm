@@ -14,7 +14,6 @@ import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
 import { GitDiff } from './GitDiff'
 import { Watcher } from './Watcher'
-import { perfStart, instrumentClass } from './performance'
 import { parseDiffNameStatusViewWithNulColumns } from './git-diff-parsing'
 
 export class Git {
@@ -35,11 +34,6 @@ export class Git {
     this.commits = new GitCommits(this.cwd, this._getSpawn, this)
     this.diff = new GitDiff(this.cwd, this._getSpawn, this)
     this.watcher = new Watcher(this.cwd)
-
-    instrumentClass(this)
-    instrumentClass(this.refs)
-    instrumentClass(this.commits)
-    instrumentClass(this.diff)
   }
 
   _getGitDir = async () => {
@@ -59,8 +53,6 @@ export class Git {
     }
 
     return async (args: string[], { okCodes = [0] } = {}): Promise<string> => {
-      const perf = perfStart('GIT/spawn/git ' + args.join(' '))
-
       const buffers: Buffer[] = []
       const child = spawn('git', args, { cwd: this.cwd })
 
@@ -74,8 +66,6 @@ export class Git {
         })
 
         child.on('close', (code) => {
-          perf.done()
-
           const stdtxt = String(Buffer.concat(buffers))
           if (okCodes.includes(code ?? 0)) {
             resolve(stdtxt)

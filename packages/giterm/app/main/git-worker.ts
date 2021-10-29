@@ -1,8 +1,7 @@
 import { ipcMain, ipcRenderer } from 'electron'
 
 import { Git } from '@giterm/git'
-
-const isDevelopment = process.env.NODE_ENV === 'development'
+import { perfStart } from './performance'
 
 type GitJob =
   | 'git/status'
@@ -27,17 +26,12 @@ const createRpc = <
   eventName: GitJob,
 ) => {
   return async (cwd: string, params: TRequest): Promise<TReturn> => {
-    if (isDevelopment) {
-      performance.mark(eventName + '/start')
-    }
+    const perf = perfStart(eventName)
 
     try {
       return await ipcRenderer.invoke(eventName, cwd, params)
     } finally {
-      if (isDevelopment) {
-        performance.mark(eventName + '/end')
-        performance.measure(eventName, eventName + '/start', eventName + '/end')
-      }
+      perf.done()
     }
   }
 }
