@@ -19,6 +19,10 @@ export class GitUtils {
     )
     if (canOptimise) {
       console.info('Optimising repository for reading')
+
+      // Basically git can manage an index which massively speeds up 'git log'.
+      //  This is a massive difference in large repositories but may take some time to complete
+      // https://git-scm.com/docs/git-commit-graph
       await spawn(['commit-graph', 'write', '--reachable', '--changed-paths'])
     } else {
       console.warn(
