@@ -14,6 +14,7 @@ type GitJob =
   | 'git/diff/load-file-text'
   | 'git/diff/by-shas'
   | 'git/diff/by-index'
+  | 'git/util/optimise'
 
 // TODO: TS4.5 has this built in and can be removed
 type Awaited<T> = T extends PromiseLike<infer U> ? U : T
@@ -82,6 +83,9 @@ export const GitWorker = {
     getByShas: createRpc<Git['diff']['getByShas']>('git/diff/by-shas'),
     getIndex: createRpc<Git['diff']['getIndex']>('git/diff/by-index'),
   },
+  utils: {
+    optimise: createRpc<Git['utils']['optimise']>('git/util/optimise'),
+  },
 }
 
 export const startGitWorker = () => {
@@ -96,6 +100,7 @@ export const startGitWorker = () => {
     createRpcHandler('git/diff/by-index', (git) => git.diff.getIndex),
     createRpcHandler('git/diff/by-shas', (git) => git.diff.getByShas),
     createRpcHandler('git/diff/load-file-text', (git) => git.diff.loadFileText),
+    createRpcHandler('git/util/optimise', (git) => git.utils.optimise),
   ]
 
   return {

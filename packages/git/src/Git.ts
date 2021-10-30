@@ -13,6 +13,7 @@ import { GitRefs } from './GitRefs'
 import { GitCommits } from './GitCommits'
 import { GitDiff } from './GitDiff'
 import { parseDiffNameStatusViewWithNulColumns } from './git-diff-parsing'
+import { GitUtils } from './GitUtils'
 
 export class Git {
   rawCwd: string
@@ -21,6 +22,7 @@ export class Git {
   readonly refs: GitRefs
   readonly commits: GitCommits
   readonly diff: GitDiff
+  readonly utils: GitUtils
 
   constructor(cwd: string) {
     this.rawCwd = cwd
@@ -29,6 +31,7 @@ export class Git {
     this.refs = new GitRefs(this.cwd, this._getSpawn)
     this.commits = new GitCommits(this.cwd, this._getSpawn, this)
     this.diff = new GitDiff(this.cwd, this._getSpawn, this)
+    this.utils = new GitUtils(this._getSpawn)
   }
 
   _getGitDir = async () => {
