@@ -1,8 +1,9 @@
-import { takeLatest, put, select } from 'redux-saga/effects'
+import { takeLatest, put, call, select } from 'redux-saga/effects'
 
 import { cwdUpdated } from './actions'
 import { TERMINAL_CHANGED } from 'app/store/terminal/actions'
 import { sentrySafeWrapper } from 'app/store/helpers'
+import { GitWorker } from 'main/git-worker'
 
 function* checkCwd(action) {
   const { cwd } = action
@@ -10,6 +11,10 @@ function* checkCwd(action) {
 
   if (cwd !== config.cwd) {
     yield put(cwdUpdated(cwd))
+
+    // Optimise after telling the rest of the application to change CWD
+    // This way future calls will be really fast though first load might have not an optimised cache yet
+    yield call(() => GitWorker.utils.optimise(cwd, []))
   }
 }
 
