@@ -64,7 +64,7 @@ export function StatusBar() {
 
   return (
     <Wrapper>
-      <Pill.Container>
+      <Pill.Container id="StatusBar_Status">
         <Pill.Segment {...stateProps}>
           <Activity size={15} style={{ marginBottom: '1px' }} />
         </Pill.Segment>
@@ -74,7 +74,7 @@ export function StatusBar() {
         </Pill.Segment>
       </Pill.Container>
 
-      <Pill.Container>
+      <Pill.Container id="StatusBar_Branch">
         <Pill.Segment>
           <GitBranch size={15} />
         </Pill.Segment>
@@ -108,6 +108,7 @@ export function StatusBar() {
       </Pill.Container>
 
       <Pill.Container
+        id="StatusBar_ShowRemote"
         onClick={toggleShowRemoteBranches}
         style={{ cursor: 'pointer' }}>
         <Pill.Segment>

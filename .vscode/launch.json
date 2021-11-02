@@ -5,6 +5,13 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "command": "yarn e2e:run",
+      "name": "Run E2E Suite",
+      "cwd": "${workspaceFolder}/packages/giterm-e2e",
+      "request": "launch",
+      "type": "node-terminal"
+    },
+    {
       "type": "node",
       "name": "vscode-jest-tests",
       "request": "launch",
