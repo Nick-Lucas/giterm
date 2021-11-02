@@ -135,6 +135,27 @@ describe('Git', () => {
         })
       })
     })
+
+    describe('corner cases', () => {
+      it('gets diff for parent-less commit', async () => {
+        const sha = await getBaseCommit()
+        const git = new Git(dir)
+
+        const changes = await git.diff.getByShas(sha)
+        expect(changes!).toEqual<DiffResult>({
+          files: [
+            {
+              oldName: null,
+              newName: 'onlyfile',
+              isDeleted: false,
+              isModified: false,
+              isNew: true,
+              isRenamed: false,
+            },
+          ],
+        })
+      })
+    })
   })
 
   describe('getDiffFromIndex', () => {

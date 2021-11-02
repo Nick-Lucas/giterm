@@ -36,12 +36,31 @@ export class GitDiff {
       }
     }
 
+    // Just support git syntax here, but it does need converting internally
+    if (sha?.includes('~')) {
+      const [childSha] = sha.split('~')
+      sha = await this.getShaParent(childSha)
+    }
+
     const fileType = path.extname(filePath)
 
     let plainText = null
     if (sha) {
       const cmd = ['show', `${sha}:${filePath}`]
-      plainText = await spawn(cmd)
+      try {
+        plainText = await spawn(cmd)
+      } catch (err) {
+        if (
+          /[(' does not exist in ')|( exists on disk, but not in )]/.test(
+            String(err),
+          )
+        ) {
+          // If the file is not in the commit, that's fine, it just didn't exist yet and so is empty
+          plainText = ''
+        } else {
+          throw err
+        }
+      }
     } else {
       const absoluteFilePath = path.join(this._cwd, filePath)
       plainText = await new Promise<string>((resolve, reject) => {
@@ -72,9 +91,12 @@ export class GitDiff {
       return null
     }
 
-    if (!shaOld) {
-      shaOld = `${shaNew}~1`
+    // While sha~1 syntax can go back a commit for free, it will error for parent-less commits.
+    // We look up the parent commit properly so parent-less commits can be compared to the empty tree instead
+    if (shaOld == null) {
+      shaOld = await this.getShaParent(shaNew)
     }
+
     const cmd = [
       'diff',
       shaOld,
@@ -151,6 +173,42 @@ export class GitDiff {
           isModified: file.isModified || file.isRenamed,
         }
       }),
+    }
+  }
+
+  private emptyTreeShaMemo: string | null = null
+  private getEmptyTreeSha = async (): Promise<string> => {
+    const spawn = (await this._getSpawn())!
+
+    if (this.emptyTreeShaMemo == null) {
+      this.emptyTreeShaMemo = await spawn([
+        'hash-object',
+        '-t',
+        'tree',
+        '/dev/null',
+      ])
+      this.emptyTreeShaMemo = this.emptyTreeShaMemo.trim()
+    }
+
+    return this.emptyTreeShaMemo
+  }
+
+  private getShaParent = async (sha: string): Promise<string> => {
+    const spawn = (await this._getSpawn())!
+
+    const output = await spawn(['rev-list', '--parents', '-n', '1', sha])
+
+    const shas = output.split(/[\s]+/)
+    if (shas[0] != sha) {
+      throw `getShaParent failed. Unexpected output: "${output}" for input "${sha}"`
+    }
+
+    if (!!shas[1]) {
+      // Merge commits will have a 3rd element, but but we always want the mainline parent for diffs
+      return shas[1]
+    } else {
+      // Unparented commits will... not have a parent
+      return await this.getEmptyTreeSha()
     }
   }
 }
