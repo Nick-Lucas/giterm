@@ -4,15 +4,15 @@
 
 ## Giterm
 
-Giterm is a GUI with the terminal at its heart, and all the best parts of a Git GUI. 
+Giterm puts the terminal at its heart, and provides all the best parts of a Git GUI. Like a visual commit graph, easy diff viewing, and HUD with you current working state.
 
 * Want to open a repository? Just `cd ./your-repo` like normal
 * Want to make the terminal full-screen? `ctrl+tab`
 * Want to understand the recent merge history? The Git Graph is right there
 * Just need to grab a SHA or branch name? Right click on it in the GUI
-* Type `help` for a list of Giterm Git aliases
+* Giterm bundles several useful git aliases. Type `help` for the full list
 
-The vision of Giterm is to make the time-consuming and weaker bits of the Git CLI faster and easier, while keeping the core CLI experience at the front.
+Giterm's vision is to complement the core Git CLI experience with visual aids, and interactivity where CLIs are weakest.
 
 Giterm is still under heavy development, and any contributions or feedback are very welcome! 
 
@@ -27,7 +27,7 @@ Giterm is still under heavy development, and any contributions or feedback are v
 ## Building locally
 
 1. checkout
-2. `yarn` (Native modules like NodeGit can take ages to build, so be patient)
+2. `yarn install` (Native modules can take a few minutes to build, so be patient)
 3. `yarn run dev` 
 
 ## Contributing
