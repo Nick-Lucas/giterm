@@ -1,3 +1,7 @@
+import path from 'path'
+const xtermJsPath = require.resolve('xterm')
+const xtermRootDir = path.normalize(path.join(path.dirname(xtermJsPath), '../'))
+
 function createCSS(href) {
   const xterm = document.createElement('link')
   xterm.rel = 'stylesheet'
@@ -5,8 +9,4 @@ function createCSS(href) {
   document.head.appendChild(xterm)
 }
 
-createCSS(
-  process.env.NODE_ENV === 'development'
-    ? '../../../../node_modules/xterm/css/xterm.css'
-    : '../../node_modules/xterm/css/xterm.css',
-)
+createCSS(path.relative(__dirname, path.join(xtermRootDir, 'css/xterm.css')))

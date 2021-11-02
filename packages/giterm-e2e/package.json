@@ -3,5 +3,14 @@
   "version": "1.0.0",
   "main": "index.js",
   "license": "UNLICENSED",
-  "private": true
+  "private": true,
+  "dependencies": {
+    "spectron": "^13.0.0",
+    "ts-node": "^10.4.0"
+  },
+  "scripts": {
+    "e2e:build": "yarn run tsnode rebuild.ts",
+    "e2e:run": "yarn run tsnode run.ts",
+    "tsnode": "node -r ts-node/register"
+  }
 }

@@ -2,10 +2,10 @@ import fs from 'fs'
 import path from 'path'
 
 let bashPath = ''
-if (process.env.NODE_ENV === 'development') {
-  bashPath = path.resolve(__dirname, './bashrc')
-} else {
+if (process.env.NODE_ENV === 'production') {
   bashPath = path.resolve(process.resourcesPath, 'bashrc')
+} else {
+  bashPath = path.resolve(__dirname, './bashrc')
 }
 
 export const BASHRC_PATH = bashPath
