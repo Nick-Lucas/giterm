@@ -1,8 +1,5 @@
 import { getPath } from './spawn'
 import { Application, SpectronClient } from 'spectron'
-// import { Element } from 'webdriverio'
-// import assert from 'assert'
-// import packageJson from '../giterm/package.json'
 import { TestGitShim } from '../git/src/TestGitShim'
 
 const STATUS_SELECTOR = '#StatusBar_Status'
@@ -29,13 +26,10 @@ describe('giterm', () => {
       env: {
         ...process.env,
         NODE_ENV: 'test',
+        E2E: '1',
       },
       requireName: 'spectronRequire',
-      chromeDriverArgs: [
-        '--no-sandbox',
-        '--disable-dev-shm-usage',
-        '--whitelisted-ips=',
-      ],
+      chromeDriverLogPath: getPath('packages/giterm-e2e/.chromedriver.logs'),
     })
 
     await app.start()
@@ -49,7 +43,11 @@ describe('giterm', () => {
   })
 
   afterEach(async () => {
-    app.stop()
+    if (app.isRunning()) {
+      await app.stop()
+    }
+
+    // eslint-disable-next-line @typescript-eslint/no-extra-semi
     ;(app as any) = null
   })
 

@@ -9,8 +9,7 @@
     "ts-node": "^10.4.0"
   },
   "scripts": {
-    "e2e:build": "ts-node rebuild.ts",
-    "e2e:run": "ts-node run.ts",
-    "e2e": "yarn run e2e:build && yarn run e2e:run"
+    "e2e": "yarn jest",
+    "e2e:nobuild": "SKIP_BUILD=1 yarn run e2e"
   }
 }
