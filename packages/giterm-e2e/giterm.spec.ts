@@ -86,4 +86,7 @@ describe('giterm', () => {
     await wd.waitUntilTextExists(COMMITS_SELECTOR, 'dev/main')
     await wd.waitUntilTextExists(COMMITS_SELECTOR, 'Initial Test Commit')
   })
+
+  it.todo('loads a git directory with a remote')
+  it.todo('loads a git directory with a remote')
 })

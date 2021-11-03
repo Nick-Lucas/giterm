@@ -17,21 +17,26 @@ stages:
   jobs:
   - job: JSChecks
     steps:
+
     - task: UseNode@1
       inputs:
         version: '14.x'
         checkLatest: true
+
     - publish: $(Build.SourcesDirectory)
       artifact: SourceCode
       displayName: Publish Source Code
+
     - script: |
         sudo apt install libkrb5-dev
         yarn install --network-timeout=100000
         yarn build-js
       displayName: Install
+
     - script: |
         yarn lint
       displayName: Lint
+
     - script: |
         # Support git CLI usage in tests
         git config --global user.email \"test@example.com\"
@@ -39,6 +44,11 @@ stages:
 
         yarn test
       displayName: Unit Tests
+
+    - script: |
+        yarn e2e
+      displayName: E2E Tests
+      workingDirectory: $(Build.SourcesDirectory)/packages/giterm-e2e/ 
 
 - stage: Build
   jobs:
