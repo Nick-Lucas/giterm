@@ -31,6 +31,11 @@ describe('giterm', () => {
         NODE_ENV: 'test',
       },
       requireName: 'spectronRequire',
+      chromeDriverArgs: [
+        '--no-sandbox',
+        '--disable-dev-shm-usage',
+        '--whitelisted-ips=',
+      ],
     })
 
     await app.start()
@@ -54,5 +59,33 @@ describe('giterm', () => {
 
     await wd.waitUntilTextExists(STATUS_SELECTOR, 'No Repository')
     await wd.waitUntilTextExists(BRANCH_SELECTOR, 'No Branch')
+  })
+
+  it('initialises a git directory with no commits', async () => {
+    const git = new TestGitShim()
+
+    await cmd('cd ' + git.dir)
+    await cmd('git init')
+    await cmd('git checkout -b dev/main')
+
+    await wd.waitUntilTextExists(STATUS_SELECTOR, 'OK')
+    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'dev/main')
+  })
+
+  it('initialises a git directory and creates one commit', async () => {
+    const git = new TestGitShim()
+
+    await cmd('cd ' + git.dir)
+    await cmd('git init')
+    git.writeFile('file1', 'abc')
+    await cmd('git checkout -b dev/main')
+    await cmd('git add --all')
+    await cmd('git commit -m "Initial Test Commit"')
+
+    await wd.waitUntilTextExists(STATUS_SELECTOR, 'OK')
+    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'dev/main')
+
+    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'dev/main')
+    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'Initial Test Commit')
   })
 })

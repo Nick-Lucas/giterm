@@ -9,7 +9,8 @@
     "paths": {
       "@giterm/*": ["../*/src"]
     },
-    "noUnusedLocals": false
+    "noUnusedLocals": false,
+    "noEmit": true
   },
   "files": [],
   "include": ["**/*"],
