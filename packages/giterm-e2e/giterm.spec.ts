@@ -30,6 +30,7 @@ describe('giterm', () => {
       },
       requireName: 'spectronRequire',
       chromeDriverLogPath: getPath('packages/giterm-e2e/.chromedriver.logs'),
+      chromeDriverArgs: ['--disable-dev-shm-usage', '--no-sandbox'],
     })
 
     await app.start()
