@@ -50,6 +50,11 @@ stages:
       displayName: E2E Tests
       workingDirectory: $(Build.SourcesDirectory)/packages/giterm-e2e/ 
 
+    - publish: $(Build.SourcesDirectory)/packages/giterm-e2e/.chromedriver.logs
+      artifact: ChromedriverLogs
+      displayName: Publish Logs
+      condition: succeededOrFailed()
+      
 - stage: Build
   jobs:
   - job: Mac
