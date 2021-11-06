@@ -128,7 +128,10 @@ export const _Row = ({
   }, [branchRefs, commit.sha])
 
   return (
-    <RowWrapper isSelected={selected} isHead={isHead}>
+    <RowWrapper
+      data-testid={`commit-${commit.sha}`}
+      isSelected={selected}
+      isHead={isHead}>
       {columns.map((column) => (
         <RowColumn
           key={column.key}

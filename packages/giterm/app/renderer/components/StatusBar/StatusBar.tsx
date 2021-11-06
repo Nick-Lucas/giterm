@@ -64,7 +64,7 @@ export function StatusBar() {
 
   return (
     <Wrapper>
-      <Pill.Container id="StatusBar_Status">
+      <Pill.Container data-testid="StatusBar_Status">
         <Pill.Segment {...stateProps}>
           <Activity size={15} style={{ marginBottom: '1px' }} />
         </Pill.Segment>
@@ -74,9 +74,9 @@ export function StatusBar() {
         </Pill.Segment>
       </Pill.Container>
 
-      <Pill.Container id="StatusBar_Branch">
+      <Pill.Container data-testid="StatusBar_Branch">
         <Pill.Segment>
-          <GitBranch size={15} />
+          <GitBranch data-testid="localTracked" size={15} />
         </Pill.Segment>
 
         {currentBranch?.upstream && isAheadBehind ? (
@@ -96,7 +96,7 @@ export function StatusBar() {
           </Pill.Segment>
         ) : (
           <Pill.Segment>
-            <Cloud size={15} />
+            <Cloud data-testid="remoteTracked" size={15} />
           </Pill.Segment>
         )}
 
@@ -106,7 +106,7 @@ export function StatusBar() {
       </Pill.Container>
 
       <Pill.Container
-        id="StatusBar_ShowRemote"
+        data-testid="StatusBar_ShowRemote"
         onClick={toggleShowRemoteBranches}
         style={{ cursor: 'pointer' }}>
         <Pill.Segment>

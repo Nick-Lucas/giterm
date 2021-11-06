@@ -92,7 +92,7 @@ export function Commits() {
   )
 
   return (
-    <Wrapper id="Commits">
+    <Wrapper data-testid="Commits">
       <Header columns={columns} />
 
       <VirtualList

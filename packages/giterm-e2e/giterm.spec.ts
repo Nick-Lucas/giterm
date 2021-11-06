@@ -2,10 +2,15 @@ import { getPath } from './spawn'
 import { Application, SpectronClient } from 'spectron'
 import { TestGitShim } from '../git/src/TestGitShim'
 
-const STATUS_SELECTOR = '#StatusBar_Status'
-const BRANCH_SELECTOR = '#StatusBar_Branch'
-const SHOW_REMOTE_SELECTOR = '#StatusBar_ShowRemote'
-const COMMITS_SELECTOR = '#Commits'
+const STATUS_SELECTOR = '[data-testid="StatusBar_Status"]'
+const BRANCH_SELECTOR = '[data-testid="StatusBar_Branch"]'
+const SHOW_REMOTE_SELECTOR = '[data-testid="StatusBar_ShowRemote"]'
+const COMMITS_SELECTOR = '[data-testid="Commits"]'
+const COMMIT_SELECTOR = (sha: string) => `[data-testid="commit-${sha}"]`
+const COMMIT_REF_SELECTOR = (localName: string) =>
+  `[data-testid="ref-${localName}"]`
+const COMMIT_LOCAL_BRANCH_SELECTOR = () => `[data-testid="localBranch"]`
+const COMMIT_TRACKED_BRANCH_SELECTOR = () => `[data-testid="remoteInSync"]`
 
 describe('giterm', () => {
   let app: Application
@@ -74,6 +79,7 @@ describe('giterm', () => {
   it('initialises a git directory and creates one commit', async () => {
     const git = new TestGitShim()
 
+    // Initialise repo
     await cmd('cd ' + git.dir)
     await cmd('git init')
     git.writeFile('file1', 'abc')
@@ -88,6 +94,35 @@ describe('giterm', () => {
     await wd.waitUntilTextExists(COMMITS_SELECTOR, 'Initial Test Commit')
   })
 
-  it.todo('loads a git directory with a remote')
-  it.todo('loads a git directory with a remote')
+  it.only('loads a git directory with a remote', async () => {
+    const git = new TestGitShim()
+
+    // Initialise repo
+    await cmd('cd ' + git.dir)
+    await cmd('git init')
+    git.writeFile('file1', 'abc')
+    await cmd('git checkout -b dev/main')
+    const sha = await git.commit('Initial Test Commit')
+
+    // Initialise remote
+    const remoteDir = await git.createRemote()
+    await cmd(`git remote add origin "${remoteDir}"`)
+    await cmd('git push --set-upstream origin dev/main')
+
+    await wd.waitUntilTextExists(STATUS_SELECTOR, 'OK')
+    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'dev/main')
+
+    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'dev/main')
+    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'Initial Test Commit')
+
+    const commitRow = await wd.$(COMMIT_SELECTOR(sha))
+    const branchRef = await commitRow.$(COMMIT_REF_SELECTOR('dev/main'))
+    const localBranch = await branchRef.$(COMMIT_LOCAL_BRANCH_SELECTOR)
+    const trackedBranch = await branchRef.$(COMMIT_TRACKED_BRANCH_SELECTOR)
+    const foovar = await branchRef.$('.foobar')
+    // TODO: check that elements exist properly
+    expect(localBranch).toBe(true)
+    expect(!!trackedBranch).toBe(true)
+    expect(!!foovar).toBe(true)
+  })
 })

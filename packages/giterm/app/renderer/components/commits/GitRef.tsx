@@ -21,13 +21,13 @@ const tagProps = {
 function iconFromType(type: RefType) {
   switch (type) {
     case 'branch':
-      return <GitBranch {...iconProps} />
+      return <GitBranch data-testid="localBranch" {...iconProps} />
 
     case 'remote-branch':
-      return <Cloud {...iconProps} />
+      return <Cloud data-testid="remoteBranch" {...iconProps} />
 
     case 'tag':
-      return <Tag {...tagProps} />
+      return <Tag data-testid="tag" {...tagProps} />
   }
 }
 
@@ -54,11 +54,11 @@ export function GitRef({
   }
 
   return (
-    <Pill.Container>
+    <Pill.Container data-testid={`ref-${label}`}>
       <Pill.Segment current={current}>{iconFromType(type)}</Pill.Segment>
 
       {type === 'branch' && remoteInSync && (
-        <Pill.Segment current={current}>
+        <Pill.Segment data-testid="remoteInSync" current={current}>
           <Cloud {...iconProps} />
         </Pill.Segment>
       )}
@@ -71,14 +71,14 @@ export function GitRef({
         <Pill.Segment current={current} warning>
           {ahead > 0 && (
             <>
-              <ArrowUp {...iconProps} size={14} />
+              <ArrowUp data-testid="remoteAhead" {...iconProps} size={14} />
               {ahead}
             </>
           )}
 
           {behind > 0 && (
             <>
-              <ArrowDown {...iconProps} size={14} />
+              <ArrowDown data-testid="remoteBehind" {...iconProps} size={14} />
               {behind}
             </>
           )}
