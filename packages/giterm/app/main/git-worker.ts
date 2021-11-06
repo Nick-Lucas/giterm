@@ -6,6 +6,7 @@ import { perfStart } from './performance'
 type GitJob =
   | 'git/status'
   | 'git/status-text'
+  | 'git/head-branch'
   | 'git/head-sha'
   | 'git/remotes'
   | 'git/refs/branches'
@@ -66,6 +67,7 @@ const createRpcHandler = <
 export const GitWorker = {
   getStatus: createRpc<Git['getStatus']>('git/status'),
   getStateText: createRpc<Git['getStateText']>('git/status-text'),
+  getHeadBranch: createRpc<Git['getHeadBranch']>('git/head-branch'),
   getHeadSha: createRpc<Git['getHeadSHA']>('git/head-sha'),
   getAllRemotes: createRpc<Git['getAllRemotes']>('git/remotes'),
   commits: {
@@ -92,6 +94,7 @@ export const startGitWorker = () => {
   const handlers = [
     createRpcHandler('git/status', (git) => git.getStatus),
     createRpcHandler('git/status-text', (git) => git.getStateText),
+    createRpcHandler('git/head-branch', (git) => git.getHeadBranch),
     createRpcHandler('git/head-sha', (git) => git.getHeadSHA),
     createRpcHandler('git/remotes', (git) => git.getAllRemotes),
     createRpcHandler('git/commits/load', (git) => git.commits.load),

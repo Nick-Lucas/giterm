@@ -11,6 +11,7 @@
     "lint": "eslint .",
     "test": "jest",
     "test:dev": "yarn run test --watch",
+    "e2e": "wsrun -p giterm-e2e -c e2e",
     "clean": "rimraf **/dist/ **/build/ **/node_modules/"
   },
   "devDependencies": {

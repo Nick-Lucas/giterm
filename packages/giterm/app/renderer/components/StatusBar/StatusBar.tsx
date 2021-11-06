@@ -34,7 +34,7 @@ function mapStateToDisplay(state: any) {
 export function StatusBar() {
   const dispatch = useDispatch()
 
-  const { state = '' } = useSelector((state) => state.status)
+  const { state = '', headBranch } = useSelector((state) => state.status)
 
   const branches = useSelector((state) => state.branches.list)
   const currentBranch = useMemo(() => {
@@ -101,9 +101,7 @@ export function StatusBar() {
         )}
 
         <Pill.Segment>
-          <Pill.Content>
-            {currentBranch?.local?.name ?? 'No Branch'}
-          </Pill.Content>
+          <Pill.Content>{headBranch || 'No Branch'}</Pill.Content>
         </Pill.Segment>
       </Pill.Container>
 
