@@ -16,6 +16,8 @@ stages:
 - stage: JSChecks
   jobs:
   - job: JSChecks
+    pool:
+      vmImage: 'macOS-10.15'
     steps:
 
     - task: UseNode@1
