@@ -72,6 +72,7 @@ describe('giterm', () => {
         },
       },
       branches: [],
+      tags: [],
       commits: 0,
       commitChecks: [],
     })
@@ -94,6 +95,7 @@ describe('giterm', () => {
         },
       },
       branches: [],
+      tags: [],
       commits: 0,
       commitChecks: [],
     })
@@ -119,6 +121,7 @@ describe('giterm', () => {
           name: branchName,
         },
       ],
+      tags: [],
       commits: 1,
       commitChecks: [
         {
@@ -169,6 +172,7 @@ describe('giterm', () => {
           },
         },
       ],
+      tags: [],
       commits: 1,
       commitChecks: [
         {

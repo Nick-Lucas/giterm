@@ -5,6 +5,9 @@ const REPO_STATUS = '[data-testid="StatusBar_Status"]'
 const BRANCH_STATUS = '[data-testid="StatusBar_Branch"]'
 const SHOW_REMOTE_SELECTOR = '[data-testid="StatusBar_ShowRemote"]'
 
+const TAGS_OUTER = '[data-testid="tags"]'
+const TAG_ROW = `[data-testid="tag"]`
+const TAG_ROW_BY_NAME = (name: string) => `[data-tagid="${name}"]`
 const BRANCHES_OUTER = '[data-testid="branches"]'
 const BRANCH_ROW = `[data-testid="branch"]`
 const BRANCH_ROW_BY_NAME = (name: string) => `[data-branchid="${name}"]`
@@ -52,6 +55,7 @@ interface CheckScreen {
     remote?: RemoteBranchInfo
   }
   branches: Omit<RefBranch, 'type'>[]
+  tags: Omit<RefTag, 'type'>[]
   commits: number
   commitChecks: {
     index: number
@@ -107,6 +111,7 @@ export class GuiValidator {
     await this.status(expected.status)
     await this.currentBranch(expected.currentBranch.name)
     await this.branches(expected.branches)
+    await this.tags(expected.tags)
 
     await this.commits(expected.commits)
     for (const commit of expected.commitChecks) {
@@ -139,6 +144,17 @@ export class GuiValidator {
       )
 
       await this.checkRemoteBranchInfo(branchRow, branch.remote)
+    }
+  }
+
+  tags = async (tags: Omit<RefTag, 'type'>[]) => {
+    const tagsSection = await this.exists(TAGS_OUTER)
+
+    const tagRows = await tagsSection.$$(TAG_ROW)
+    expect(tagRows.length).toBe(tags.length)
+
+    for (const tag of tags) {
+      await this.exists(TAG_ROW_BY_NAME(tag.name), tagsSection)
     }
   }
 
