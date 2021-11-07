@@ -54,7 +54,7 @@ export function GitRef({
   }
 
   return (
-    <Pill.Container data-testid={`ref-${label}`}>
+    <Pill.Container data-testid={`ref`} data-refid={`ref-${label}`}>
       <Pill.Segment current={current}>{iconFromType(type)}</Pill.Segment>
 
       {type === 'branch' && remoteInSync && (

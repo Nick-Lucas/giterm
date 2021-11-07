@@ -9,7 +9,8 @@ const COMMITS_OUTER = '[data-testid="Commits"]'
 const COMMIT_ROW = `[data-testid="commit"]`
 const COMMIT_ROW_BY_SHA = (sha: string) =>
   `[data-testid="commit"][data-sha="${sha}"]`
-const COMMIT_REF = (localName: string) => `[data-testid="ref-${localName}"]`
+const COMMIT_REF = `[data-testid="ref"]`
+const COMMIT_REF_BY_TEXT = (text: string) => `[data-refid="ref-${text}"]`
 const LOCAL_BRANCH_ICON = `[data-testid="localBranch"]`
 const TRACKED_BRANCH_ICON = `[data-testid="remoteInSync"]`
 const REMOTE_BRANCH_ICON = `[data-testid="remoteBranch"]`
@@ -40,6 +41,20 @@ interface RefRemoteBranch {
 }
 
 type Ref = RefBranch | RefTag | RefRemoteBranch
+
+interface CheckScreen {
+  status: string
+  currentBranch: {
+    name: string
+    remote?: RemoteBranchInfo
+  }
+  commits: number
+  commitChecks: {
+    index: number
+    message: string
+    refs?: Ref[]
+  }[]
+}
 
 export class GuiValidator {
   private wd: SpectronClient
@@ -84,6 +99,16 @@ export class GuiValidator {
     await this.wd.waitUntilTextExists(SHOW_REMOTE_SELECTOR, 'Show Remote')
   }
 
+  screen = async (expected: CheckScreen) => {
+    await this.status(expected.status)
+    await this.currentBranch(expected.currentBranch.name)
+
+    await this.commits(expected.commits)
+    for (const commit of expected.commitChecks) {
+      await this.commit(commit.index, commit.message, commit.refs)
+    }
+  }
+
   status = async (status: string) => {
     await this.wd.waitUntilTextExists(REPO_STATUS, status)
   }
@@ -108,9 +133,19 @@ export class GuiValidator {
     expect(!!commit).toBe(true)
 
     await this.wd.waitUntilTextExists(commit.selector, commitMessage)
+
+    const refElements = await this.wd.$$(COMMIT_REF)
+
+    // Check that we have the same number on both sides, we should always validate every ref on a commit
+    const expectedRefsLength = refs?.length ?? 0
+    expect(refElements.length).toBe(expectedRefsLength)
+
     if (refs && refs.length > 0) {
       for (const ref of refs) {
-        const refElement = await this.exists(COMMIT_REF(ref.name), commit)
+        const refElement = await this.exists(
+          COMMIT_REF_BY_TEXT(ref.name),
+          commit,
+        )
 
         if (ref.type === 'branch') {
           await this.exists(LOCAL_BRANCH_ICON, refElement)

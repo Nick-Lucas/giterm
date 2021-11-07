@@ -54,10 +54,19 @@ describe('giterm', () => {
     const git = new TestGitShim()
     await cmd('cd ' + git.dir)
 
-    await validate.status('No Repository')
-    await validate.currentBranch('No Branch')
-
-    await validate.commits(0)
+    await validate.screen({
+      status: 'No Repository',
+      currentBranch: {
+        name: 'No Branch',
+        remote: {
+          hasRemote: true,
+          ahead: 0,
+          behind: 0,
+        },
+      },
+      commits: 0,
+      commitChecks: [],
+    })
   })
 
   it('initialises a git directory with no commits', async () => {
@@ -67,10 +76,19 @@ describe('giterm', () => {
     await cmd('git init')
     await cmd('git checkout -b dev/main')
 
-    await validate.status('OK')
-    await validate.currentBranch('dev/main')
-
-    await validate.commits(0)
+    await validate.screen({
+      status: 'OK',
+      currentBranch: {
+        name: 'dev/main',
+        remote: {
+          hasRemote: true,
+          ahead: 0,
+          behind: 0,
+        },
+      },
+      commits: 0,
+      commitChecks: [],
+    })
   })
 
   it('initialises a git directory and creates one commit', async () => {
@@ -91,6 +109,26 @@ describe('giterm', () => {
     await validate.commit(0, 'Initial Test Commit', [
       { type: 'branch', name: 'dev/main' },
     ])
+
+    await validate.screen({
+      status: 'OK',
+      currentBranch: {
+        name: 'dev/main',
+      },
+      commits: 1,
+      commitChecks: [
+        {
+          index: 0,
+          message: 'Initial Test Commit',
+          refs: [
+            {
+              type: 'branch',
+              name: 'dev/main',
+            },
+          ],
+        },
+      ],
+    })
   })
 
   it('loads a git directory with a remote', async () => {
@@ -108,16 +146,30 @@ describe('giterm', () => {
     await cmd(`git remote add origin "${remoteDir}"`)
     await cmd('git push --set-upstream origin dev/main')
 
-    await validate.status('OK')
-    await validate.currentBranch('dev/main')
-
-    await validate.commits(1)
-    await validate.commit(0, 'Initial Test Commit', [
-      {
-        type: 'branch',
+    await validate.screen({
+      status: 'OK',
+      currentBranch: {
         name: 'dev/main',
-        remote: { hasRemote: true, ahead: 0, behind: 0 },
+        remote: {
+          hasRemote: true,
+          ahead: 0,
+          behind: 0,
+        },
       },
-    ])
+      commits: 1,
+      commitChecks: [
+        {
+          index: 0,
+          message: 'Initial Test Commit',
+          refs: [
+            {
+              type: 'branch',
+              name: 'dev/main',
+              remote: { hasRemote: true, ahead: 0, behind: 0 },
+            },
+          ],
+        },
+      ],
+    })
   })
 })
