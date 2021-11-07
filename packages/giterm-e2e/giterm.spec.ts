@@ -141,7 +141,54 @@ describe('giterm', () => {
     })
   })
 
-  it.only('loads a git directory with a remote', async () => {
+  it('initialises a git directory and creates a tag', async () => {
+    const git = new TestGitShim()
+
+    // Initialise repo
+    await cmd('cd ' + git.dir)
+    const branchName = await gitInit(git.dir)
+    git.writeFile('file1', 'abc')
+    await cmd('git add --all')
+    await cmd('git commit -m "Initial Test Commit"')
+    await cmd('git tag my-first-tag')
+
+    await validate.screen({
+      status: 'OK',
+      currentBranch: {
+        name: branchName,
+      },
+      branches: [
+        {
+          name: branchName,
+        },
+      ],
+      tags: [
+        {
+          name: 'my-first-tag',
+        },
+      ],
+      remotes: [],
+      commits: 1,
+      commitChecks: [
+        {
+          index: 0,
+          message: 'Initial Test Commit',
+          refs: [
+            {
+              type: 'branch',
+              name: branchName,
+            },
+            {
+              type: 'tag',
+              name: 'my-first-tag',
+            },
+          ],
+        },
+      ],
+    })
+  })
+
+  it('loads a git directory with a remote', async () => {
     const git = new TestGitShim()
 
     // Initialise repo

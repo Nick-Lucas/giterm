@@ -1,6 +1,9 @@
 import { SpectronClient } from 'spectron'
 import { STATE } from '@giterm/git'
 
+const CHEVRON_CLOSE = '[data-testid="chevron-close"]'
+const CHEVRON_OPEN = '[data-testid="chevron-open"]'
+
 const REPO_STATUS = '[data-testid="StatusBar_Status"]'
 const BRANCH_STATUS = '[data-testid="StatusBar_Branch"]'
 const SHOW_REMOTE_SELECTOR = '[data-testid="StatusBar_ShowRemote"]'
@@ -130,6 +133,11 @@ export class GuiValidator {
 
   remotes = async (remoteNames: string[]) => {
     const remotesSection = await this.exists(REMOTES_OUTER)
+    const chevronOpen = await remotesSection.$(CHEVRON_OPEN)
+    if (await chevronOpen.isExisting()) {
+      await chevronOpen.click()
+      await this.exists(CHEVRON_CLOSE)
+    }
 
     const remoteRows = await remotesSection.$$(REMOTE_ROW)
     expect(remoteRows.length).toBe(remoteNames.length)
@@ -149,6 +157,11 @@ export class GuiValidator {
 
   branches = async (branches: Omit<RefBranch, 'type'>[]) => {
     const branchesSection = await this.exists(BRANCHES_OUTER)
+    const chevronOpen = await branchesSection.$(CHEVRON_OPEN)
+    if (await chevronOpen.isExisting()) {
+      await chevronOpen.click()
+      await this.exists(CHEVRON_CLOSE)
+    }
 
     const branchRows = await branchesSection.$$(BRANCH_ROW)
     expect(branchRows.length).toBe(branches.length)
@@ -165,6 +178,11 @@ export class GuiValidator {
 
   tags = async (tags: Omit<RefTag, 'type'>[]) => {
     const tagsSection = await this.exists(TAGS_OUTER)
+    const chevronOpen = await tagsSection.$(CHEVRON_OPEN)
+    if (await chevronOpen.isExisting()) {
+      await chevronOpen.click()
+      await this.exists(CHEVRON_CLOSE)
+    }
 
     const tagRows = await tagsSection.$$(TAG_ROW)
     expect(tagRows.length).toBe(tags.length)
