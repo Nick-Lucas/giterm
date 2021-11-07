@@ -29,10 +29,14 @@ export function Remotes() {
   }, [_remotes])
 
   return (
-    <Section title="REMOTES" icon={<Cloud size={15} />}>
+    <Section data-testid="remotes" title="REMOTES" icon={<Cloud size={15} />}>
       {remotes.map((remote) => {
         return (
-          <RightClickArea key={remote.id} menuItems={remote.menuItems}>
+          <RightClickArea
+            data-testid="remote"
+            data-remoteid={remote.name}
+            key={remote.id}
+            menuItems={remote.menuItems}>
             <List.Row>
               <List.Label>{remote.name}</List.Label>
             </List.Row>

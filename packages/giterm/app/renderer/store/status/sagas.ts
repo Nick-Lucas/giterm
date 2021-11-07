@@ -12,17 +12,19 @@ import { GitWorker } from 'main/git-worker'
 function* updateStatus(): any {
   const cwd: string = yield select((state) => state.config.cwd)
 
-  const [state, files, headSHA]: [
+  const [state, files, headSHA, headBranch]: [
     state: string,
     files: StatusFile[],
     headSHA: string,
+    headBranch: string,
   ] = yield all([
     call(() => GitWorker.getStateText(cwd, [])),
     call(() => GitWorker.getStatus(cwd, [])),
     call(() => GitWorker.getHeadSha(cwd, [])),
+    call(() => GitWorker.getHeadBranch(cwd, [])),
   ])
 
-  yield put(statusUpdated(files, state, headSHA))
+  yield put(statusUpdated(files, state, headSHA, headBranch))
 }
 
 export function* watch() {

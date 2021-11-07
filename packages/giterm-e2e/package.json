@@ -1,0 +1,16 @@
+{
+  "name": "giterm-e2e",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "UNLICENSED",
+  "private": true,
+  "dependencies": {
+    "@giterm/git": "*",
+    "spectron": "^13.0.0",
+    "ts-node": "^10.4.0"
+  },
+  "scripts": {
+    "e2e": "yarn jest",
+    "e2e:nobuild": "SKIP_BUILD=1 yarn run e2e"
+  }
+}

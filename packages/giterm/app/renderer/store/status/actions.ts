@@ -5,11 +5,13 @@ export const statusUpdated = (
   files: StatusFile[],
   state: string,
   headSHA: string,
+  headBranch: string,
 ) => ({
   type: STATUS_UPDATED,
   payload: {
     files,
     state,
     headSHA,
+    headBranch,
   },
 })

@@ -6,12 +6,14 @@ export interface StatusReducer {
   files: StatusFile[]
   state: string
   headSHA: string
+  headBranch: string
 }
 
-const initialState = {
+const initialState: StatusReducer = {
   files: [],
   state: '',
   headSHA: '',
+  headBranch: '',
 }
 
 export const reducer = updateReducer<StatusReducer>(

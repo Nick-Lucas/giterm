@@ -1,0 +1,17 @@
+{
+  "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "strict": true,
+    "skipLibCheck": true,
+    "target": "ES2020",
+    "module": "CommonJS",
+    "paths": {
+      "@giterm/*": ["../*/src"]
+    },
+    "noUnusedLocals": false,
+    "noEmit": true
+  },
+  "files": [],
+  "include": ["**/*"],
+}

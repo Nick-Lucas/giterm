@@ -18,7 +18,10 @@ export function BranchUpstreamState({
 
   return (
     <Pill.Container marginRight={0}>
-      <Pill.Segment current={selected} warning={false}>
+      <Pill.Segment
+        data-testid="remoteInSync"
+        current={selected}
+        warning={false}>
         {inSync && (
           <>
             <Cloud size={15} />
@@ -27,14 +30,14 @@ export function BranchUpstreamState({
 
         {ahead > 0 && (
           <>
-            <ArrowUp size={15} />
+            <ArrowUp data-testid="remoteAhead" size={15} />
             {ahead}
           </>
         )}
 
         {behind > 0 && (
           <>
-            <ArrowDown size={15} />
+            <ArrowDown data-testid="remoteBehind" size={15} />
             {behind}
           </>
         )}

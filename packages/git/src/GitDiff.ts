@@ -177,7 +177,7 @@ export class GitDiff {
   }
 
   private emptyTreeShaMemo: string | null = null
-  private getEmptyTreeSha = async (): Promise<string> => {
+  getEmptyTreeSha = async (): Promise<string> => {
     const spawn = (await this._getSpawn())!
 
     if (this.emptyTreeShaMemo == null) {

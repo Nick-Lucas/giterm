@@ -22,6 +22,15 @@ describe('Git', () => {
       expect(branches.refs).toEqual([])
     })
 
+    it('FIXME: shows no branches prior to first commit', async () => {
+      // the behaviour is understood, and normal for git, but not necessarily desirable here. Pretty small bug in context though.
+      await spawn(['init'])
+      const git = new Git(dir)
+
+      const branches = await git.refs.getAllBranches({ sort: 'refname' })
+      expect(branches.refs).toEqual([])
+    })
+
     it('lists branches', async () => {
       await spawn(['init'])
       const git = new Git(dir)

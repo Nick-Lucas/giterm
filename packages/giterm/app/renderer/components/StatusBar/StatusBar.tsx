@@ -34,7 +34,7 @@ function mapStateToDisplay(state: any) {
 export function StatusBar() {
   const dispatch = useDispatch()
 
-  const { state = '' } = useSelector((state) => state.status)
+  const { state = '', headBranch } = useSelector((state) => state.status)
 
   const branches = useSelector((state) => state.branches.list)
   const currentBranch = useMemo(() => {
@@ -64,7 +64,7 @@ export function StatusBar() {
 
   return (
     <Wrapper>
-      <Pill.Container>
+      <Pill.Container data-testid="StatusBar_Status">
         <Pill.Segment {...stateProps}>
           <Activity size={15} style={{ marginBottom: '1px' }} />
         </Pill.Segment>
@@ -74,40 +74,39 @@ export function StatusBar() {
         </Pill.Segment>
       </Pill.Container>
 
-      <Pill.Container>
+      <Pill.Container data-testid="StatusBar_Branch">
         <Pill.Segment>
-          <GitBranch size={15} />
+          <GitBranch data-testid="localTracked" size={15} />
         </Pill.Segment>
 
         {currentBranch?.upstream && isAheadBehind ? (
           <Pill.Segment warning>
             {currentBranch?.upstream.ahead > 0 && (
               <>
-                <ArrowUp size={15} />
+                <ArrowUp data-testid="remoteAhead" size={15} />
                 {currentBranch?.upstream.ahead}
               </>
             )}
             {currentBranch?.upstream.behind > 0 && (
               <>
-                <ArrowDown size={15} />
+                <ArrowDown data-testid="remoteBehind" size={15} />
                 {currentBranch?.upstream.behind}
               </>
             )}
           </Pill.Segment>
         ) : (
           <Pill.Segment>
-            <Cloud size={15} />
+            <Cloud data-testid="remoteTracked" size={15} />
           </Pill.Segment>
         )}
 
         <Pill.Segment>
-          <Pill.Content>
-            {currentBranch?.local?.name ?? 'No Branch'}
-          </Pill.Content>
+          <Pill.Content>{headBranch || 'No Branch'}</Pill.Content>
         </Pill.Segment>
       </Pill.Container>
 
       <Pill.Container
+        data-testid="StatusBar_ShowRemote"
         onClick={toggleShowRemoteBranches}
         style={{ cursor: 'pointer' }}>
         <Pill.Segment>

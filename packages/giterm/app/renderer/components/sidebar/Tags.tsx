@@ -20,11 +20,15 @@ export function Tags() {
   }, [tags])
 
   return (
-    <Section title="TAGS" initialOpenState={false} icon={<Tag size={15} />}>
+    <Section
+      data-testid="tags"
+      title="TAGS"
+      initialOpenState={false}
+      icon={<Tag size={15} />}>
       {tags.map((tag, index) => {
         return (
           <RightClickArea key={tag.id} menuItems={menuItems[index]}>
-            <List.Row>
+            <List.Row data-testid="tag" data-tagid={tag.name}>
               <List.Label>{tag.name}</List.Label>
             </List.Row>
           </RightClickArea>
