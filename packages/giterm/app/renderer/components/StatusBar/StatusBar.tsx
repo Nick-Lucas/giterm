@@ -83,13 +83,13 @@ export function StatusBar() {
           <Pill.Segment warning>
             {currentBranch?.upstream.ahead > 0 && (
               <>
-                <ArrowUp size={15} />
+                <ArrowUp data-testid="remoteAhead" size={15} />
                 {currentBranch?.upstream.ahead}
               </>
             )}
             {currentBranch?.upstream.behind > 0 && (
               <>
-                <ArrowDown size={15} />
+                <ArrowDown data-testid="remoteBehind" size={15} />
                 {currentBranch?.upstream.behind}
               </>
             )}

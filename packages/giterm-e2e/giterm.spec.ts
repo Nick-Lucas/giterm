@@ -1,20 +1,12 @@
 import { getPath } from './spawn'
 import { Application, SpectronClient } from 'spectron'
 import { TestGitShim } from '../git/src/TestGitShim'
-
-const STATUS_SELECTOR = '[data-testid="StatusBar_Status"]'
-const BRANCH_SELECTOR = '[data-testid="StatusBar_Branch"]'
-const SHOW_REMOTE_SELECTOR = '[data-testid="StatusBar_ShowRemote"]'
-const COMMITS_SELECTOR = '[data-testid="Commits"]'
-const COMMIT_SELECTOR = (sha: string) => `[data-testid="commit-${sha}"]`
-const COMMIT_REF_SELECTOR = (localName: string) =>
-  `[data-testid="ref-${localName}"]`
-const COMMIT_LOCAL_BRANCH_SELECTOR = () => `[data-testid="localBranch"]`
-const COMMIT_TRACKED_BRANCH_SELECTOR = () => `[data-testid="remoteInSync"]`
+import { GuiValidator } from './GuiValidator'
 
 describe('giterm', () => {
   let app: Application
   let wd: SpectronClient
+  let validate: GuiValidator
 
   async function cmd(text: string) {
     await wd.keys(text)
@@ -40,12 +32,13 @@ describe('giterm', () => {
 
     await app.start()
     wd = app.client
+    validate = new GuiValidator(wd)
 
     await wd.waitUntilWindowLoaded()
 
     const handles = await wd.getWindowHandles()
     await wd.switchToWindow(handles[0])
-    await wd.waitUntilTextExists(SHOW_REMOTE_SELECTOR, 'Show Remote')
+    await validate.loaded()
   })
 
   afterEach(async () => {
@@ -61,8 +54,10 @@ describe('giterm', () => {
     const git = new TestGitShim()
     await cmd('cd ' + git.dir)
 
-    await wd.waitUntilTextExists(STATUS_SELECTOR, 'No Repository')
-    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'No Branch')
+    await validate.status('No Repository')
+    await validate.currentBranch('No Branch')
+
+    await validate.commits(0)
   })
 
   it('initialises a git directory with no commits', async () => {
@@ -72,8 +67,10 @@ describe('giterm', () => {
     await cmd('git init')
     await cmd('git checkout -b dev/main')
 
-    await wd.waitUntilTextExists(STATUS_SELECTOR, 'OK')
-    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'dev/main')
+    await validate.status('OK')
+    await validate.currentBranch('dev/main')
+
+    await validate.commits(0)
   })
 
   it('initialises a git directory and creates one commit', async () => {
@@ -87,14 +84,16 @@ describe('giterm', () => {
     await cmd('git add --all')
     await cmd('git commit -m "Initial Test Commit"')
 
-    await wd.waitUntilTextExists(STATUS_SELECTOR, 'OK')
-    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'dev/main')
+    await validate.status('OK')
+    await validate.currentBranch('dev/main')
 
-    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'dev/main')
-    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'Initial Test Commit')
+    await validate.commits(1)
+    await validate.commit(0, 'Initial Test Commit', [
+      { type: 'branch', name: 'dev/main' },
+    ])
   })
 
-  it.only('loads a git directory with a remote', async () => {
+  it('loads a git directory with a remote', async () => {
     const git = new TestGitShim()
 
     // Initialise repo
@@ -102,27 +101,23 @@ describe('giterm', () => {
     await cmd('git init')
     git.writeFile('file1', 'abc')
     await cmd('git checkout -b dev/main')
-    const sha = await git.commit('Initial Test Commit')
+    await git.commit('Initial Test Commit')
 
     // Initialise remote
     const remoteDir = await git.createRemote()
     await cmd(`git remote add origin "${remoteDir}"`)
     await cmd('git push --set-upstream origin dev/main')
 
-    await wd.waitUntilTextExists(STATUS_SELECTOR, 'OK')
-    await wd.waitUntilTextExists(BRANCH_SELECTOR, 'dev/main')
+    await validate.status('OK')
+    await validate.currentBranch('dev/main')
 
-    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'dev/main')
-    await wd.waitUntilTextExists(COMMITS_SELECTOR, 'Initial Test Commit')
-
-    const commitRow = await wd.$(COMMIT_SELECTOR(sha))
-    const branchRef = await commitRow.$(COMMIT_REF_SELECTOR('dev/main'))
-    const localBranch = await branchRef.$(COMMIT_LOCAL_BRANCH_SELECTOR)
-    const trackedBranch = await branchRef.$(COMMIT_TRACKED_BRANCH_SELECTOR)
-    const foovar = await branchRef.$('.foobar')
-    // TODO: check that elements exist properly
-    expect(localBranch).toBe(true)
-    expect(!!trackedBranch).toBe(true)
-    expect(!!foovar).toBe(true)
+    await validate.commits(1)
+    await validate.commit(0, 'Initial Test Commit', [
+      {
+        type: 'branch',
+        name: 'dev/main',
+        remote: { hasRemote: true, ahead: 0, behind: 0 },
+      },
+    ])
   })
 })

@@ -129,7 +129,8 @@ export const _Row = ({
 
   return (
     <RowWrapper
-      data-testid={`commit-${commit.sha}`}
+      data-testid={`commit`}
+      data-sha={commit.sha}
       isSelected={selected}
       isHead={isHead}>
       {columns.map((column) => (
