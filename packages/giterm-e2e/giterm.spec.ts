@@ -71,6 +71,7 @@ describe('giterm', () => {
           behind: 0,
         },
       },
+      branches: [],
       commits: 0,
       commitChecks: [],
     })
@@ -92,6 +93,7 @@ describe('giterm', () => {
           behind: 0,
         },
       },
+      branches: [],
       commits: 0,
       commitChecks: [],
     })
@@ -112,6 +114,11 @@ describe('giterm', () => {
       currentBranch: {
         name: branchName,
       },
+      branches: [
+        {
+          name: branchName,
+        },
+      ],
       commits: 1,
       commitChecks: [
         {
@@ -152,6 +159,16 @@ describe('giterm', () => {
           behind: 0,
         },
       },
+      branches: [
+        {
+          name: branchName,
+          remote: {
+            hasRemote: true,
+            ahead: 0,
+            behind: 0,
+          },
+        },
+      ],
       commits: 1,
       commitChecks: [
         {

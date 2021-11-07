@@ -32,6 +32,7 @@ export function Branches() {
 
   return (
     <Section
+      data-testid="branches"
       title="BRANCHES"
       icon={
         <>
@@ -42,7 +43,10 @@ export function Branches() {
       {branches.map((branch, index) => {
         return (
           <RightClickArea key={branch.local!.id} menuItems={menuItems[index]}>
-            <List.Row active={branch.isHead}>
+            <List.Row
+              active={branch.isHead}
+              data-testid="branch"
+              data-branchid={branch.local!.name}>
               <List.Label>{branch.local!.name}</List.Label>
 
               {(branch.isHead || branch.upstream) && (

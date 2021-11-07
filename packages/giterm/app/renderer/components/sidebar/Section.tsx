@@ -16,6 +16,7 @@ export function Section({
   hasContent = true,
   initialOpenState = true,
   icon = null,
+  ...props
 }: Props) {
   const [open, setOpen] = useState(initialOpenState)
   const toggleOpen = useCallback(() => {
@@ -23,7 +24,7 @@ export function Section({
   }, [])
 
   return (
-    <Container open={open && hasContent}>
+    <Container {...props} open={open && hasContent}>
       <Button onClick={toggleOpen} disabled={!hasContent}>
         {hasContent ? (
           <Chevron open={open} width="2rem" />

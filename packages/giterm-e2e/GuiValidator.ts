@@ -5,6 +5,9 @@ const REPO_STATUS = '[data-testid="StatusBar_Status"]'
 const BRANCH_STATUS = '[data-testid="StatusBar_Branch"]'
 const SHOW_REMOTE_SELECTOR = '[data-testid="StatusBar_ShowRemote"]'
 
+const BRANCHES_OUTER = '[data-testid="branches"]'
+const BRANCH_ROW = `[data-testid="branch"]`
+const BRANCH_ROW_BY_NAME = (name: string) => `[data-branchid="${name}"]`
 const COMMITS_OUTER = '[data-testid="Commits"]'
 const COMMIT_ROW = `[data-testid="commit"]`
 const COMMIT_ROW_BY_SHA = (sha: string) =>
@@ -48,6 +51,7 @@ interface CheckScreen {
     name: string
     remote?: RemoteBranchInfo
   }
+  branches: Omit<RefBranch, 'type'>[]
   commits: number
   commitChecks: {
     index: number
@@ -102,6 +106,7 @@ export class GuiValidator {
   screen = async (expected: CheckScreen) => {
     await this.status(expected.status)
     await this.currentBranch(expected.currentBranch.name)
+    await this.branches(expected.branches)
 
     await this.commits(expected.commits)
     for (const commit of expected.commitChecks) {
@@ -119,6 +124,22 @@ export class GuiValidator {
     await this.wd.waitUntilTextExists(branchStatus.selector, branchName)
 
     await this.checkRemoteBranchInfo(branchStatus, remote)
+  }
+
+  branches = async (branches: Omit<RefBranch, 'type'>[]) => {
+    const branchesSection = await this.exists(BRANCHES_OUTER)
+
+    const branchRows = await branchesSection.$$(BRANCH_ROW)
+    expect(branchRows.length).toBe(branches.length)
+
+    for (const branch of branches) {
+      const branchRow = await this.exists(
+        BRANCH_ROW_BY_NAME(branch.name),
+        branchesSection,
+      )
+
+      await this.checkRemoteBranchInfo(branchRow, branch.remote)
+    }
   }
 
   commits = async (count: number) => {
