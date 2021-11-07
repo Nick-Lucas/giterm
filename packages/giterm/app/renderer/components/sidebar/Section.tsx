@@ -27,7 +27,11 @@ export function Section({
     <Container {...props} open={open && hasContent}>
       <Button onClick={toggleOpen} disabled={!hasContent}>
         {hasContent ? (
-          <Chevron open={open} width="2rem" />
+          <Chevron
+            data-testid={open ? 'chevron-close' : 'chevron-open'}
+            open={open}
+            width="2rem"
+          />
         ) : (
           <Minus width="2rem" />
         )}

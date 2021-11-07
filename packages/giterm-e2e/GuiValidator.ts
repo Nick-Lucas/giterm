@@ -5,6 +5,9 @@ const REPO_STATUS = '[data-testid="StatusBar_Status"]'
 const BRANCH_STATUS = '[data-testid="StatusBar_Branch"]'
 const SHOW_REMOTE_SELECTOR = '[data-testid="StatusBar_ShowRemote"]'
 
+const REMOTES_OUTER = '[data-testid="remotes"]'
+const REMOTE_ROW = `[data-testid="remote"]`
+const REMOTE_ROW_BY_NAME = (name: string) => `[data-remoteid="${name}"]`
 const TAGS_OUTER = '[data-testid="tags"]'
 const TAG_ROW = `[data-testid="tag"]`
 const TAG_ROW_BY_NAME = (name: string) => `[data-tagid="${name}"]`
@@ -54,6 +57,7 @@ interface CheckScreen {
     name: string
     remote?: RemoteBranchInfo
   }
+  remotes: string[]
   branches: Omit<RefBranch, 'type'>[]
   tags: Omit<RefTag, 'type'>[]
   commits: number
@@ -112,6 +116,7 @@ export class GuiValidator {
     await this.currentBranch(expected.currentBranch.name)
     await this.branches(expected.branches)
     await this.tags(expected.tags)
+    await this.remotes(expected.remotes)
 
     await this.commits(expected.commits)
     for (const commit of expected.commitChecks) {
@@ -121,6 +126,17 @@ export class GuiValidator {
 
   status = async (status: string) => {
     await this.wd.waitUntilTextExists(REPO_STATUS, status)
+  }
+
+  remotes = async (remoteNames: string[]) => {
+    const remotesSection = await this.exists(REMOTES_OUTER)
+
+    const remoteRows = await remotesSection.$$(REMOTE_ROW)
+    expect(remoteRows.length).toBe(remoteNames.length)
+
+    for (const remoteName of remoteNames) {
+      await this.exists(REMOTE_ROW_BY_NAME(remoteName), remotesSection)
+    }
   }
 
   currentBranch = async (branchName: string, remote?: RemoteBranchInfo) => {

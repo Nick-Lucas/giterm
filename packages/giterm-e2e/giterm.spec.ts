@@ -73,6 +73,7 @@ describe('giterm', () => {
       },
       branches: [],
       tags: [],
+      remotes: [],
       commits: 0,
       commitChecks: [],
     })
@@ -96,6 +97,7 @@ describe('giterm', () => {
       },
       branches: [],
       tags: [],
+      remotes: [],
       commits: 0,
       commitChecks: [],
     })
@@ -122,6 +124,7 @@ describe('giterm', () => {
         },
       ],
       tags: [],
+      remotes: [],
       commits: 1,
       commitChecks: [
         {
@@ -138,7 +141,7 @@ describe('giterm', () => {
     })
   })
 
-  it('loads a git directory with a remote', async () => {
+  it.only('loads a git directory with a remote', async () => {
     const git = new TestGitShim()
 
     // Initialise repo
@@ -173,6 +176,7 @@ describe('giterm', () => {
         },
       ],
       tags: [],
+      remotes: ['origin'],
       commits: 1,
       commitChecks: [
         {
