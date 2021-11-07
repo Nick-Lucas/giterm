@@ -2,6 +2,7 @@ import { getPath } from './spawn'
 import { Application, SpectronClient } from 'spectron'
 import { TestGitShim } from '../git/src/TestGitShim'
 import { GuiValidator } from './GuiValidator'
+import { Git } from '@giterm/git'
 
 describe('giterm', () => {
   let app: Application
@@ -13,6 +14,12 @@ describe('giterm', () => {
     await wd.keys(['Enter'])
 
     await new Promise((resolve) => setTimeout(resolve, 50))
+  }
+
+  async function gitInit(dir: string) {
+    await cmd('git init')
+
+    return await new Git(dir).getHeadBranch()
   }
 
   beforeEach(async () => {
@@ -73,13 +80,12 @@ describe('giterm', () => {
     const git = new TestGitShim()
 
     await cmd('cd ' + git.dir)
-    await cmd('git init')
-    await cmd('git checkout -b dev/main')
+    const branchName = await gitInit(git.dir)
 
     await validate.screen({
       status: 'OK',
       currentBranch: {
-        name: 'dev/main',
+        name: branchName,
         remote: {
           hasRemote: true,
           ahead: 0,
@@ -96,24 +102,15 @@ describe('giterm', () => {
 
     // Initialise repo
     await cmd('cd ' + git.dir)
-    await cmd('git init')
+    const branchName = await gitInit(git.dir)
     git.writeFile('file1', 'abc')
-    await cmd('git checkout -b dev/main')
     await cmd('git add --all')
     await cmd('git commit -m "Initial Test Commit"')
-
-    await validate.status('OK')
-    await validate.currentBranch('dev/main')
-
-    await validate.commits(1)
-    await validate.commit(0, 'Initial Test Commit', [
-      { type: 'branch', name: 'dev/main' },
-    ])
 
     await validate.screen({
       status: 'OK',
       currentBranch: {
-        name: 'dev/main',
+        name: branchName,
       },
       commits: 1,
       commitChecks: [
@@ -123,7 +120,7 @@ describe('giterm', () => {
           refs: [
             {
               type: 'branch',
-              name: 'dev/main',
+              name: branchName,
             },
           ],
         },
@@ -136,20 +133,19 @@ describe('giterm', () => {
 
     // Initialise repo
     await cmd('cd ' + git.dir)
-    await cmd('git init')
+    const branchName = await gitInit(git.dir)
     git.writeFile('file1', 'abc')
-    await cmd('git checkout -b dev/main')
     await git.commit('Initial Test Commit')
 
     // Initialise remote
     const remoteDir = await git.createRemote()
     await cmd(`git remote add origin "${remoteDir}"`)
-    await cmd('git push --set-upstream origin dev/main')
+    await cmd(`git push --set-upstream origin ${branchName}`)
 
     await validate.screen({
       status: 'OK',
       currentBranch: {
-        name: 'dev/main',
+        name: branchName,
         remote: {
           hasRemote: true,
           ahead: 0,
@@ -164,7 +160,7 @@ describe('giterm', () => {
           refs: [
             {
               type: 'branch',
-              name: 'dev/main',
+              name: branchName,
               remote: { hasRemote: true, ahead: 0, behind: 0 },
             },
           ],
