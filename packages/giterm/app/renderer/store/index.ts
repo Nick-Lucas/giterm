@@ -2,6 +2,7 @@ import { createStore, applyMiddleware, combineReducers, compose } from 'redux'
 import createSagaMiddleware from 'redux-saga'
 import * as Sentry from '@sentry/electron'
 import * as ReactRedux from 'react-redux'
+import { NODE_ENV } from 'app/lib/env'
 
 // Reducers
 import * as reducers from './reducers'
@@ -14,7 +15,7 @@ function configureStore() {
   const composeEnhancers = (() => {
     const compose_ =
       window && (window as any).__REDUX_DEVTOOLS_EXTENSION_COMPOSE__
-    if (process.env.NODE_ENV === 'development' && compose_) {
+    if (NODE_ENV === 'development' && compose_) {
       return compose_
     }
     return compose

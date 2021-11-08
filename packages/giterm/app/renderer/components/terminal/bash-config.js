@@ -1,8 +1,9 @@
 import fs from 'fs'
 import path from 'path'
+import { NODE_ENV } from 'app/lib/env'
 
 let bashPath = ''
-if (process.env.NODE_ENV === 'production') {
+if (NODE_ENV === 'production') {
   bashPath = path.resolve(process.resourcesPath, 'bashrc')
 } else {
   bashPath = path.resolve(__dirname, './bashrc')
